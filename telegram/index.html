@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#090610">
+<title>ATROPA: The Peggening - Telegram</title>
+<script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090610;color:#f4e8ff;font-family:Arial,sans-serif;overscroll-behavior:none}
+#game{position:fixed;inset:0;width:100%;height:100%;border:0;background:#090610;display:block}
+#loading{position:fixed;inset:0;z-index:2;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#261139,#090610 72%);text-align:center;padding:24px;box-sizing:border-box}
+#loading strong{display:block;font-size:clamp(22px,6vw,42px);letter-spacing:.14em;color:#e9bd78}
+#loading span{display:block;margin-top:12px;color:#cdbce6;font-size:13px}
+</style>
+</head>
+<body>
+<div id="loading"><div><strong>ATROPA</strong><span>Loading The Peggening inside Telegram...</span></div></div>
+<iframe id="game" src="./game.html" title="ATROPA: The Peggening" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen></iframe><script>
+(function(){
+  var tg=window.Telegram&&window.Telegram.WebApp;
+  if(tg){
+    try{tg.ready();}catch(_){}
+    try{tg.expand();}catch(_){}
+    try{if(tg.disableVerticalSwipes)tg.disableVerticalSwipes();}catch(_){}
+    try{if(tg.setHeaderColor)tg.setHeaderColor('#090610');}catch(_){}
+    try{if(tg.setBackgroundColor)tg.setBackgroundColor('#090610');}catch(_){}
+    try{if(tg.requestFullscreen)tg.requestFullscreen();}catch(_){}
+  }
+  var game=document.getElementById('game');
+  var loading=document.getElementById('loading');
+  game.addEventListener('load',function(){if(loading)loading.style.display='none';},{once:true});
+})();
+</script>
+</body>
+</html>
