@@ -1,0 +1,32 @@
+[
+  {
+    "id": "signal-welcome",
+    "type": "news",
+    "text": "SIMULATED: Liberty Plaza keeps a light on for anyone finding their way.",
+    "ts": 1790726400
+  },
+  {
+    "id": "signal-route",
+    "type": "swap",
+    "text": "SIMULATED: A fictional intent reached its destination. The harbor bell says welcome.",
+    "ts": 1790726460
+  },
+  {
+    "id": "signal-furnace",
+    "type": "burn",
+    "text": "SIMULATED: The story furnace flares for a buyback/burn tale. No real trade or price forecast.",
+    "ts": 1790726520
+  },
+  {
+    "id": "signal-friend",
+    "type": "tweet",
+    "text": "SIMULATED: Pulse Guy says a safe first step beats a rushed one, my guy.",
+    "ts": 1790726580
+  },
+  {
+    "id": "signal-build",
+    "type": "news",
+    "text": "SIMULATED: Construction Row has new chalk sketches. COMING is a teaser, with no promised timeline.",
+    "ts": 1790726640
+  }
+]

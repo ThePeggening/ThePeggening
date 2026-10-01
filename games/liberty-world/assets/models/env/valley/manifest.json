@@ -1,0 +1,168 @@
+{
+  "version": "PCOCK-VALLEY-KIT-R3",
+  "status": "Original detailed authored Valley art; human review deferred.",
+  "models": {
+    "tree": {
+      "file": "./tree.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 216,
+      "bytes": 24260,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "rock": {
+      "file": "./rock.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 100,
+      "bytes": 11736,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "house": {
+      "file": "./house.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 684,
+      "bytes": 74816,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "crate": {
+      "file": "./crate.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 72,
+      "bytes": 8708,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "signal-lamp": {
+      "file": "./signal-lamp.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 80,
+      "bytes": 9556,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "liberty-arch": {
+      "file": "./liberty-arch.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 186,
+      "bytes": 20968,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "signal-spire": {
+      "file": "./signal-spire.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 180,
+      "bytes": 20320,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "wooden-bridge": {
+      "file": "./wooden-bridge.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 360,
+      "bytes": 39740,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "planter": {
+      "file": "./planter.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 200,
+      "bytes": 22484,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "liberty-statue": {
+      "file": "./liberty-statue.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 176,
+      "bytes": 19908,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "windmill": {
+      "file": "./windmill.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 176,
+      "bytes": 19876,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "lighthouse": {
+      "file": "./lighthouse.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 308,
+      "bytes": 34168,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "boat": {
+      "file": "./boat.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 62,
+      "bytes": 7624,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "feather-shrine": {
+      "file": "./feather-shrine.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 56,
+      "bytes": 6964,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "product-hall": {
+      "file": "./product-hall.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 348,
+      "bytes": 38504,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "tree-far": {
+      "file": "./tree-far.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 84,
+      "bytes": 10000,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "house-far": {
+      "file": "./house-far.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 140,
+      "bytes": 16056,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "rock-far": {
+      "file": "./rock-far.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 60,
+      "bytes": 7416,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    }
+  }
+}

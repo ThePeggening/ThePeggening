@@ -1,0 +1,65 @@
+{
+  "acquiredAt": "2026-09-30T11:08:23.059Z",
+  "fonts": [
+    {
+      "family": "BT Beau Sans",
+      "weight": 300,
+      "file": "assets/fonts/BT-BeauSans-Light.otf",
+      "bytes": 36204,
+      "source": "https://drive.usercontent.google.com/download?id=1ynYO8Goku5MgwzKzvVlN2uKsN3lBlucB&export=download",
+      "creator": "https://beautype.studio/bt-beausans",
+      "terms": "Creator advertises free typeface with standard commercial license; original OTF files retained without modification.",
+      "sha256": "17bb6e327d43d30be43ec57386ab41fed896e8a004c6e4f5a3864ac472bf3e67"
+    },
+    {
+      "family": "BT Beau Sans",
+      "weight": 400,
+      "file": "assets/fonts/BT-BeauSans-Regular.otf",
+      "bytes": 35228,
+      "source": "https://drive.usercontent.google.com/download?id=16ouQEcdwX5xf3nC6kCzhZEMfi9wDrZuK&export=download",
+      "creator": "https://beautype.studio/bt-beausans",
+      "terms": "Creator advertises free typeface with standard commercial license; original OTF files retained without modification.",
+      "sha256": "a32068001355c43419ca29fa73a984baa612341b4ff2a74dee379caf95603851"
+    },
+    {
+      "family": "BT Beau Sans",
+      "weight": 500,
+      "file": "assets/fonts/BT-BeauSans-Medium.otf",
+      "bytes": 36680,
+      "source": "https://drive.usercontent.google.com/download?id=1N04vORI0MXUnOoFR55EMVPgtgjYuJMCB&export=download",
+      "creator": "https://beautype.studio/bt-beausans",
+      "terms": "Creator advertises free typeface with standard commercial license; original OTF files retained without modification.",
+      "sha256": "1010f30da7231fb60ca11c1335a8ca37c2b85ea7f770314bd3df4619ef15c9d9"
+    },
+    {
+      "family": "BT Beau Sans",
+      "weight": 700,
+      "file": "assets/fonts/BT-BeauSans-Bold.otf",
+      "bytes": 35920,
+      "source": "https://drive.usercontent.google.com/download?id=1SOr6J-ODOSBXC2LXhBtM2NS1EDxeiCzW&export=download",
+      "creator": "https://beautype.studio/bt-beausans",
+      "terms": "Creator advertises free typeface with standard commercial license; original OTF files retained without modification.",
+      "sha256": "f006ea8125a8105430fb323789bfb9ea58a43bf9ec08a8d590a083031f7b1fc8"
+    },
+    {
+      "family": "BT Beau Sans",
+      "weight": 800,
+      "file": "assets/fonts/BT-BeauSans-ExtraBold.otf",
+      "bytes": 36312,
+      "source": "https://drive.usercontent.google.com/download?id=1G8brsNfYVwbrUr37E91RC1YGV1oUsql_&export=download",
+      "creator": "https://beautype.studio/bt-beausans",
+      "terms": "Creator advertises free typeface with standard commercial license; original OTF files retained without modification.",
+      "sha256": "977d04d25ecc8d7a705f67a793fcd6f095cd934095686db7fe6622292cec0a62"
+    },
+    {
+      "family": "Soloist Extra Italic",
+      "weight": 400,
+      "file": "assets/fonts/Soloist-ExtraItalic.ttf",
+      "source": "https://www.iconian.com/fonts3/soloist12.zip",
+      "terms": "assets/fonts/SOLOIST-TERMS.txt",
+      "commercialTerms": "https://www.iconian.com/commercial.html",
+      "bytes": 37584,
+      "sha256": "ef377a45c8134c27c57f9937d1c5c7a0f67a4b1b05b3ac6b7119b0a76ee9b162"
+    }
+  ]
+}

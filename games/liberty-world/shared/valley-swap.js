@@ -1,0 +1,15 @@
+import {element,button} from './hud-kit.js';
+import {markNext} from './valley-guide.js';
+import {disclaimer} from './valley-data.js';
+// One active field and one persistent next action: no disabled fields below the fold.
+export function openHarborSwap({panel,wallet,done}){
+ let phase=0;const values=['Choose token','Choose token','Choose chain',100,false],steps=[['You have',['Choose token','USDC','PLS'],'USDC','Choose the token Nessa gave you.'],['You want',['Choose token','pDAI','USDC'],'pDAI','Choose the token used for bridge supplies.'],['Destination chain',['Choose chain','PulseChain','Base'],'PulseChain','Choose the destination written on the cargo.'],['Fictional amount',null,null,'Keep some USDC for equipment. This exercise starts with 300.'],['Gasless mode',null,true,'Cover the simulated route fee.'],['Review',null,null,'Review the fictional route, then confirm it.']];
+ function draw(){const p=panel('Liberty Swap · SIMULATED');p.classList.add('v-swap-step');const [label,options,answer,hint]=steps[phase],status=element('p','v-sim-status');status.setAttribute('role','status');p.append(element('p','v-step-count','STEP '+(phase+1)+' OF 6'),element('p','v-sim-hint',hint));let field;
+  if(phase<5){const row=element('label','v-swap-field');row.append(element('span','',label));field=element(options?'select':'input');field.setAttribute('aria-label',label);if(options){for(const value of options)field.append(element('option','',value));field.value=values[phase];}else{field.type=phase===4?'checkbox':'number';if(phase===4)field.checked=values[phase];else{field.min=10;field.max=wallet.wallet.balances.USDC;field.value=values[phase];}}row.append(field);p.append(row);}else p.append(element('div','v-swap-summary',values[3]+' USDC → '+values[3]+' pDAI\nDestination: PulseChain\nPractice fee: 0 · Gasless\nYour balance after routing: '+(wallet.wallet.balances.USDC-values[3])+' USDC'));
+  const valid=()=>phase<3?values[phase]===answer:phase===3?Number.isFinite(values[3])&&values[3]>=10&&values[3]<=wallet.wallet.balances.USDC:phase===4?values[4]:true;
+  const advance=button(phase===5?'Route simulated intent':'Continue',()=>{if(!valid()){status.textContent=phase===3?'Choose 10 to '+wallet.wallet.balances.USDC+' fictional USDC.':'Use the highlighted choice to continue.';return;}if(phase===5){const result=wallet.swap(values[3]);if(!result.ok){status.textContent=result.error;return;}done();}else{phase++;draw();}},'pc-button pc-primary');advance.dataset.simNext='';let pick;
+  if(options){pick=button('Choose: '+answer,()=>{values[phase]=field.value=answer;sync();},'pc-button v-answer-pick');p.append(pick);}p.append(status,advance);if(phase>0)p.append(button('Back',()=>{phase--;draw();},'pc-button'));p.append(element('p','v-small',disclaimer));
+  function sync(){advance.disabled=!valid();if(pick)pick.hidden=valid();markNext(p,valid()?advance:pick||field,valid()?'Select '+advance.textContent+'.':hint);}
+  if(field)for(const event of ['input','change'])field.addEventListener(event,()=>{values[phase]=phase===4?field.checked:phase===3?Number(field.value):field.value;sync();});sync();p.scrollTop=0;
+ }draw();
+}

@@ -1,0 +1,11 @@
+import * as THREE from 'three';
+import {worldPalette as W} from './world-palette.js';
+import {rng} from './rng.js';
+export function createSky(scene,toon,resources){
+  const dome=resources.own(new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color(W.skyTop)},bottom:{value:new THREE.Color(W.sky)}},vertexShader:'varying vec3 dir;void main(){dir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'varying vec3 dir;uniform vec3 top;uniform vec3 bottom;void main(){float t=smoothstep(-.05,.8,normalize(dir).y);gl_FragColor=vec4(mix(bottom,top,t),1.0);\n#include <colorspace_fragment>\n}'}));const sky=new THREE.Mesh(resources.own(new THREE.SphereGeometry(190,24,12)),dome);sky.renderOrder=-20;scene.add(sky);
+  const sun=new THREE.Mesh(resources.own(new THREE.CircleGeometry(7,32)),resources.own(new THREE.MeshBasicMaterial({color:W.sun,fog:false})));sun.position.set(-38,26,-98);scene.add(sun);
+  const random=rng(553),cloudGeo=resources.own(new THREE.IcosahedronGeometry(1,1)),cloudMat=toon.material(W.cloud),clouds=new THREE.InstancedMesh(cloudGeo,cloudMat,32),hulls=new THREE.InstancedMesh(cloudGeo,toon.outline(toon.tint(W.cloud)),32),dummy=new THREE.Object3D();let index=0;
+  for(let i=0;i<8;i++){const x=(i-3.5)*19,z=-45-random()*35,y=16+random()*9;for(let j=0;j<4;j++){dummy.position.set(x+j*2.8,y+Math.sin(j)*1.3,z);dummy.scale.set(4+random()*2,2+random(),3+random());dummy.updateMatrix();clouds.setMatrixAt(index,dummy.matrix);hulls.setMatrixAt(index++,dummy.matrix);}}clouds.instanceMatrix.needsUpdate=hulls.instanceMatrix.needsUpdate=true;scene.add(hulls,clouds);
+  for(let layer=0;layer<2;layer++){const geo=resources.own(new THREE.ConeGeometry(1,1,5)),mat=toon.material(layer?W.mountainNear:W.mountainFar),mountains=new THREE.InstancedMesh(geo,mat,12),edges=new THREE.InstancedMesh(geo,toon.outline(toon.tint(layer?W.mountainNear:W.mountainFar)),12);for(let i=0;i<12;i++){const height=12+random()*17;dummy.position.set((i-5.5)*17,height/2-4,-(layer?69:98)-random()*8);dummy.scale.set(14+random()*12,height,12+random()*14);dummy.rotation.y=random()*2;dummy.updateMatrix();mountains.setMatrixAt(i,dummy.matrix);edges.setMatrixAt(i,dummy.matrix);}scene.add(edges,mountains);}
+  return {clouds,sun};
+}

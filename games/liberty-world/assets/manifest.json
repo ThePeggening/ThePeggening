@@ -1,0 +1,41 @@
+{
+  "version": "s1-20260930-1",
+  "models": {
+    "pcock": {
+      "file": "./assets/models/pcock.glb",
+      "height": 2.25,
+      "maxTriangles": 30000,
+      "triangles": 16748,
+      "clips": [
+        "Running",
+        "Walking",
+        "RunFast",
+        "Wave_for_Help_1"
+      ]
+    },
+    "liberty": {
+      "file": "./assets/models/liberty.glb",
+      "height": 2.8,
+      "maxTriangles": 20000,
+      "triangles": 10584,
+      "clips": [
+        "Running",
+        "Walking",
+        "Run_Jump_and_Roll",
+        "Groovy_Walk"
+      ]
+    },
+    "pulse": {
+      "file": "./assets/models/pulse-guy.glb",
+      "height": 2.5,
+      "maxTriangles": 20000,
+      "triangles": 9516,
+      "clips": [
+        "Running",
+        "Walking",
+        "Agree_Gesture",
+        "RunFast"
+      ]
+    }
+  }
+}

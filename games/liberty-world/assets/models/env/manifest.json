@@ -1,0 +1,147 @@
+{
+  "version": "PCOCK-AUTHORED-KIT-20260930",
+  "status": "Original authored modular Liberty Valley kit; human art review deferred.",
+  "budget": {
+    "heroTriangles": 8000,
+    "propTriangles": 3000,
+    "textureSize": 512,
+    "kitBytes": 25000000
+  },
+  "models": {
+    "tree": {
+      "file": "./tree.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 60,
+      "bytes": 7376,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "rock": {
+      "file": "./rock.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 60,
+      "bytes": 7416,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "house": {
+      "file": "./house.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 140,
+      "bytes": 16056,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "crate": {
+      "file": "./crate.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 72,
+      "bytes": 8708,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "signal-lamp": {
+      "file": "./signal-lamp.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 80,
+      "bytes": 9556,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "liberty-arch": {
+      "file": "./liberty-arch.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 186,
+      "bytes": 20968,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "signal-spire": {
+      "file": "./signal-spire.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 180,
+      "bytes": 20320,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "wooden-bridge": {
+      "file": "./wooden-bridge.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 360,
+      "bytes": 39740,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "planter": {
+      "file": "./planter.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 200,
+      "bytes": 22484,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "liberty-statue": {
+      "file": "./liberty-statue.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 176,
+      "bytes": 19908,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "windmill": {
+      "file": "./windmill.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 92,
+      "bytes": 10800,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "lighthouse": {
+      "file": "./lighthouse.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 80,
+      "bytes": 9536,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "boat": {
+      "file": "./boat.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 62,
+      "bytes": 7624,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "feather-shrine": {
+      "file": "./feather-shrine.glb",
+      "enabled": true,
+      "maxTriangles": 3000,
+      "kind": "prop",
+      "triangles": 56,
+      "bytes": 6964,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    },
+    "product-hall": {
+      "file": "./product-hall.glb",
+      "enabled": true,
+      "maxTriangles": 8000,
+      "kind": "hero",
+      "triangles": 72,
+      "bytes": 8688,
+      "author": "Original PCOCK project geometry; no copied logos or external art"
+    }
+  }
+}

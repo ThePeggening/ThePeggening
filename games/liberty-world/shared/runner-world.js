@@ -1,0 +1,42 @@
+import * as THREE from 'three';
+import {brand} from './brand.js';
+import {worldPalette as W} from './world-palette.js';
+import {createSceneKit,mergeParts} from './scene-kit.js';
+import {segmentKinds} from './runner-data.js';
+export function createRunnerWorld(scene,toon,resources,assets,{stress=false}={}){
+ const B=brand.colors,kit=createSceneKit(scene,toon,resources,assets),box=resources.own(new THREE.BoxGeometry(1,1,1)),sphere=resources.own(new THREE.IcosahedronGeometry(.5,0)),cylinder=resources.own(new THREE.CylinderGeometry(.5,.5,1,6)),dummy=new THREE.Object3D(),color=new THREE.Color(),templates={},slots=[],point={},origin={};
+ function part(parts,geometry,color,x,y,z,sx,sy,sz,ry=0){dummy.position.set(x,y,z);dummy.rotation.set(0,ry,0);dummy.scale.set(sx,sy,sz);dummy.updateMatrix();parts.push({geometry,matrix:dummy.matrix.clone(),color});}
+ const forgeParts=[];for(const side of [-1,1]){part(forgeParts,cylinder,W.stone,side*1.8,3,0,1.4,6,1.4);part(forgeParts,cylinder,B.primary,side*1.8,4.5,0,1.55,.4,1.55);}part(forgeParts,box,W.stone,0,5,0,4.5,1.2,1.2);part(forgeParts,box,B.glow,0,.5,0,5,1,3);part(forgeParts,sphere,B.gold,0,3,1,1,1,.3);const forge=resources.own(mergeParts(forgeParts));
+ for(let world=0;world<5;world++)for(const kind of segmentKinds){const parts=[],road=world===2?W.wood:world===3?W.stone:world===4?W.construction:W.path,width=kind==='bridge'?3.7:8.8;
+  if(kind==='gap'){part(parts,box,road,0,-.35,-11.5,width,.7,23);part(parts,box,road,0,-.35,-35.5,width,.7,9);}else part(parts,box,road,0,-.35,-20,width,.7,40);
+  for(const side of [-1,1]){part(parts,box,world===2?W.water:W.grass,side*18,-1.2,-20,25,1,42);for(let i=0;i<3;i++){const x=side*(9+(i%2)*4),z=-6-i*13,key=world===0?'tree':world===1?'house':world===2?'boat':world===3?'product-hall':'signal-spire';part(parts,world===4?forge:kit.templates[key],B.text,x,world===2?-.5:0,z,world===1?.8:1,1,1,side*.3);part(parts,kit.templates.rock,B.text,side*6,.1,z-4,1.2,1.2,1.2);}for(let c=0;c<9;c++){part(parts,kit.templates.rock,B.text,side*(5.5+c%2),.1,-c*4.5,.7,.7,.7);if(c%4===0)part(parts,kit.templates.planter,B.text,side*6.8,0,-c*4.5,.4,.4,.4);else part(parts,cylinder,W.flowerGold,side*6.5,.3,-c*4.5,.15,.6,.15);}part(parts,box,B.primary,side*4.25,.04,-20,.13,.08,40);}
+  if(kind==='left'||kind==='right'){part(parts,box,road,0,-.36,-38,13,.7,8);part(parts,kit.templates['signal-lamp'],B.text,kind==='left'?4:-4,0,-34,1,1,1);}
+  if(kind==='tunnel'){part(parts,box,W.stone,0,5,-22,10,.8,13);for(const side of [-1,1])part(parts,box,W.stone,side*4.9,2.3,-22,.7,5,13);}
+  if(kind==='rail'){for(const side of [-1,1])part(parts,box,B.pulseCyan,side*2.1,.1,-20,.13,.1,35);part(parts,box,B.accent,0,4,-20,.12,.15,38);}
+  if(kind==='bridge')for(const side of [-1,1]){part(parts,box,W.wood,side*1.8,1,-20,.16,.15,40);for(let i=0;i<7;i++)part(parts,cylinder,W.wood,side*1.8,.6,-i*6,.18,1.4,.18);}
+  if(kind==='fork'){part(parts,box,road,0,-.35,-38,30,.7,8);part(parts,box,B.accent,0,.7,-43,12,1.4,.5);}if(kind==='fork')for(const side of [-1,1]){part(parts,kit.templates['liberty-arch'],B.text,side*2.1,0,-25,.42,.5,.42);part(parts,box,side>0?B.primary:B.pulseCyan,side*2.1,.09,-25,2,.15,8);}
+  templates[world+kind]=resources.own(mergeParts(parts));
+ }
+ for(let i=0;i<14;i++){const mesh=new THREE.Mesh(templates['0straight'],kit.material),hull=new THREE.Mesh(mesh.geometry,kit.outline);scene.add(hull,mesh);slots.push({mesh,hull});}
+ function instances(geometry,material,n){const mesh=new THREE.InstancedMesh(geometry,material,n),hull=new THREE.InstancedMesh(geometry,kit.outline,n);resources.own(mesh);resources.own(hull);mesh.frustumCulled=hull.frustumCulled=false;scene.add(hull,mesh);return {mesh,hull,n};}
+ const goblinParts=[];part(goblinParts,sphere,W.grassDark,0,1.45,0,.85,.8,.75);part(goblinParts,box,W.rockDark,0,.7,0,.65,1,.55);for(const side of [-1,1]){part(goblinParts,kit.templates.tree,W.grassDark,side*.4,1.45,0,.13,.12,.13);part(goblinParts,box,B.danger,side*.18,1.5,.36,.16,.1,.07);part(goblinParts,box,W.rockDark,side*.2,.15,0,.2,.5,.3);}const goblinGeo=resources.own(mergeParts(goblinParts));
+ const obstacles=instances(box,toon.material(B.text),28),coins=instances(sphere,toon.material(B.gold),70),powers=instances(sphere,toon.material(B.text),14),goblins=instances(goblinGeo,kit.material,9),warning=instances(box,toon.material(B.accent),3),ambient=instances(sphere,toon.material(B.pulseCyan),stress?400:30);
+ const laser=new THREE.Mesh(box,toon.material(B.danger));scene.add(laser);const laserHull=toon.hull(laser);
+ const bossParts=[];part(bossParts,box,W.rockDark,0,4,0,4,5,3);part(bossParts,sphere,B.glow,0,8,0,5,4,4);for(const side of [-1,1]){part(bossParts,cylinder,W.stone,side*3.4,4,0,1.5,7,1.5);part(bossParts,box,B.accent,side*.9,8.2,1.9,.9,.45,.15);part(bossParts,box,W.rockDark,side*1.1,1,0,1.3,3,1.6);}part(bossParts,kit.templates['signal-spire'],B.text,0,9,-.3,.5,.5,.5);const bossGeo=resources.own(mergeParts(bossParts)),boss=new THREE.Mesh(bossGeo,kit.material),bossHull=new THREE.Mesh(bossGeo,kit.outline);scene.add(bossHull,boss);
+ function put(batch,i,x,y,z,sx,sy,sz,yaw=0,tint=null){dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(0,yaw,0);dummy.updateMatrix();batch.mesh.setMatrixAt(i,dummy.matrix);batch.hull.setMatrixAt(i,dummy.matrix);if(tint)batch.mesh.setColorAt(i,color.set(tint));}
+ function update(loop,time,renderDistance=loop.state.distance){const s=loop.state,track=loop.track,index=Math.floor(s.distance/40);track.at(renderDistance,0,origin);let oi=0,ci=0,pi=0;
+  for(let i=0;i<slots.length;i++){const id=Math.max(0,index-2)+i,seg=track.get(id),slot=slots[i],enabled=s.hazards[id]!==false,kind=!enabled&&seg.kind==='gap'?'straight':seg.kind;slot.mesh.geometry=slot.hull.geometry=templates[seg.world+kind];slot.mesh.position.set(seg.x-origin.x,0,seg.z-origin.z);slot.hull.position.copy(slot.mesh.position);slot.mesh.rotation.y=slot.hull.rotation.y=seg.yaw;
+   if(seg.obstacle&&enabled&&seg.kind!=='gap'&&seg.kind!=='bridge'){track.at(seg.start+25,seg.lane,point);const tall=seg.kind==='tunnel',pincer=seg.kind==='chicane',telegraph=seg.start+25-s.distance<Math.max(10,s.speed*.8);put(obstacles,oi++,point.x-origin.x,tall?1.8:.65,point.z-origin.z,pincer?telegraph?1.8:.7:1.8,tall?.6:1.3,.8,seg.yaw,telegraph?B.danger:B.accent);}
+   for(let c=0;c<5;c++){const lane=seg.kind==='fork'?seg.correct:(id+c)%3-1;track.at(seg.start+6+c*5,lane,point);const scale=s.events[id+':coin'+c]?0:.48;put(coins,ci++,point.x-origin.x,1+Math.sin(time*2+c)*.08,point.z-origin.z,scale,scale,scale*.3,time);}
+   if(seg.power){track.at(seg.start+10,0,point);const scale=s.events[id+':power']?0:.8;put(powers,pi++,point.x-origin.x,1.5,point.z-origin.z,scale,scale,scale,time,[B.primary,B.pulseCyan,B.gold,B.accent,B.pulsePurple][['gasless','shield','rocket','storm','double'].indexOf(seg.power)]);}
+  }
+  for(;oi<obstacles.n;oi++)put(obstacles,oi,0,-20,0,0,0,0);for(;pi<powers.n;pi++)put(powers,pi,0,-20,0,0,0,0);
+  for(let i=0;i<9;i++){track.at(Math.max(0,s.distance-7-i%3*1.7),(i%3-1)*.7,point);put(goblins,i,point.x-origin.x,.1+Math.abs(Math.sin(time*7+i))*.1,point.z-origin.z,.9,.9,.9,point.yaw+Math.PI);}
+  track.at(s.distance+9,-4,point);boss.position.set(point.x-origin.x,0,point.z-origin.z);boss.rotation.y=point.yaw;bossHull.position.copy(boss.position);bossHull.rotation.copy(boss.rotation);boss.visible=bossHull.visible=s.boss;track.at(s.distance+(33-s.bossPhase)*2,0,point);laser.position.set(point.x-origin.x,.7,point.z-origin.z);laser.scale.set(8,.22,.25);laser.rotation.y=point.yaw;laserHull.position.copy(laser.position);laserHull.scale.copy(laser.scale);laserHull.rotation.copy(laser.rotation);laser.visible=laserHull.visible=s.boss&&s.bossLaser&&s.bossPhase>29&&s.bossPhase<34;ambient.mesh.material.color.set([W.cloud,B.gold,W.waterLight,B.pulsePurple,B.primary][Math.floor(s.distance/500)%5]);
+  for(let i=0;i<3;i++){track.at(s.distance+7,i-1,point);const show=s.bossWarn&&(s.bossLaser||i-1===s.bossLane);put(warning,i,point.x-origin.x,.07,point.z-origin.z,show?1.8:0,.05,8,point.yaw);}
+  for(let i=0;i<ambient.n;i++){put(ambient,i,Math.sin(i*3.1+time*.4)*22,1+(i%8)*.7,-10+(i*7%65),.05,.1,.05,time);}
+  for(const batch of [obstacles,coins,powers,goblins,warning,ambient]){batch.mesh.instanceMatrix.needsUpdate=batch.hull.instanceMatrix.needsUpdate=true;if(batch.mesh.instanceColor)batch.mesh.instanceColor.needsUpdate=true;}
+  return origin;
+ }
+ return {update,kit,get activeChunks(){return slots.length;},pools:{track:14,obstacles:28,coins:70,powers:14,goblins:9}};
+}
