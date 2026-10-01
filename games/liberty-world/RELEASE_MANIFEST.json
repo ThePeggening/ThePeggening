@@ -1,6 +1,6 @@
 {
     "build":  "PCOCK-VALLEY-BETA-20261001-r10",
-    "createdAt":  "2026-10-01T02:44:37.6205655Z",
+    "createdAt":  "2026-10-01T03:43:47.4443505Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -484,8 +484,8 @@
                   },
                   {
                       "path":  "shared/hud-editor.js",
-                      "bytes":  10531,
-                      "sha256":  "855548a744cd020dce94637dee2234b2f1363ff01b75c32141601243d82e6cc1"
+                      "bytes":  10924,
+                      "sha256":  "023b15ae3966be7a60bfa87ba09d34a4b581dd70386822ac8f2c5b15af32ddcf"
                   },
                   {
                       "path":  "shared/hud-kit.js",
@@ -781,7 +781,22 @@
                       "path":  "tools/server.mjs",
                       "bytes":  1357,
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
+                  },
+                  {
+                      "path":  "libs/three-global-shim.js",
+                      "bytes":  3351,
+                      "sha256":  "0e5244338d69182159a9c0847cb101b0e50797bd5ee69fe077e59bf60d602de0"
+                  },
+                  {
+                      "path":  "libs/addons/loaders/GLTFLoaderAtropa.js",
+                      "bytes":  114766,
+                      "sha256":  "b01f30fcb6510ba2885c85c99c4b6307be7da3a7906576aa950ceb29c0ce86c1"
+                  },
+                  {
+                      "path":  "libs/addons/utils/BufferGeometryUtilsAtropa.js",
+                      "bytes":  35560,
+                      "sha256":  "eda756a543145e5ce6738a5169b24e0fc433d6d53bb15aaf9e41ab89d2115b87"
                   }
               ],
-    "totalBytes":  7099454
+    "totalBytes":  7253524
 }

@@ -46,7 +46,7 @@ export function createHudEditor(root){
     if(!editing||!overlay)return;
     const present=new Set();
     for(const [id,label] of TARGETS){
-      const el=target(id);if(!el||el.hidden||getComputedStyle(el).display==='none')continue;
+      const el=target(id);if(!el||getComputedStyle(el).display==='none')continue;const visibleRect=el.getBoundingClientRect();if(visibleRect.width<1||visibleRect.height<1)continue;
       present.add(id);let frame=frames.get(id);
       if(!frame){
         frame=document.createElement('div');frame.dataset.hudFrame=id;
@@ -83,15 +83,15 @@ export function createHudEditor(root){
     const data=getProfile(selected),items={};
     for(const [id,label] of TARGETS){const el=target(id),v=data[id]||{x:0,y:0,s:1};if(!el){items[id]={label,present:false,offset:v};continue;}const r=el.getBoundingClientRect();items[id]={label,present:true,offset:{x:Number(v.x)||0,y:Number(v.y)||0,scale:Number(v.s)||1},rect:{left:Math.round(r.left),top:Math.round(r.top),width:Math.round(r.width),height:Math.round(r.height)}};}
     const [device,orientation]=selected.split('-');
-    const payload={type:'PCOCK_LIBERTY_HUD_LAYOUT_V1',profile:selected,device,orientation,viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio||1},items};
+    const payload={type:'PCOCK_LIBERTY_HUD_LAYOUT_V1',profile:selected,device,orientation,actual:{device:actualDevice(),orientation:actualOrientation()},viewport:{width:innerWidth,height:innerHeight,dpr:devicePixelRatio||1},items};
     await copyText(JSON.stringify(payload,null,2));toast('COPIED '+selected.toUpperCase()+' HUD LAYOUT');
     return payload;
   }
   function stop(reopen=true){
-    if(!editing)return;editing=false;cancelAnimationFrame(raf);raf=0;overlay?.remove();overlay=null;bar=null;frames.clear();previewStyle?.remove();previewStyle=null;if(previewState){for(const x of previewState){if(x.el)x.el.hidden=x.hidden;}previewState=null;}root.classList.remove('pc-hud-editing');const cb=onDone;onDone=null;selected=null;apply();if(reopen)cb?.();
+    if(!editing)return;editing=false;cancelAnimationFrame(raf);raf=0;overlay?.remove();overlay=null;bar=null;frames.clear();previewStyle?.remove();previewStyle=null;if(previewState){for(const x of previewState){if(x.el)x.el.hidden=x.hidden;}previewState=null;}root.classList.remove('pc-hud-editing','pc-hud-edit-mobile','pc-hud-edit-pc');const cb=onDone;onDone=null;selected=null;apply();if(reopen)cb?.();
   }
   function start(device,orientation,done){
-    stop(false);selected=keyOf(device,orientation);onDone=done;editing=true;previewState=[];for(const el of [root.querySelector('.pc-hud'),root.querySelector('.v-toolbar'),root.querySelector('[data-bubble]'),root.querySelector('.v-edge'),root.querySelector('.v-toast')])if(el){previewState.push({el,hidden:el.hidden});el.hidden=false;}root.classList.add('pc-hud-editing');previewStyle=document.createElement('style');previewStyle.textContent='.pc-root.pc-hud-editing [data-bubble],.pc-root.pc-hud-editing .v-edge,.pc-root.pc-hud-editing .v-toast{display:block!important;visibility:visible!important;opacity:.92!important}.pc-root.pc-hud-editing [data-bubble]{transform:none!important;left:50%!important;top:auto!important;bottom:18%!important}.pc-root.pc-hud-editing .v-edge{left:12px!important;top:48%!important}.pc-root.pc-hud-editing .v-toast{top:34%!important}';document.head.append(previewStyle);apply(selected);
+    stop(false);selected=keyOf(device,orientation);onDone=done;editing=true;previewState=[];const reveal=[root.querySelector('.pc-hud'),...TARGETS.map(([id])=>target(id))];for(const el of [...new Set(reveal.filter(Boolean))]){previewState.push({el,hidden:el.hidden});el.hidden=false;}root.classList.add('pc-hud-editing',device==='mobile'?'pc-hud-edit-mobile':'pc-hud-edit-pc');previewStyle=document.createElement('style');previewStyle.textContent='.pc-root.pc-hud-editing [data-bubble],.pc-root.pc-hud-editing .v-edge,.pc-root.pc-hud-editing .v-signal,.pc-root.pc-hud-editing .v-toast,.pc-root.pc-hud-editing .v-flight-return{display:block!important;visibility:visible!important;opacity:.92!important}.pc-root.pc-hud-edit-mobile .pc-controls{display:flex!important}.pc-root.pc-hud-edit-pc .pc-controls{display:none!important}.pc-root.pc-hud-editing [data-bubble]{transform:none!important;left:50%!important;top:auto!important;bottom:18%!important}.pc-root.pc-hud-editing .v-edge{left:12px!important;top:48%!important}.pc-root.pc-hud-editing .v-toast{top:34%!important}';document.head.append(previewStyle);apply(selected);
     overlay=document.createElement('div');overlay.id='pcock-hud-editor';style(overlay,{position:'fixed',inset:'0',zIndex:'2147483643',pointerEvents:'none'});
     bar=document.createElement('div');style(bar,{position:'fixed',top:'max(8px,env(safe-area-inset-top))',left:'50%',translate:'-50% 0',zIndex:'2147483646',display:'flex',gap:'7px',alignItems:'center',maxWidth:'calc(100vw - 16px)',padding:'8px',borderRadius:'12px',background:'rgba(4,9,18,.95)',border:'1px solid rgba(92,232,255,.65)',boxShadow:'0 8px 28px rgba(0,0,0,.55)',pointerEvents:'auto',font:'800 10px Arial,sans-serif'});
     const title=document.createElement('span');title.textContent='✥ HUD RESIZE · '+device.toUpperCase()+' · '+orientation.toUpperCase();style(title,{color:'#b9f7ff',whiteSpace:'nowrap'});
