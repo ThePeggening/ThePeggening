@@ -76,12 +76,12 @@ function createSkybreakCourse(config){
   loopMeta.forEach((l,li)=>{for(const [t,x]of [[.34,li%2?1.5:-1.5],[.68,li%2?-1.5:1.5]])stuntRings.push({id:ringId++,s:l.start+l.length*t,x,y:1.35,kind:'loop',set:10+li});});
   const energyGates=[];let gateId=0;for(const sec of locked){for(let s=sec.start+24;s<sec.end-12;s+=42)energyGates.push({id:gateId++,s,style:sec.kind==='roll'?'twist':sec.kind==='loop'?'halo':'wall'});}
   const coins=[];for(let s=18;s<config.length-12;s+=7){const gap=skybreakMeta.gaps.find(([a,b])=>s>=a&&s<b),near=hazards.find(h=>Math.abs(h.s-s)<20),hx=near?.motion==='sweep'?0:near?.x,x=near?(hx===0?-2.8:0):Math.sin(Math.floor(s/110)*1.31)*2.25;let cy=1.1;if(gap){const u=(s-gap[0])/(gap[1]-gap[0]);cy=3+Math.sin(Math.PI*u)*13;}coins.push({id:coins.length,s,x,y:cy,route:0});}
-  const items=[],put=(type,s,x=0)=>{if(s>8&&s<config.length-8)items.push({id:items.length,type,s,x,route:0,y:type==='spring'||type==='dash'?0:1.4});};
-  for(const [a,b]of skybreakMeta.gaps){put('dash',a-72,0);put('spring',a-28,0);put('dash',b+20,0);}
+  const items=[],put=(type,s,x=0,extra={})=>{if(s>8&&s<config.length-8)items.push({id:items.length,type,s,x,route:0,y:type==='spring'||type==='dash'||type==='launch'?0:1.4,...extra});};
+  for(const [a,b]of skybreakMeta.gaps){put('dash',a-78,0);put('launch',a-30,0,{gapStart:a,gapEnd:b,landing:b+10});put('dash',b+20,0);}
   for(const s of [1450,4920,9210])put('feather',s,0);
   for(let s=600;s<config.length-300;s+=980)if(!gapAt(s)&&!lockedAt(s,80))put(s%1960<900?'shield':'magnet',s,0);
   const checkpoints=[];for(let target=850;target<config.length;target+=850){let s=target;while(s<config.length-80&&(gapAt(s)||lockedAt(s,20)))s+=25;checkpoints.push(Math.round(s));}
-  const safeSections=skybreakMeta.sections.filter(s=>!s.lock),stuntSigns=[...skybreakMeta.signs,...skybreakMeta.gaps.map(([a,b,label])=>({s:Math.max(8,a-90),text:label||'MEGA GAP'}))];
+  const safeSections=skybreakMeta.sections.filter(s=>!s.lock),stuntSigns=[...skybreakMeta.signs,...skybreakMeta.gaps.flatMap(([a,b,label])=>[{s:Math.max(8,a-125),text:'414 BOOST RAMP / STAY CENTER'},{s:Math.max(8,a-82),text:label||'MEGA GAP'}])];
   function edges(){return {left:-5,right:5,railLeft:true,railRight:true,sep:18};}
   function cuts(start,end,spacing=2){const list=[start,end];for(let s=start+spacing;s<end;s+=spacing)list.push(s);for(const [a,b]of skybreakMeta.gaps)for(const q of [a,b])if(q>start&&q<end)list.push(q);for(const sec of skybreakMeta.sections)for(const q of [sec.start,sec.end])if(q>start&&q<end)list.push(q);return [...new Set(list)].sort((a,b)=>a-b);}
   return {config,hazards,coins,items,stuntRings,energyGates,checkpoints,loops:loopMeta,turns,sample,forkAt,loopAt,lockedAt,cornerAt,edges,loopStart:loopMeta[0].start,loopLength:loopMeta[0].length,gapAt,cuts,halfWidth:()=>5,stuntSigns,safeSections};
