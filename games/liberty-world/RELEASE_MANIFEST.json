@@ -1,6 +1,6 @@
 {
     "build":  "PCOCK-VALLEY-BETA-20261001-r10",
-    "createdAt":  "2026-10-01T15:25:00.4214601Z",
+    "createdAt":  "2026-10-01T15:52:54.4989226Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -524,8 +524,8 @@
                   },
                   {
                       "path":  "shared/liberty-entry.js",
-                      "bytes":  32737,
-                      "sha256":  "c7a70c5bce3a88debcc51ce01adeadc138c5ac25a419ca7832fcd854e58289bf"
+                      "bytes":  34310,
+                      "sha256":  "61bed66dd3f903530ce84436118a618665ce6dfd1aed266285032e93a00893f9"
                   },
                   {
                       "path":  "shared/liberty-geometry.js",
@@ -803,5 +803,5 @@
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
                   }
               ],
-    "totalBytes":  7285159
+    "totalBytes":  7286732
 }
