@@ -1,6 +1,6 @@
 {
-    "build":  "PCOCK-VALLEY-BETA-20261001-r9",
-    "createdAt":  "2026-10-01T01:55:31.3307366Z",
+    "build":  "PCOCK-VALLEY-BETA-20261001-r10",
+    "createdAt":  "2026-10-01T02:44:37.6205655Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -483,9 +483,14 @@
                       "sha256":  "20fc7420ce748350f4e83982732ead06896e35645edcebef4ce7940b0f02f330"
                   },
                   {
+                      "path":  "shared/hud-editor.js",
+                      "bytes":  10531,
+                      "sha256":  "855548a744cd020dce94637dee2234b2f1363ff01b75c32141601243d82e6cc1"
+                  },
+                  {
                       "path":  "shared/hud-kit.js",
-                      "bytes":  5896,
-                      "sha256":  "511cee6006077aef4a2f2c3b48f46692db6c6ef0742a06e320d96c8ba14891f4"
+                      "bytes":  6119,
+                      "sha256":  "49bba5d6ecc4cdb5cdb3a723498cb56dca93e0f08c091371d5909ffccc81ee1a"
                   },
                   {
                       "path":  "shared/input.js",
@@ -624,8 +629,8 @@
                   },
                   {
                       "path":  "shared/valley.css",
-                      "bytes":  10409,
-                      "sha256":  "d148d75c5ee942db96c1e668be978f04a29ebcbcaa1a32be5407c103f2f3b981"
+                      "bytes":  11320,
+                      "sha256":  "6777a8f3c1262020dc0b097a7f7647bb37bc5f5df7ef0d2ce33d658a00cd18d9"
                   },
                   {
                       "path":  "shared/valley-adventure.js",
@@ -669,8 +674,8 @@
                   },
                   {
                       "path":  "shared/valley-entry.js",
-                      "bytes":  16668,
-                      "sha256":  "be9e182dd6639a021770664c9010ab2be1943cc83a0e0b62c13647b3ab29f878"
+                      "bytes":  18127,
+                      "sha256":  "1aa3767648ad9052fbdf15ffb79e485ede6bc9e17d8cf9cca868e90382ec3cc8"
                   },
                   {
                       "path":  "shared/valley-expedition-data.js",
@@ -778,5 +783,5 @@
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
                   }
               ],
-    "totalBytes":  7086330
+    "totalBytes":  7099454
 }

@@ -31,3 +31,16 @@ body.valley :is(.v-panel,.v-caption,.v-toast,.v-edge,.v-world-label,.v-signal,.v
 .v-edge{white-space:nowrap;width:max-content;max-width:calc(100% - 24px)}
 @media(pointer:coarse) and (min-width:761px) and (max-height:500px){body.valley .pc-compass{bottom:134px;width:105px;padding:8px}}
 @media(max-width:760px) and (min-height:501px){body.valley .v-flight-return{left:max(14px,env(safe-area-inset-left));transform:none;bottom:calc(206px + env(safe-area-inset-bottom));max-width:240px;font-size:12px}}
+
+/* R10 HUD editor + real mobile E interaction. Three actions stay usable on narrow portrait phones. */
+body.valley [data-interact]{background:radial-gradient(closest-side,var(--surface) 78%,transparent 82%),conic-gradient(var(--gold) 360deg,var(--control) 0)!important;border-color:color-mix(in srgb,var(--gold) 55%,var(--border))!important}
+@media(pointer:coarse) and (max-width:700px){
+  body.valley .pc-abilities{display:grid;grid-template-columns:repeat(2,56px);gap:6px;align-items:end;justify-items:end}
+  body.valley .pc-abilities button{width:56px;height:56px;padding:5px!important}
+  body.valley .pc-abilities [data-interact]{grid-column:2}
+}
+@media(pointer:coarse) and (orientation:landscape) and (max-height:560px){
+  body.valley .pc-abilities{display:flex;gap:6px}
+  body.valley .pc-abilities button{width:52px;height:52px}
+  body.valley .pc-controls{bottom:max(16px,env(safe-area-inset-bottom))}
+}
