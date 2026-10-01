@@ -1,6 +1,6 @@
 {
-    "build":  "PCOCK-VALLEY-BETA-20261001-r12",
-    "createdAt":  "2026-10-01T22:41:14.0526820Z",
+    "build":  "PCOCK-VALLEY-BETA-20261001-r13",
+    "createdAt":  "2026-10-01T23:29:58.6859106Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -259,8 +259,8 @@
                   },
                   {
                       "path":  "assets/runner/skybreak.png",
-                      "bytes":  112126,
-                      "sha256":  "8ac8e50d1752d414c31e0d92d9152877487551d853a34797f01427fef8c52119"
+                      "bytes":  224028,
+                      "sha256":  "af7b46f86bd1193b5db0edbbcc0e293dd89daba41e2b6f78802d892ba1934370"
                   },
                   {
                       "path":  "assets/runner/skyline.png",
@@ -524,13 +524,13 @@
                   },
                   {
                       "path":  "shared/liberty-biomes.js",
-                      "bytes":  1577,
-                      "sha256":  "3c0711fcb071727465846e851a9a6b828666151e169291ee7c4ff1598d1ff9a1"
+                      "bytes":  1596,
+                      "sha256":  "8f9c9973ca14dc820d8750f4cb3190f06d472344bee50ad4928d02424733d956"
                   },
                   {
                       "path":  "shared/liberty-entry.js",
-                      "bytes":  34669,
-                      "sha256":  "e74cab168cbee655655be407d1f3ebfc8bcaa51b6a88486b3e53c1085c611305"
+                      "bytes":  35309,
+                      "sha256":  "b8d509d4a1807b333ede9c6621b7214f7618571640c3a7aa63318d6c5ad2817c"
                   },
                   {
                       "path":  "shared/liberty-geometry.js",
@@ -539,8 +539,8 @@
                   },
                   {
                       "path":  "shared/liberty-loop.js",
-                      "bytes":  8964,
-                      "sha256":  "439b523b13c56cdf4981d092eb8868ef22267c6648bbb8c5a2f4bfc0932bd99f"
+                      "bytes":  10113,
+                      "sha256":  "6efb9f441d571a134a2d105838356b117c16a86becc05f174976e88f56565a07"
                   },
                   {
                       "path":  "shared/liberty-renderer.js",
@@ -564,13 +564,13 @@
                   },
                   {
                       "path":  "shared/liberty-track.js",
-                      "bytes":  17665,
-                      "sha256":  "7587a9921641f4bc5705d990a47c4febbbeb68ac829a99ed714f01484777ff39"
+                      "bytes":  18747,
+                      "sha256":  "efa028902b90c36db2245438b7fffd9d5f36123b430f8538636fccc2a1a5ba95"
                   },
                   {
                       "path":  "shared/liberty-world.js",
-                      "bytes":  25523,
-                      "sha256":  "8db918989efa6f88f39ba4dbb7e1fed92ba44e92746b8d0b4f52b27ce0966ddd"
+                      "bytes":  29439,
+                      "sha256":  "e408b0ac0190bfa9fd903c9904eba3c832f8ece073acd22be90d229421c633e7"
                   },
                   {
                       "path":  "shared/mini-hud-editor.js",
@@ -700,7 +700,7 @@
                   {
                       "path":  "shared/valley-entry.js",
                       "bytes":  21050,
-                      "sha256":  "0513f75a55472e13dd58365271b29ef1bd57e7f0d59daafb03f1c6ee99da18a4"
+                      "sha256":  "6c8c51322086f9aaaf0cb6687af83bf53d0ecd568a2608c3c8570e4671bebab1"
                   },
                   {
                       "path":  "shared/valley-expedition-data.js",
@@ -808,5 +808,5 @@
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
                   }
               ],
-    "totalBytes":  7420532
+    "totalBytes":  7539240
 }

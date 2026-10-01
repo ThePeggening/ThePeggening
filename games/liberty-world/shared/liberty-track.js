@@ -40,7 +40,7 @@ const layouts=[
   ['canyon','Sunstone Canyon','03 / DESERT RUSH',10400,54,29,'Sandstone arches, mesas and desert switchbacks'],
   ['alpine','Frostline Summit','04 / ALPINE EXPEDITION',11000,55,30,'Snowy pines, ice spires and mountain passes'],
   ['volcano','Magma Foundry','05 / VOLCANIC VELOCITY',11800,58,32,'Lava channels, steel gantries and volcanic loops'],
-  ['skybreak','Skybreak 414','06 / VERTICAL VOID',skybreakMeta.length,70,42,'Mega jumps, vertical walls, twisted loops and double corkscrews']
+  ['skybreak','Skybreak 414','06 / VERTICAL VOID',skybreakMeta.length,70,42,'Mega jumps, stunt-ring OVERDRIVE, moving sweepers, vertical walls and twisted loops']
 ];
 export const courses=Object.freeze(layouts.map(([id,name,tag,length,speed,radius,description],index)=>{
   if(id==='skybreak')return Object.freeze({id,name,tag,length,speed,description,index,loops:skybreakMeta.loops,loop:skybreakMeta.loops[0],forks:[],gaps:skybreakMeta.gaps.map(([a,b])=>[a,b]),par:Math.round(length/speed*.98),coinGoal:Math.round(length/31),sections:['Ignition','Vertical Spine','Halo Cluster','The Void','Freefall Wall','414 Singularity','Final Flight'],stunt:true,recoverOnCrash:true,springVelocity:22,padBoostSeconds:5.2,boostBonus:52,glideBonus:.8,cameraFar:900,previewDistance:1180});
@@ -69,8 +69,13 @@ function createSkybreakCourse(config){
   const locked=skybreakMeta.sections.filter(s=>s.lock),turns=skybreakMeta.sections.filter(s=>s.kind==='yaw').map((s,id)=>({id,start:s.start,end:s.end,from:0,to:s.yaw,direction:Math.sign(s.yaw)}));
   const gapAt=s=>{const g=skybreakMeta.gaps.find(([a,b])=>s>=a&&s<b);return g?[g[0],g[1]]:undefined;},loopAt=(s,padding=0)=>loopMeta.find(l=>s>l.start-padding&&s<l.end+padding),lockedAt=(s,padding=0)=>locked.find(l=>s>l.start-padding&&s<l.end+padding),cornerAt=s=>turns.find(t=>s>=t.start&&s<=t.end),forkAt=()=>undefined;
   function sample(s,route=0,out=makeFrame()){s=clamp(s,0,config.length);const a=Math.floor(s),b=Math.min(a+1,config.length),t=s-a,ix=a*3,jx=b*3,lerp=(A,B)=>A+(B-A)*t;let fx=lerp(fxs[a],fxs[b]),fy=lerp(fys[a],fys[b]),fz=lerp(fzs[a],fzs[b]),fn=Math.hypot(fx,fy,fz)||1;fx/=fn;fy/=fn;fz/=fn;let rx=lerp(rxs[a],rxs[b]),ry=lerp(rys[a],rys[b]),rz=lerp(rzs[a],rzs[b]),dot=rx*fx+ry*fy+rz*fz;rx-=fx*dot;ry-=fy*dot;rz-=fz*dot;const rn=Math.hypot(rx,ry,rz)||1;rx/=rn;ry/=rn;rz/=rn;const ux=ry*fz-rz*fy,uy=rz*fx-rx*fz,uz=rx*fy-ry*fx;Object.assign(out,{x:lerp(centers[ix],centers[jx]),y:lerp(centers[ix+1],centers[jx+1]),z:lerp(centers[ix+2],centers[jx+2]),fx,fy,fz,rx,ry,rz,ux,uy,uz,width:10,loop:!!lockedAt(s)});return out;}
-  const hazards=[];for(let s=150,i=0;s<config.length-120;s+=245,i++){if(gapAt(s)||lockedAt(s,65)||skybreakMeta.gaps.some(([a,b])=>s>a-90&&s<b+70))continue;hazards.push({id:hazards.length,s,x:[-2.8,0,2.8][i%3],type:i%3===1?'beam':'barrier',route:0});}
-  const coins=[];for(let s=18;s<config.length-12;s+=7){const gap=skybreakMeta.gaps.find(([a,b])=>s>=a&&s<b),near=hazards.find(h=>Math.abs(h.s-s)<20),x=near?(near.x===0?-2.8:0):Math.sin(Math.floor(s/110)*1.31)*2.25;let cy=1.1;if(gap){const u=(s-gap[0])/(gap[1]-gap[0]);cy=3+Math.sin(Math.PI*u)*13;}coins.push({id:coins.length,s,x,y:cy,route:0});}
+  const sweepCandidates=[1860,3180,4550,6680,7870,9040,10620];
+  const hazards=[];for(let s=150,i=0;s<config.length-120;s+=245,i++){if(gapAt(s)||lockedAt(s,65)||skybreakMeta.gaps.some(([a,b])=>s>a-90&&s<b+70)||sweepCandidates.some(q=>Math.abs(q-s)<70))continue;hazards.push({id:hazards.length,s,x:[-2.8,0,2.8][i%3],type:i%3===1?'beam':'barrier',route:0});}
+  sweepCandidates.forEach((s,i)=>{if(s<config.length-80&&!gapAt(s)&&!lockedAt(s,65))hazards.push({id:hazards.length,s,x:0,type:'sweep',route:0,motion:'sweep',amp:2.7,speed:1.25+(i%3)*.22,phase:i*1.73});});hazards.sort((a,b)=>a.s-b.s);hazards.forEach((h,i)=>h.id=i);
+  const stuntRings=[];let ringId=0;skybreakMeta.gaps.forEach(([a,b],gi)=>{const xs=gi%2?[-1.8,1.8,0]:[1.8,-1.8,0],ys=[5.1,8.4,5.6],ts=[.22,.5,.78];for(let i=0;i<3;i++)stuntRings.push({id:ringId++,s:a+(b-a)*ts[i],x:xs[i],y:ys[i],kind:'air',set:gi});});
+  loopMeta.forEach((l,li)=>{for(const [t,x]of [[.34,li%2?1.5:-1.5],[.68,li%2?-1.5:1.5]])stuntRings.push({id:ringId++,s:l.start+l.length*t,x,y:1.35,kind:'loop',set:10+li});});
+  const energyGates=[];let gateId=0;for(const sec of locked){for(let s=sec.start+24;s<sec.end-12;s+=42)energyGates.push({id:gateId++,s,style:sec.kind==='roll'?'twist':sec.kind==='loop'?'halo':'wall'});}
+  const coins=[];for(let s=18;s<config.length-12;s+=7){const gap=skybreakMeta.gaps.find(([a,b])=>s>=a&&s<b),near=hazards.find(h=>Math.abs(h.s-s)<20),hx=near?.motion==='sweep'?0:near?.x,x=near?(hx===0?-2.8:0):Math.sin(Math.floor(s/110)*1.31)*2.25;let cy=1.1;if(gap){const u=(s-gap[0])/(gap[1]-gap[0]);cy=3+Math.sin(Math.PI*u)*13;}coins.push({id:coins.length,s,x,y:cy,route:0});}
   const items=[],put=(type,s,x=0)=>{if(s>8&&s<config.length-8)items.push({id:items.length,type,s,x,route:0,y:type==='spring'||type==='dash'?0:1.4});};
   for(const [a,b]of skybreakMeta.gaps){put('dash',a-72,0);put('spring',a-28,0);put('dash',b+20,0);}
   for(const s of [1450,4920,9210])put('feather',s,0);
@@ -79,7 +84,7 @@ function createSkybreakCourse(config){
   const safeSections=skybreakMeta.sections.filter(s=>!s.lock),stuntSigns=[...skybreakMeta.signs,...skybreakMeta.gaps.map(([a,b,label])=>({s:Math.max(8,a-90),text:label||'MEGA GAP'}))];
   function edges(){return {left:-5,right:5,railLeft:true,railRight:true,sep:18};}
   function cuts(start,end,spacing=2){const list=[start,end];for(let s=start+spacing;s<end;s+=spacing)list.push(s);for(const [a,b]of skybreakMeta.gaps)for(const q of [a,b])if(q>start&&q<end)list.push(q);for(const sec of skybreakMeta.sections)for(const q of [sec.start,sec.end])if(q>start&&q<end)list.push(q);return [...new Set(list)].sort((a,b)=>a-b);}
-  return {config,hazards,coins,items,checkpoints,loops:loopMeta,turns,sample,forkAt,loopAt,lockedAt,cornerAt,edges,loopStart:loopMeta[0].start,loopLength:loopMeta[0].length,gapAt,cuts,halfWidth:()=>5,stuntSigns,safeSections};
+  return {config,hazards,coins,items,stuntRings,energyGates,checkpoints,loops:loopMeta,turns,sample,forkAt,loopAt,lockedAt,cornerAt,edges,loopStart:loopMeta[0].start,loopLength:loopMeta[0].length,gapAt,cuts,halfWidth:()=>5,stuntSigns,safeSections};
 }
 export function createCourse(id='coast'){
   const config=courses.find(c=>c.id===id)||courses[0];if(config.id==='skybreak')return createSkybreakCourse(config);const city=config.id==='skyline',loops=config.loops.map(([start,radius],id)=>({id,start,radius,length:Math.round(radius*2*Math.PI),end:start+Math.round(radius*2*Math.PI)}));
