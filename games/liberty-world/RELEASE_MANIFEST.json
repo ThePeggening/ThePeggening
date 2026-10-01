@@ -1,6 +1,6 @@
 {
     "build":  "PCOCK-VALLEY-BETA-20261001-r10",
-    "createdAt":  "2026-10-01T04:38:50.4581439Z",
+    "createdAt":  "2026-10-01T14:32:29.6271257Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -329,8 +329,8 @@
                   },
                   {
                       "path":  "index.html",
-                      "bytes":  286405,
-                      "sha256":  "34955d5994a15abe10ccc5b087cf3b914092a9e10855fdb7475c8d610046093a"
+                      "bytes":  292577,
+                      "sha256":  "104eaf952a399c088fedfc9870d1c6ee527b87ebe2b02f34f22a770f1398f5f6"
                   },
                   {
                       "path":  "libs/addons/libs/meshopt_decoder.module.js",
@@ -474,8 +474,8 @@
                   },
                   {
                       "path":  "shared/game-shell.js",
-                      "bytes":  18516,
-                      "sha256":  "0290802990d9eca169eda04e22cdcba0b1a67992878269a64d932b9067603675"
+                      "bytes":  19000,
+                      "sha256":  "197dd24446f41adf7c44c54b0458fc9993137d52136123a7a42c0fe21717b463"
                   },
                   {
                       "path":  "shared/ghost-data.js",
@@ -484,8 +484,8 @@
                   },
                   {
                       "path":  "shared/ghost-entry.js",
-                      "bytes":  16340,
-                      "sha256":  "7dd63254a84fcf0fa5751ed6db17250d9ae22bfcb413f6f36e9df341a258f126"
+                      "bytes":  16485,
+                      "sha256":  "62b5da88dc8246eecc7c49ef941d257c63191ee9d0fac675ae42e199bab1efc1"
                   },
                   {
                       "path":  "shared/ghost-loop.js",
@@ -524,8 +524,8 @@
                   },
                   {
                       "path":  "shared/liberty-entry.js",
-                      "bytes":  30479,
-                      "sha256":  "ddd2f8c9b673cb87041dae92f82f42814814b238946f1e9084065e0a61b71751"
+                      "bytes":  31296,
+                      "sha256":  "3bd7c068a46fe22617d6493c965499bba07d043088e6ff92c0c170039439aacb"
                   },
                   {
                       "path":  "shared/liberty-geometry.js",
@@ -689,8 +689,8 @@
                   },
                   {
                       "path":  "shared/valley-entry.js",
-                      "bytes":  18127,
-                      "sha256":  "1aa3767648ad9052fbdf15ffb79e485ede6bc9e17d8cf9cca868e90382ec3cc8"
+                      "bytes":  18900,
+                      "sha256":  "450ac62aab3bcd7d076d4a6ea384e6bd4acc30391c0def5c5f7edc0b92548590"
                   },
                   {
                       "path":  "shared/valley-expedition-data.js",
@@ -798,5 +798,5 @@
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
                   }
               ],
-    "totalBytes":  7258244
+    "totalBytes":  7266635
 }
