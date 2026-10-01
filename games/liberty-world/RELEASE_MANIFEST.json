@@ -1,6 +1,6 @@
 {
     "build":  "PCOCK-VALLEY-BETA-20261001-r10",
-    "createdAt":  "2026-10-01T14:32:29.6271257Z",
+    "createdAt":  "2026-10-01T15:25:00.4214601Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -474,8 +474,8 @@
                   },
                   {
                       "path":  "shared/game-shell.js",
-                      "bytes":  19000,
-                      "sha256":  "197dd24446f41adf7c44c54b0458fc9993137d52136123a7a42c0fe21717b463"
+                      "bytes":  19180,
+                      "sha256":  "a93fd328080d67cf85658c152c9102f2f1cda790079da48a60c04d7917d40126"
                   },
                   {
                       "path":  "shared/ghost-data.js",
@@ -484,8 +484,8 @@
                   },
                   {
                       "path":  "shared/ghost-entry.js",
-                      "bytes":  16485,
-                      "sha256":  "62b5da88dc8246eecc7c49ef941d257c63191ee9d0fac675ae42e199bab1efc1"
+                      "bytes":  18467,
+                      "sha256":  "026e217eff383bc45b92b6e95e6d10133d45f53dd6f07080967ced7b30fc906b"
                   },
                   {
                       "path":  "shared/ghost-loop.js",
@@ -524,8 +524,8 @@
                   },
                   {
                       "path":  "shared/liberty-entry.js",
-                      "bytes":  31296,
-                      "sha256":  "3bd7c068a46fe22617d6493c965499bba07d043088e6ff92c0c170039439aacb"
+                      "bytes":  32737,
+                      "sha256":  "c7a70c5bce3a88debcc51ce01adeadc138c5ac25a419ca7832fcd854e58289bf"
                   },
                   {
                       "path":  "shared/liberty-geometry.js",
@@ -544,8 +544,8 @@
                   },
                   {
                       "path":  "shared/liberty-runner.css",
-                      "bytes":  19824,
-                      "sha256":  "071b32997d35219e417e17d152723de05438f3fb6b156f2453b0216e7eb72c2c"
+                      "bytes":  20355,
+                      "sha256":  "fc89c4ff91314e7ff71b7c4c40f51650f7bcc57548185ff3bd94c4c4db092a80"
                   },
                   {
                       "path":  "shared/liberty-surfaces.js",
@@ -566,6 +566,11 @@
                       "path":  "shared/liberty-world.js",
                       "bytes":  25250,
                       "sha256":  "7758b9de094c128b5971f647f2ce45b0b655368b104f17ea7bc252378d249139"
+                  },
+                  {
+                      "path":  "shared/mini-hud-editor.js",
+                      "bytes":  14390,
+                      "sha256":  "e61aa06960430ec81c810cac5b0cfb3c37b9d99cddd26a72fff32e4965150679"
                   },
                   {
                       "path":  "shared/movement.js",
@@ -798,5 +803,5 @@
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
                   }
               ],
-    "totalBytes":  7266635
+    "totalBytes":  7285159
 }

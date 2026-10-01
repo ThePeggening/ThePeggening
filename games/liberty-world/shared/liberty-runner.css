@@ -24,3 +24,7 @@
 
 .lr-return-valley{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 10px;border:2px solid var(--border);border-radius:var(--radius-md);background:var(--surface);color:var(--text);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap}
 @media(max-width:600px){.lr-return-valley{padding:8px 6px;font-size:11px}.lr-header-right{gap:6px}}
+
+/* R11: keep gameplay notices out of the forward driving line; HUD editor can override per profile. */
+.lr-message{left:auto!important;right:max(8px,env(safe-area-inset-right));top:50%!important;bottom:auto!important;transform:translateY(-50%)!important;text-align:right;white-space:normal;max-width:min(240px,45vw)}
+.lr-toast{left:auto!important;right:max(8px,env(safe-area-inset-right));top:calc(50% + 66px);bottom:auto!important;transform:none!important;text-align:right;max-width:min(220px,42vw)}
