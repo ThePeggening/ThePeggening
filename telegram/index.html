@@ -15,8 +15,9 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090610;col
 </style>
 </head>
 <body>
-<div id="loading"><div><strong>ATROPA</strong><span>Loading The Peggening inside Telegram...</span></div></div>
-<iframe id="game" src="./game.html" title="ATROPA: The Peggening" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen></iframe><script>
+<div id="loading"><div><strong>ATROPA</strong><span>Loading the latest Peggening build inside Telegram...</span></div></div>
+<iframe id="game" src="../index.html?telegram=TG-20261001-R11" title="ATROPA: The Peggening" allow="fullscreen; autoplay; gamepad; clipboard-write" allowfullscreen></iframe>
+<script>
 (function(){
   var tg=window.Telegram&&window.Telegram.WebApp;
   if(tg){
@@ -29,7 +30,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090610;col
   }
   var game=document.getElementById('game');
   var loading=document.getElementById('loading');
-  game.addEventListener('load',function(){if(loading)loading.style.display='none';},{once:true});
+  function hideLoading(){if(loading)loading.style.display='none';}
+  game.addEventListener('load',hideLoading);
+  try{if(game.contentDocument&&game.contentDocument.readyState==='complete')hideLoading();}catch(_){}
+  setTimeout(function(){try{if(game.contentDocument&&game.contentDocument.readyState!=='loading')hideLoading();}catch(_){}},250);
 })();
 </script>
 </body>
