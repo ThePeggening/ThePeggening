@@ -1,6 +1,6 @@
 {
     "build":  "PCOCK-VALLEY-BETA-20261001-r10",
-    "createdAt":  "2026-10-01T03:43:47.4443505Z",
+    "createdAt":  "2026-10-01T04:14:00.7495024Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -343,9 +343,19 @@
                       "sha256":  "67ac5551fdafa6e349bd80c8f8e5e39c136d6b2fb1ad647db9abb21dc86f9e4a"
                   },
                   {
+                      "path":  "libs/addons/loaders/GLTFLoaderAtropa.js",
+                      "bytes":  114766,
+                      "sha256":  "b01f30fcb6510ba2885c85c99c4b6307be7da3a7906576aa950ceb29c0ce86c1"
+                  },
+                  {
                       "path":  "libs/addons/utils/BufferGeometryUtils.js",
                       "bytes":  35539,
                       "sha256":  "fda7e946b8e0b5ab39b779206589e7a1079a22eb24efb89d7223e03fdfb1f751"
+                  },
+                  {
+                      "path":  "libs/addons/utils/BufferGeometryUtilsAtropa.js",
+                      "bytes":  35560,
+                      "sha256":  "eda756a543145e5ce6738a5169b24e0fc433d6d53bb15aaf9e41ab89d2115b87"
                   },
                   {
                       "path":  "libs/three.core.js",
@@ -356,6 +366,11 @@
                       "path":  "libs/three.module.js",
                       "bytes":  603113,
                       "sha256":  "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a"
+                  },
+                  {
+                      "path":  "libs/three-global-shim.js",
+                      "bytes":  3351,
+                      "sha256":  "0e5244338d69182159a9c0847cb101b0e50797bd5ee69fe077e59bf60d602de0"
                   },
                   {
                       "path":  "libs/THREE-LICENSE.txt",
@@ -394,8 +409,8 @@
                   },
                   {
                       "path":  "shared/atropa-bridge.js",
-                      "bytes":  2614,
-                      "sha256":  "c15f1b45a7090bd46f54c923f60d4635d17d40aa3b94f9ce842386985df44171"
+                      "bytes":  4252,
+                      "sha256":  "f9cb8cb7c78f95fa87b592bf9e80316f066d688e38aac8acbd92d4da0516d7ad"
                   },
                   {
                       "path":  "shared/audio.js",
@@ -484,8 +499,8 @@
                   },
                   {
                       "path":  "shared/hud-editor.js",
-                      "bytes":  10924,
-                      "sha256":  "023b15ae3966be7a60bfa87ba09d34a4b581dd70386822ac8f2c5b15af32ddcf"
+                      "bytes":  13181,
+                      "sha256":  "f01d0ed27b7a9e5ca325e5827bde6bbde93696913dc79f4f834b42614966634a"
                   },
                   {
                       "path":  "shared/hud-kit.js",
@@ -781,22 +796,7 @@
                       "path":  "tools/server.mjs",
                       "bytes":  1357,
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
-                  },
-                  {
-                      "path":  "libs/three-global-shim.js",
-                      "bytes":  3351,
-                      "sha256":  "0e5244338d69182159a9c0847cb101b0e50797bd5ee69fe077e59bf60d602de0"
-                  },
-                  {
-                      "path":  "libs/addons/loaders/GLTFLoaderAtropa.js",
-                      "bytes":  114766,
-                      "sha256":  "b01f30fcb6510ba2885c85c99c4b6307be7da3a7906576aa950ceb29c0ce86c1"
-                  },
-                  {
-                      "path":  "libs/addons/utils/BufferGeometryUtilsAtropa.js",
-                      "bytes":  35560,
-                      "sha256":  "eda756a543145e5ce6738a5169b24e0fc433d6d53bb15aaf9e41ab89d2115b87"
                   }
               ],
-    "totalBytes":  7253524
+    "totalBytes":  7257419
 }

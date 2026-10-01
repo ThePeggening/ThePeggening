@@ -11,15 +11,33 @@ const TARGETS=Object.freeze([
   ['edge','OBJECTIVE EDGE ARROW','.v-edge'],
   ['signal','SIGNAL MESSAGE','.v-signal'],
   ['toast','NOTIFICATION','.v-toast'],
-  ['flight','FLIGHT RETURN','.v-flight-return']
+  ['flight','FLIGHT RETURN','.v-flight-return'],
+  ['return','BACK TO ATROPA / WEBSITE','#atropa-liberty-return,#liberty-website-return']
 ]);
+const DEFAULT_LAYOUTS=Object.freeze({
+  'mobile-landscape':Object.freeze({
+    brand:{x:0,y:0,s:1},status:{x:38,y:2,s:.71},mission:{x:-54,y:-46,s:.54},
+    compass:{x:31,y:28,s:.75},stick:{x:0,y:0,s:1},actions:{x:-4,y:-13,s:1.29},
+    toolbar:{x:80,y:-2,s:.69},prompt:{x:193,y:-50,s:.85},edge:{x:10,y:-3,s:.77},
+    signal:{x:-22,y:65,s:.75},toast:{x:-43,y:-80,s:.59},flight:{x:-191,y:-162,s:.81},return:{x:0,y:0,s:.72}
+  }),
+  'mobile-portrait':Object.freeze({
+    brand:{x:0,y:0,s:1},status:{x:40,y:-2,s:.65},mission:{x:-51,y:-7,s:.54},
+    compass:{x:-271,y:-274,s:.81},stick:{x:-14,y:15,s:.93},actions:{x:-6,y:59,s:1.29},
+    toolbar:{x:-3,y:3,s:.79},prompt:{x:62,y:-107,s:.84},edge:{x:158,y:-329,s:.85},
+    signal:{x:-32,y:-506,s:.79},toast:{x:97,y:-151,s:.48},flight:{x:-30,y:11,s:.68},return:{x:0,y:0,s:.68}
+  }),
+  'pc-landscape':Object.freeze({}),
+  'pc-portrait':Object.freeze({})
+});
+function defaultsFor(profile){const x=DEFAULT_LAYOUTS[profile]||{};return Object.fromEntries(Object.entries(x).map(([k,v])=>[k,{...v}]));}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function read(){
   try{const x=JSON.parse(localStorage.getItem(KEY)||'{}');return x&&typeof x==='object'?x:{};}catch{return {};}
 }
 function write(data){try{localStorage.setItem(KEY,JSON.stringify(data));}catch{}}
 function actualDevice(){return (navigator.maxTouchPoints||0)>0||matchMedia?.('(pointer: coarse)').matches?'mobile':'pc';}
-function actualOrientation(){return innerWidth>=innerHeight?'landscape':'portrait';}
+function actualOrientation(){try{if(matchMedia?.('(orientation: landscape)').matches)return 'landscape';if(matchMedia?.('(orientation: portrait)').matches)return 'portrait';}catch{}const t=screen.orientation?.type||'';if(t.startsWith('landscape'))return 'landscape';if(t.startsWith('portrait'))return 'portrait';return innerWidth>=innerHeight?'landscape':'portrait';}
 function keyOf(device,orientation){return device+'-'+orientation;}
 function copyText(text){
   const fallback=()=>{const ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.left='-9999px';ta.style.opacity='0';document.body.append(ta);ta.select();try{document.execCommand('copy');}catch{}ta.remove();};
@@ -28,7 +46,7 @@ function copyText(text){
 }
 export function createHudEditor(root){
   let layouts=read(),editing=false,selected=null,onDone=null,overlay=null,bar=null,frames=new Map(),raf=0,previewState=null,previewStyle=null;
-  const getProfile=(profile)=>layouts[profile]&&typeof layouts[profile]==='object'?layouts[profile]:{};
+  const getProfile=(profile)=>layouts[profile]&&typeof layouts[profile]==='object'?{...defaultsFor(profile),...layouts[profile]}:defaultsFor(profile);
   function target(id){const spec=TARGETS.find(x=>x[0]===id);return spec?root.querySelector(spec[2]):null;}
   function clearTransforms(){
     for(const [id] of TARGETS){const el=target(id);if(!el)continue;el.style.translate='';el.style.scale='';el.style.transformOrigin='';}
@@ -99,10 +117,13 @@ export function createHudEditor(root){
     bar.append(title,mk('COPY LAYOUT',()=>copy().catch(()=>toast('COPY FAILED'))),mk('RESET',()=>{layouts={...layouts,[selected]:{}};write(layouts);apply(selected);toast('PROFILE RESET');}),mk('DONE ✓',()=>stop(true)));
     overlay.append(bar);document.body.append(overlay);loop();
   }
-  const onResize=()=>{if(editing){apply(selected);positionFrames();}else apply();};
+  const syncActualProfile=()=>{const orientation=actualOrientation();if(editing&&selected){const device=selected.split('-')[0];const next=keyOf(device,orientation);if(next!==selected){selected=next;if(bar?.firstChild)bar.firstChild.textContent='✥ HUD RESIZE · '+device.toUpperCase()+' · '+orientation.toUpperCase();toast('SWITCHED TO '+next.toUpperCase());}apply(selected);positionFrames();}else apply(keyOf(actualDevice(),orientation));};
+  const onResize=()=>syncActualProfile();
   addEventListener('resize',onResize);addEventListener('orientationchange',onResize);
+  const mqLandscape=matchMedia?.('(orientation: landscape)');mqLandscape?.addEventListener?.('change',onResize);
+  screen.orientation?.addEventListener?.('change',onResize);visualViewport?.addEventListener?.('resize',onResize);
   const observer=new MutationObserver(()=>{if(editing)rebuildFrames();else apply();});observer.observe(root,{childList:true,subtree:true});
   apply();
-  const api={start,stop,copy,apply,get editing(){return editing;},get layouts(){return JSON.parse(JSON.stringify(layouts));},activeProfile(){return keyOf(actualDevice(),actualOrientation());},dispose(){stop(false);observer.disconnect();removeEventListener('resize',onResize);removeEventListener('orientationchange',onResize);clearTransforms();}};
+  const api={start,stop,copy,apply,get editing(){return editing;},get layouts(){return JSON.parse(JSON.stringify(layouts));},activeProfile(){return keyOf(actualDevice(),actualOrientation());},dispose(){stop(false);observer.disconnect();removeEventListener('resize',onResize);removeEventListener('orientationchange',onResize);mqLandscape?.removeEventListener?.('change',onResize);screen.orientation?.removeEventListener?.('change',onResize);visualViewport?.removeEventListener?.('resize',onResize);clearTransforms();}};
   window.__PCOCK_HUD_EDITOR=api;return api;
 }
