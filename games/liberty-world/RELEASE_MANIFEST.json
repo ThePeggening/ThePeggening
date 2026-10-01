@@ -1,6 +1,6 @@
 {
     "build":  "PCOCK-VALLEY-BETA-20261001-r10",
-    "createdAt":  "2026-10-01T04:14:00.7495024Z",
+    "createdAt":  "2026-10-01T04:38:50.4581439Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -499,8 +499,8 @@
                   },
                   {
                       "path":  "shared/hud-editor.js",
-                      "bytes":  13181,
-                      "sha256":  "f01d0ed27b7a9e5ca325e5827bde6bbde93696913dc79f4f834b42614966634a"
+                      "bytes":  14006,
+                      "sha256":  "ffa811e6de3d67f910d09969059c058787245cd8694862e991dae04191cc99bc"
                   },
                   {
                       "path":  "shared/hud-kit.js",
@@ -798,5 +798,5 @@
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
                   }
               ],
-    "totalBytes":  7257419
+    "totalBytes":  7258244
 }

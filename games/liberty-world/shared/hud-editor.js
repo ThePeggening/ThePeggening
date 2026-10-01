@@ -16,15 +16,15 @@ const TARGETS=Object.freeze([
 ]);
 const DEFAULT_LAYOUTS=Object.freeze({
   'mobile-landscape':Object.freeze({
-    brand:{x:0,y:0,s:1},status:{x:38,y:2,s:.71},mission:{x:-54,y:-46,s:.54},
-    compass:{x:31,y:28,s:.75},stick:{x:0,y:0,s:1},actions:{x:-4,y:-13,s:1.29},
-    toolbar:{x:80,y:-2,s:.69},prompt:{x:193,y:-50,s:.85},edge:{x:10,y:-3,s:.77},
-    signal:{x:-22,y:65,s:.75},toast:{x:-43,y:-80,s:.59},flight:{x:-191,y:-162,s:.81},return:{x:0,y:0,s:.72}
+    brand:{x:-3,y:-15,s:1},status:{x:38,y:2,s:.71},mission:{x:-57,y:-78,s:.54},
+    compass:{x:-704,y:5,s:.68},stick:{x:-10,y:13,s:.84},actions:{x:-25,y:2,s:1.41},
+    toolbar:{x:80,y:-2,s:.69},prompt:{x:39,y:39,s:.85},edge:{x:408,y:59,s:.77},
+    signal:{x:-20,y:75,s:.75},toast:{x:-43,y:-80,s:.59},flight:{x:-198,y:-185,s:.81},return:{x:0,y:0,s:.72}
   }),
   'mobile-portrait':Object.freeze({
     brand:{x:0,y:0,s:1},status:{x:40,y:-2,s:.65},mission:{x:-51,y:-7,s:.54},
-    compass:{x:-271,y:-274,s:.81},stick:{x:-14,y:15,s:.93},actions:{x:-6,y:59,s:1.29},
-    toolbar:{x:-3,y:3,s:.79},prompt:{x:62,y:-107,s:.84},edge:{x:158,y:-329,s:.85},
+    compass:{x:-271,y:-274,s:.81},stick:{x:-12,y:16,s:.93},actions:{x:-6,y:59,s:1.29},
+    toolbar:{x:-3,y:3,s:.79},prompt:{x:8,y:79,s:.84},edge:{x:122,y:266,s:.85},
     signal:{x:-32,y:-506,s:.79},toast:{x:97,y:-151,s:.48},flight:{x:-30,y:11,s:.68},return:{x:0,y:0,s:.68}
   }),
   'pc-landscape':Object.freeze({}),
@@ -51,11 +51,26 @@ export function createHudEditor(root){
   function clearTransforms(){
     for(const [id] of TARGETS){const el=target(id);if(!el)continue;el.style.translate='';el.style.scale='';el.style.transformOrigin='';}
   }
+  function fitValue(el,v){
+    let x=Number(v?.x)||0,y=Number(v?.y)||0,s=clamp(Number(v?.s)||1,.35,2.5);
+    const margin=4,W=Math.max(40,innerWidth),H=Math.max(40,innerHeight);
+    el.style.transformOrigin='center center';el.style.translate=`${x}px ${y}px`;el.style.scale=String(s);
+    let r=el.getBoundingClientRect();
+    if(r.width>W-margin*2||r.height>H-margin*2){
+      const factor=Math.min(1,(W-margin*2)/Math.max(1,r.width),(H-margin*2)/Math.max(1,r.height));
+      s=clamp(Math.round(s*factor*100)/100,.35,2.5);el.style.scale=String(s);r=el.getBoundingClientRect();
+    }
+    if(r.left<margin)x+=margin-r.left;if(r.right>W-margin)x-=r.right-(W-margin);
+    if(r.top<margin)y+=margin-r.top;if(r.bottom>H-margin)y-=r.bottom-(H-margin);
+    x=Math.round(x);y=Math.round(y);s=Math.round(s*100)/100;
+    el.style.translate=`${x}px ${y}px`;el.style.scale=String(s);
+    return {x,y,s};
+  }
   function apply(profile=keyOf(actualDevice(),actualOrientation())){
     clearTransforms();const data=getProfile(profile);
-    for(const [id] of TARGETS){const el=target(id),v=data[id];if(!el||!v)continue;el.style.transformOrigin='center center';el.style.translate=`${Number(v.x)||0}px ${Number(v.y)||0}px`;el.style.scale=String(Number(v.s)||1);}
+    for(const [id] of TARGETS){const el=target(id),v=data[id];if(!el||!v)continue;fitValue(el,v);}
   }
-  function saveItem(id,v){const profile=selected;if(!profile)return;const next={...getProfile(profile),[id]:{x:Math.round(v.x),y:Math.round(v.y),s:Math.round(v.s*100)/100}};layouts={...layouts,[profile]:next};write(layouts);}
+  function saveItem(id,v){const profile=selected;if(!profile)return;const el=target(id),fitted=el?fitValue(el,v):{x:Math.round(v.x),y:Math.round(v.y),s:Math.round(v.s*100)/100};const next={...getProfile(profile),[id]:fitted};layouts={...layouts,[profile]:next};write(layouts);}
   function style(el,obj){Object.assign(el.style,obj);return el;}
   function toast(msg){
     let n=document.getElementById('pcock-hud-edit-toast');if(!n){n=document.createElement('div');n.id='pcock-hud-edit-toast';style(n,{position:'fixed',left:'50%',bottom:'76px',translate:'-50% 0',zIndex:'2147483647',padding:'10px 14px',borderRadius:'10px',background:'rgba(8,12,24,.96)',border:'1px solid rgba(255,215,80,.75)',color:'#fff6cf',font:'800 11px Arial,sans-serif',pointerEvents:'none'});document.body.append(n);}n.textContent=msg;n.hidden=false;clearTimeout(n._t);n._t=setTimeout(()=>n.hidden=true,1800);
