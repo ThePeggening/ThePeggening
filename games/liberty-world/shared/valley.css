@@ -44,3 +44,97 @@ body.valley [data-interact]{background:radial-gradient(closest-side,var(--surfac
   body.valley .pc-abilities button{width:52px;height:52px}
   body.valley .pc-controls{bottom:max(16px,env(safe-area-inset-bottom))}
 }
+
+
+/* R11 — mobile landscape shell. Menus are designed for 832x384-class play, not scaled portrait sheets. */
+.v-landscape-guard{position:fixed;inset:0;z-index:2147483600;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 35%,rgba(46,32,76,.98),rgba(4,8,18,.995) 70%);color:var(--text);text-align:center;pointer-events:auto}
+.v-landscape-guard>div{width:min(430px,92vw);padding:24px;border:2px solid var(--gold);border-radius:18px;background:var(--surface);box-shadow:0 24px 80px #000a}
+.v-landscape-guard strong{display:block;font:800 28px/1 var(--font-heading);color:var(--gold);letter-spacing:.03em}
+.v-landscape-guard p{margin:12px 0 18px;color:var(--textSecondary);font-size:14px;line-height:1.45}
+.v-landscape-guard .pc-button{width:100%;min-height:50px}
+.v-landscape-guard small{display:block;margin-top:10px;line-height:1.35}
+
+@media(pointer:coarse) and (orientation:landscape) and (max-height:560px){
+  /* Clear the world HUD while reading/using a menu. */
+  .pc-root.v-modal-open :is(.pc-brandbar,.pc-hud,.pc-controls,.v-toolbar,.v-world-labels,.v-edge,.v-signal,.v-toast,.v-flight-return){visibility:hidden!important;pointer-events:none!important}
+  .pc-root.v-modal-open .v-layer{background:rgba(3,7,15,.48);backdrop-filter:blur(5px)}
+  .v-layer{padding:max(7px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));place-items:center}
+  .v-panel{width:min(790px,calc(100vw - 22px));max-height:calc(100dvh - 14px);padding:10px 12px 12px;gap:7px;border-radius:14px;scroll-padding:54px 10px 10px;overscroll-behavior:contain;box-shadow:0 10px 44px #0009}
+  .v-panel-head{position:sticky;top:-10px;z-index:8;margin:-2px 0 2px;padding:5px 0 7px;background:linear-gradient(var(--surface) 82%,color-mix(in srgb,var(--surface) 80%,transparent));border-bottom:1px solid var(--border)}
+  .v-panel-head h2,.v-panel h2{font-size:19px;line-height:1.1;letter-spacing:-.01em}
+  .v-panel-head .pc-button{min-height:38px;height:38px;flex-basis:38px;padding:5px 10px}
+  .v-panel p{font-size:11.5px;line-height:1.38}
+  .v-panel .v-dialogue{font-size:15px;line-height:1.38}
+  .v-panel .v-small{font-size:9.5px;line-height:1.32}
+  .v-panel>.pc-button,.v-panel>a.pc-button{min-height:40px;padding:7px 10px;font-size:10.5px;line-height:1.2}
+  .v-guide-note{padding:7px 9px!important;font-size:10.5px!important;line-height:1.3!important}
+  .v-guide-entry{padding:8px;border-radius:9px;font-size:10px}
+  .v-guide-entry p{font-size:10px}
+  .v-answer-pick,.v-guide-row{min-height:40px!important;padding:7px 9px!important;font-size:10.5px!important}
+  .v-sim-form{gap:7px}.v-sim-form label{min-height:42px;padding:7px 9px;font-size:10.5px}.v-sim-form input,.v-sim-form select{padding:6px 8px}
+  .v-swap-field{margin:6px 0;padding:8px 10px;gap:10px}.v-swap-field select,.v-swap-field input[type=number]{padding:8px}.v-swap-summary{padding:9px;line-height:1.4}.v-swap-step{max-width:none!important;padding:10px!important}
+  .v-wallet-balances{gap:10px;padding:9px 12px;flex-wrap:wrap}
+  .v-wallet-balances strong{font-size:11px}
+
+  /* Title: copy on top, actions across the width instead of one huge vertical stack. */
+  .v-title{position:relative!important;left:auto!important;bottom:auto!important;width:min(700px,calc(100vw - 28px))!important;max-height:calc(100dvh - 18px)!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 9px;border-top:4px solid var(--primary)}
+  .v-title>.v-panel-head,.v-title>p{grid-column:1/-1}
+  .v-title>.pc-button{min-height:44px}
+  .v-title>.pc-primary{grid-column:1/3}
+
+  /* Journal and top-level menus: readable three-column action board. */
+  .v-panel[data-panel-title="Quest Journal"]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:start}
+  .v-panel[data-panel-title="Quest Journal"]>:is(.v-panel-head,p,.v-guide-entry){grid-column:1/-1}
+  .v-panel[data-panel-title="Quest Journal"]>.pc-button{min-width:0;white-space:normal}
+
+  /* Guide/category pages that contain activity rows. */
+  .v-panel:has(> .v-guide-row){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-content:start}
+  .v-panel:has(> .v-guide-row)>:is(.v-panel-head,p,h3,.v-adventure-map,.v-guide-entry,.v-guide-note){grid-column:1/-1}
+  .v-panel:has(> .v-guide-row)>.pc-button{min-width:0;white-space:normal}
+
+  /* Settings: two compact columns; actions remain easy to hit. */
+  .v-panel[data-panel-title="Settings"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}
+  .v-panel[data-panel-title="Settings"]>.v-panel-head{grid-column:1/-1}
+  .v-panel[data-panel-title="Settings"]>.pc-row{min-height:42px;margin:0;padding:6px 8px;gap:8px;border-radius:8px;background:var(--surface2)}
+  .v-panel[data-panel-title="Settings"]>.pc-row span{font-size:10.5px}
+  .v-panel[data-panel-title="Settings"]>.pc-row input[type=range]{max-width:120px}
+  .v-panel[data-panel-title="Settings"]>.pc-row select{padding:5px 6px;font-size:10px}
+  .v-panel[data-panel-title="Settings"]>.pc-button{min-height:40px}
+
+  /* Pause and small decision sheets use rows, not towering stacks. */
+  .v-panel[data-panel-title="Paused"],.v-panel[data-panel-title="Mini-Games · Fun Only"],.v-panel[data-panel-title="Resize HUD"],.v-panel[data-panel-title^="Resize HUD ·"]{width:min(610px,calc(100vw - 24px));display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .v-panel[data-panel-title="Paused"]>:is(.v-panel-head,p),.v-panel[data-panel-title="Mini-Games · Fun Only"]>:is(.v-panel-head,p),.v-panel[data-panel-title="Resize HUD"]>:is(.v-panel-head,p),.v-panel[data-panel-title^="Resize HUD ·"]>:is(.v-panel-head,p){grid-column:1/-1}
+
+  /* Wallet: balances and equipment use width, receipts stay readable full-width. */
+  .v-panel[data-panel-title="Practice wallet"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start}
+  .v-panel[data-panel-title="Practice wallet"]>:is(.v-panel-head,.v-wallet-label,.v-wallet-balances,h3,.v-guide-entry){grid-column:1/-1}
+  .v-panel[data-panel-title="Practice wallet"]>p:not(.v-small){grid-column:1/-1}
+  .v-panel[data-panel-title="Practice wallet"]>.v-small{align-self:center}
+
+  /* Map: shorter landscape map, expedition actions use the same grid language. */
+  .v-panel[data-panel-title="Valley map & expeditions"] .v-adventure-map{min-height:138px;max-height:156px;aspect-ratio:3.2}
+  .v-panel[data-panel-title="Valley map & expeditions"] .v-adventure-map text{font-size:19px}
+  .v-panel[data-panel-title="Valley map & expeditions"]>h3{margin:4px 0 0;font-size:13px}
+
+  /* Dialogues/quest decision cards are intentionally smaller than data-heavy menus. */
+  .v-panel:not([data-panel-title="Quest Journal"]):not([data-panel-title="Settings"]):not([data-panel-title="Practice wallet"]):not([data-panel-title="Valley map & expeditions"]):not(.v-title):not(:has(> .v-guide-row)){max-width:650px}
+
+  /* Cinematics: compact lower-third instead of a portrait-sized card. */
+  .v-letterbox{border-top-width:6dvh;border-bottom-width:6dvh}
+  .v-caption{bottom:max(8px,env(safe-area-inset-bottom));width:min(720px,calc(100vw - 24px));padding:9px 12px;border-radius:10px}
+  .v-caption p{margin:4px 0;font-size:13px;line-height:1.3}
+  .v-cinema-count{font-size:9px!important}
+  .v-cinema-actions{margin-top:6px;gap:8px;justify-content:flex-end}
+  .v-cinema-actions .pc-button{min-height:38px;padding:6px 10px;font-size:10px}
+}
+
+@media(pointer:coarse) and (orientation:portrait){
+  body.valley{overscroll-behavior:none}
+}
+
+@media(pointer:coarse) and (orientation:landscape) and (max-height:560px){
+  .v-panel[data-panel-title="Adventure Guide"]>.pc-primary{grid-column:1/3}
+  .v-panel[data-panel-title="Valley map & expeditions"]>.pc-button:nth-of-type(1){grid-column:1/3}
+  .v-panel[data-panel-title="Valley map & expeditions"]>.pc-button:nth-of-type(2){grid-column:3}
+  .v-panel[data-panel-title="Valley map & expeditions"] .v-adventure-map{grid-column:1/-1;width:min(560px,100%);height:148px;min-height:148px;max-height:148px;aspect-ratio:auto;justify-self:center}
+}
