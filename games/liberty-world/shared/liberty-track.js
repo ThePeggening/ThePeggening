@@ -34,16 +34,67 @@ const skybreakPlan=Object.freeze([
   {kind:'straight',length:600,name:'Freedom Runout',sign:'LAND IT / RUN FREE'}
 ]);
 const skybreakMeta=(()=>{let cursor=0;const sections=[],loops=[],gaps=[],signs=[];for(const spec of skybreakPlan){const start=cursor,end=start+spec.length,section={...spec,start,end,id:sections.length};sections.push(section);if(spec.loop)loops.push([start,Math.max(24,Math.round(spec.length/(Math.PI*2))) ]);for(const gap of spec.gaps||[])gaps.push([start+gap.at,start+gap.at+gap.length,gap.label]);if(spec.sign)signs.push({s:Math.max(8,start-65),text:spec.sign});cursor=end;}return Object.freeze({length:cursor,sections:Object.freeze(sections),loops:Object.freeze(loops),gaps:Object.freeze(gaps),signs:Object.freeze(signs)});})();
+const libertySwapPlan=Object.freeze([
+  {kind:'yaw',length:170,yaw:Math.PI*.55,pitch:.04,name:'Sunrise Hook',sign:'LIBERTYSWAP / DAYBREAK'},
+  {kind:'yaw',length:170,yaw:-Math.PI*1.05,pitch:-.04,roll:.18,name:'Orange S-Bend',sign:'NO STRAIGHTS / KEEP TURNING'},
+  {kind:'pitch',length:70,pitch:Math.PI/2,lock:true,name:'Liberty Wallrise',sign:'VERTICAL UP / FULL COMMIT'},
+  {kind:'roll',length:120,yaw:Math.PI*.28,roll:Math.PI,lock:true,name:'Shield Wall Helix',sign:'SHIELD / WALL HELIX'},
+  {kind:'yaw',length:100,yaw:-Math.PI*.55,roll:.4,lock:true,name:'Wall Crown'},
+  {kind:'pitch',length:70,pitch:-Math.PI/2,lock:true,name:'Wallrise Exit'},
+  {kind:'loop',length:240,pitch:Math.PI*2,yaw:Math.PI*.22,roll:Math.PI*2,lock:true,loop:true,name:'Liberty Halo',sign:'LIBERTY HALO / SEND IT'},
+  {kind:'yaw',length:180,yaw:Math.PI*1.15,roll:.35,name:'Hypermarket Switchback',sign:'HYPERMARKET / HARD RIGHT'},
+  {kind:'yaw',length:520,yaw:-Math.PI*.55,pitch:.08,name:'Sunshot One',gaps:[{at:150,length:220,label:'SUNSHOT I / FLY'}]},
+  {kind:'roll',length:260,yaw:Math.PI*.45,pitch:.12,roll:Math.PI*2,lock:true,name:'Pool Corkscrew',sign:'POOL / CORKSCREW CLIMB'},
+  {kind:'loop',length:275,pitch:-Math.PI*2,yaw:-Math.PI*.32,roll:-Math.PI*2,lock:true,loop:true,name:'Reverse Swap Loop',sign:'REVERSE SWAP LOOP'},
+  {kind:'yaw',length:170,yaw:-Math.PI*.95,pitch:-.2,roll:-.25,name:'Magenta Hairpin'},
+  {kind:'pitch',length:75,pitch:-Math.PI/2,lock:true,name:'Pool Drop Gate',sign:'POOL DROP / VERTICAL DOWN'},
+  {kind:'yaw',length:120,yaw:Math.PI*.35,roll:-.6,lock:true,name:'Vertical Chicane'},
+  {kind:'pitch',length:75,pitch:Math.PI/2,lock:true,name:'Pool Drop Exit'},
+  {kind:'yaw',length:620,yaw:Math.PI*1.25,pitch:.1,name:'Sunshot Two',gaps:[{at:190,length:260,label:'SUNSHOT II / BIG AIR'}]},
+  {kind:'loop',length:260,pitch:Math.PI*2,yaw:Math.PI*.4,roll:Math.PI*2,lock:true,loop:true,name:'Golden Ratio Loop',sign:'GOLDEN RATIO / LOOP'},
+  {kind:'yaw',length:150,yaw:-Math.PI*.8,pitch:-.1,roll:.4,name:'Stables Snap'},
+  {kind:'roll',length:330,yaw:-Math.PI*.5,pitch:.18,roll:Math.PI*4,lock:true,name:'Double Liberty Corkscrew',sign:'DOUBLE LIBERTY CORKSCREW'},
+  {kind:'yaw',length:470,yaw:Math.PI*1.05,pitch:-.18,name:'Hypermarket Leap',gaps:[{at:135,length:210,label:'HYPERMARKET LEAP'}]},
+  {kind:'loop',length:245,pitch:Math.PI*2,yaw:-Math.PI*.25,roll:Math.PI*2,lock:true,loop:true,name:'Pool Halo',sign:'POOL HALO'},
+  {kind:'yaw',length:160,yaw:Math.PI*.9,pitch:-.12,name:'Shield Switch'},
+  {kind:'pitch',length:80,pitch:Math.PI/2,lock:true,name:'Shield Wall Gate',sign:'SHIELD WALL / STRAIGHT UP'},
+  {kind:'roll',length:140,yaw:-Math.PI*.35,roll:-Math.PI,lock:true,name:'Shield Wall Twist'},
+  {kind:'pitch',length:80,pitch:-Math.PI/2,lock:true,name:'Shield Wall Exit'},
+  {kind:'yaw',length:760,yaw:-Math.PI*1.3,pitch:.12,name:'Freedom Flight',gaps:[{at:235,length:300,label:'FREEDOM FLIGHT / MEGA AIR'}]},
+  {kind:'loop',length:290,pitch:-Math.PI*2,yaw:Math.PI*.3,roll:-Math.PI*2,lock:true,loop:true,name:'Inverse Liberty Loop',sign:'INVERSE LIBERTY'},
+  {kind:'yaw',length:190,yaw:Math.PI*1.2,roll:-.3,name:'Whiteglass Hairpin'},
+  {kind:'roll',length:360,yaw:Math.PI*.55,pitch:-.12,roll:Math.PI*4,lock:true,name:'Quad Swap Spiral',sign:'QUAD SWAP SPIRAL'},
+  {kind:'yaw',length:540,yaw:-Math.PI*.9,pitch:.12,name:'Garden Jump',gaps:[{at:165,length:230,label:'GARDEN JUMP / FLOAT'}]},
+  {kind:'loop',length:300,pitch:Math.PI*2,yaw:Math.PI*.33,roll:Math.PI*2,lock:true,loop:true,name:'Daylight Crown',sign:'DAYLIGHT CROWN'},
+  {kind:'yaw',length:150,yaw:-Math.PI*.9,name:'Poolside Hook'},
+  {kind:'pitch',length:75,pitch:-Math.PI/2,lock:true,name:'Sunvault Drop',sign:'SUNVAULT / DROP NOW'},
+  {kind:'yaw',length:130,yaw:Math.PI*.45,roll:.6,lock:true,name:'Sunvault Twist'},
+  {kind:'pitch',length:75,pitch:Math.PI/2,lock:true,name:'Sunvault Exit'},
+  {kind:'yaw',length:920,yaw:Math.PI*1.45,pitch:.08,name:'Liberty Canyon Flight',gaps:[{at:285,length:340,label:'LIBERTY CANYON / HUGE JUMP'}]},
+  {kind:'loop',length:320,pitch:Math.PI*2,yaw:-Math.PI*.42,roll:Math.PI*2,lock:true,loop:true,name:'Swap Singularity',sign:'SWAP SINGULARITY'},
+  {kind:'roll',length:300,yaw:-Math.PI*.4,pitch:-.08,roll:-Math.PI*2,lock:true,name:'Countermarket Twist',sign:'COUNTERMARKET / TWIST'},
+  {kind:'yaw',length:480,yaw:Math.PI*.95,name:'Pool-to-Pool Jump',gaps:[{at:145,length:250,label:'POOL-TO-POOL / FLY'}]},
+  {kind:'loop',length:280,pitch:-Math.PI*2,yaw:Math.PI*.28,roll:-Math.PI*2,lock:true,loop:true,name:'Reverse Daylight Loop',sign:'REVERSE DAYLIGHT'},
+  {kind:'yaw',length:200,yaw:-Math.PI*1.3,name:'Liberty Hairpin'},
+  {kind:'roll',length:320,yaw:Math.PI*.6,pitch:-.08,roll:Math.PI*4,lock:true,name:'Final Double Spiral',sign:'FINAL DOUBLE SPIRAL'},
+  {kind:'yaw',length:1000,yaw:-Math.PI*.8,pitch:.08,name:'Impossible Daylight Jump',gaps:[{at:315,length:360,label:'IMPOSSIBLE DAYLIGHT / FLY'}]},
+  {kind:'loop',length:350,pitch:Math.PI*2,yaw:Math.PI*.48,roll:Math.PI*2,lock:true,loop:true,name:'LibertySwap Crown',sign:'LIBERTYSWAP CROWN'},
+  {kind:'yaw',length:300,yaw:Math.PI*1.2,pitch:-.08,name:'Victory Orbit'},
+  {kind:'yaw',length:420,yaw:-Math.PI*.9,pitch:.08,roll:.2,name:'Freedom Finish',sign:'LIBERTYSWAP / RUN FREE'}
+]);
+const libertySwapMeta=(()=>{let cursor=0;const sections=[],loops=[],gaps=[],signs=[];for(const spec of libertySwapPlan){const start=cursor,end=start+spec.length,section={...spec,start,end,id:sections.length};sections.push(section);if(spec.loop)loops.push([start,Math.max(24,Math.round(spec.length/(Math.PI*2)))]);for(const gap of spec.gaps||[])gaps.push([start+gap.at,start+gap.at+gap.length,gap.label]);if(spec.sign)signs.push({s:Math.max(8,start-58),text:spec.sign,color:'#f97316'});cursor=end;}return Object.freeze({length:cursor,sections:Object.freeze(sections),loops:Object.freeze(loops),gaps:Object.freeze(gaps),signs:Object.freeze(signs)});})();
 const layouts=[
   ['coast','Liberty Coast','01 / ISLAND ODYSSEY',18000,52,24,'Original green run plus a remixed second circuit of jumps, loops and turns'],
   ['skyline','Liberty Skyline','02 / CITY CIRCUIT',9800,56,27,'Glass canyons, rooftop loops and skybridges'],
   ['canyon','Sunstone Canyon','03 / DESERT RUSH',10400,54,29,'Sandstone arches, mesas and desert switchbacks'],
   ['alpine','Frostline Summit','04 / ALPINE EXPEDITION',11000,55,30,'Snowy pines, ice spires and mountain passes'],
   ['volcano','Magma Foundry','05 / VOLCANIC VELOCITY',11800,58,32,'Lava channels, steel gantries and volcanic loops'],
-  ['skybreak','Skybreak 414','06 / VERTICAL VOID',skybreakMeta.length,70,42,'Mega jumps, stunt-ring OVERDRIVE, moving sweepers, vertical walls and twisted loops']
+  ['skybreak','Skybreak 414','06 / VERTICAL VOID',skybreakMeta.length,70,42,'Mega jumps, stunt-ring OVERDRIVE, moving sweepers, vertical walls and twisted loops'],
+  ['libertyswap','LibertySwap Daybreak','07 / DAYLIGHT HYPERLOOP',libertySwapMeta.length,72,44,'Non-stop daytime twisting, vertical drops, corkscrews, loops and huge LibertySwap jumps']
 ];
 export const courses=Object.freeze(layouts.map(([id,name,tag,length,speed,radius,description],index)=>{
-  if(id==='skybreak')return Object.freeze({id,name,tag,length,speed,description,index,loops:skybreakMeta.loops,loop:skybreakMeta.loops[0],forks:[],gaps:skybreakMeta.gaps.map(([a,b])=>[a,b]),par:Math.round(length/speed*.98),coinGoal:Math.round(length/31),sections:['Ignition','Vertical Spine','Halo Cluster','The Void','Freefall Wall','414 Singularity','Final Flight'],stunt:true,recoverOnCrash:true,springVelocity:22,padBoostSeconds:5.2,boostBonus:52,glideBonus:.8,cameraFar:900,previewDistance:1180});
+  if(id==='skybreak')return Object.freeze({id,name,tag,length,speed,description,index,loops:skybreakMeta.loops,loop:skybreakMeta.loops[0],forks:[],gaps:skybreakMeta.gaps.map(([a,b])=>[a,b]),par:Math.round(length/speed*.98),coinGoal:Math.round(length/31),sections:['Ignition','Vertical Spine','Halo Cluster','The Void','Freefall Wall','414 Singularity','Final Flight'],stunt:true,recoverOnCrash:true,springVelocity:22,padBoostSeconds:5.2,boostBonus:52,glideBonus:.8,cameraFar:900,previewDistance:1180,stuntTitle:'SKYBREAK 414',rampLabel:'414 BOOST RAMP',stuntJumpLabel:'SKYBREAK LAUNCH',stuntFinishLabel:'SKYBREAK CONQUERED'});
+  if(id==='libertyswap')return Object.freeze({id,name,tag,length,speed,description,index,loops:libertySwapMeta.loops,loop:libertySwapMeta.loops[0],forks:[],gaps:libertySwapMeta.gaps.map(([a,b])=>[a,b]),par:Math.round(length/speed*.99),coinGoal:Math.round(length/30),sections:['Sunrise Hooks','Liberty Wallrise','Hypermarket Flight','Pool Drop','Freedom Flight','Sunvault','Impossible Daylight'],stunt:true,recoverOnCrash:true,springVelocity:23,padBoostSeconds:5.4,boostBonus:56,glideBonus:.9,cameraFar:980,previewDistance:1660,stuntTitle:'LIBERTYSWAP DAYBREAK',rampLabel:'LIBERTY BOOST RAMP',stuntJumpLabel:'DAYBREAK LAUNCH',stuntFinishLabel:'DAYBREAK CONQUERED',featherLabel:'Daybreak feathers',featherPositions:[2020,6210,10360],sweeperPositions:[1180,2840,4580,7040,8640,11020]});
   const loops=[],forks=[],gaps=[];
   for(let base=0;base<length-1500;base+=1800){loops.push([base+930,radius+(base/1800%2)*3]);forks.push([base+310,base+610]);gaps.push([base+220,base+232],[base+710,base+724],[base+1450,base+1464]);}
   return Object.freeze({id,name,tag,length,speed,description,index,loops,loop:loops[0],forks,gaps,legacyLength:id==='coast'?9000:undefined,par:Math.round(length/speed*.93),coinGoal:Math.round(length/24),sections:id==='coast'?['Original Departure','Original High Road','Original Finish / Remix Gate','Remix Switchbacks','Remix Sky Loops','Remix Wild Run','Final Green Sprint']:['Departure','High Road','Switchback Run','Sky Loop','Wild Frontier','Summit Sprint','Final Stretch']});
@@ -58,36 +109,37 @@ export const disclaimer='Fan-made game. Simulated only. Not financial advice. No
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function makeFrame(){return {x:0,y:0,z:0,fx:0,fy:0,fz:-1,rx:1,ry:0,rz:0,ux:0,uy:1,uz:0,width:10,loop:false};}
 function createSkybreakCourse(config){
+  const meta=config.id==='libertyswap'?libertySwapMeta:skybreakMeta;
   const count=config.length+1,centers=new Float64Array(count*3),fxs=new Float32Array(count),fys=new Float32Array(count),fzs=new Float32Array(count),rxs=new Float32Array(count),rys=new Float32Array(count),rzs=new Float32Array(count),uxs=new Float32Array(count),uys=new Float32Array(count),uzs=new Float32Array(count);
   let x=0,y=38,z=0,yaw=0,pitch=0,roll=0,cursor=0;
   const smooth=t=>t*t*(3-2*t),norm=(x,y,z)=>{const n=Math.hypot(x,y,z)||1;return [x/n,y/n,z/n];};
   function basis(yw,pt,rl){const cp=Math.cos(pt),sp=Math.sin(pt),sy=Math.sin(yw),cy=Math.cos(yw),cr=Math.cos(rl),sr=Math.sin(rl),f=[sy*cp,sp,-cy*cp],r0=[cy,0,sy],u0=[-sy*sp,cp,cy*sp],r=[r0[0]*cr+u0[0]*sr,r0[1]*cr+u0[1]*sr,r0[2]*cr+u0[2]*sr],u=[u0[0]*cr-r0[0]*sr,u0[1]*cr-r0[1]*sr,u0[2]*cr-r0[2]*sr];return {f:norm(...f),r:norm(...r),u:norm(...u)};}
   function store(i,yw,pt,rl){const b=basis(yw,pt,rl);centers.set([x,y,z],i*3);fxs[i]=b.f[0];fys[i]=b.f[1];fzs[i]=b.f[2];rxs[i]=b.r[0];rys[i]=b.r[1];rzs[i]=b.r[2];uxs[i]=b.u[0];uys[i]=b.u[1];uzs[i]=b.u[2];}
   store(0,yaw,pitch,roll);
-  for(const sec of skybreakMeta.sections){const sy=yaw,sp=pitch,sr=roll,dy=sec.yaw||0,dp=sec.pitch||0,dr=sec.roll||0,linear=sec.kind==='loop'||sec.kind==='roll';for(let j=1;j<=sec.length;j++){const tm=(j-.5)/sec.length,te=j/sec.length,em=linear?tm:smooth(tm),ee=linear?te:smooth(te),my=sy+dy*em,mp=sp+dp*em,mr=sr+dr*em,b=basis(my,mp,mr);x+=b.f[0];y+=b.f[1];z+=b.f[2];store(cursor+j,sy+dy*ee,sp+dp*ee,sr+dr*ee);}cursor=sec.end;yaw=sy+dy;pitch=sp+dp;roll=sr+dr;}
-  const loopMeta=skybreakMeta.sections.filter(s=>s.loop).map((s,id)=>({id,start:s.start,end:s.end,length:s.length,radius:Math.round(s.length/(Math.PI*2)),name:s.name}));
-  const locked=skybreakMeta.sections.filter(s=>s.lock),turns=skybreakMeta.sections.filter(s=>s.kind==='yaw').map((s,id)=>({id,start:s.start,end:s.end,from:0,to:s.yaw,direction:Math.sign(s.yaw)}));
-  const gapAt=s=>{const g=skybreakMeta.gaps.find(([a,b])=>s>=a&&s<b);return g?[g[0],g[1]]:undefined;},loopAt=(s,padding=0)=>loopMeta.find(l=>s>l.start-padding&&s<l.end+padding),lockedAt=(s,padding=0)=>locked.find(l=>s>l.start-padding&&s<l.end+padding),cornerAt=s=>turns.find(t=>s>=t.start&&s<=t.end),forkAt=()=>undefined;
+  for(const sec of meta.sections){const sy=yaw,sp=pitch,sr=roll,dy=sec.yaw||0,dp=sec.pitch||0,dr=sec.roll||0,linear=sec.kind==='loop'||sec.kind==='roll';for(let j=1;j<=sec.length;j++){const tm=(j-.5)/sec.length,te=j/sec.length,em=linear?tm:smooth(tm),ee=linear?te:smooth(te),my=sy+dy*em,mp=sp+dp*em,mr=sr+dr*em,b=basis(my,mp,mr);x+=b.f[0];y+=b.f[1];z+=b.f[2];store(cursor+j,sy+dy*ee,sp+dp*ee,sr+dr*ee);}cursor=sec.end;yaw=sy+dy;pitch=sp+dp;roll=sr+dr;}
+  const loopMeta=meta.sections.filter(s=>s.loop).map((s,id)=>({id,start:s.start,end:s.end,length:s.length,radius:Math.round(s.length/(Math.PI*2)),name:s.name}));
+  const locked=meta.sections.filter(s=>s.lock),turns=meta.sections.filter(s=>s.kind==='yaw').map((s,id)=>({id,start:s.start,end:s.end,from:0,to:s.yaw,direction:Math.sign(s.yaw)}));
+  const gapAt=s=>{const g=meta.gaps.find(([a,b])=>s>=a&&s<b);return g?[g[0],g[1]]:undefined;},loopAt=(s,padding=0)=>loopMeta.find(l=>s>l.start-padding&&s<l.end+padding),lockedAt=(s,padding=0)=>locked.find(l=>s>l.start-padding&&s<l.end+padding),cornerAt=s=>turns.find(t=>s>=t.start&&s<=t.end),forkAt=()=>undefined;
   function sample(s,route=0,out=makeFrame()){s=clamp(s,0,config.length);const a=Math.floor(s),b=Math.min(a+1,config.length),t=s-a,ix=a*3,jx=b*3,lerp=(A,B)=>A+(B-A)*t;let fx=lerp(fxs[a],fxs[b]),fy=lerp(fys[a],fys[b]),fz=lerp(fzs[a],fzs[b]),fn=Math.hypot(fx,fy,fz)||1;fx/=fn;fy/=fn;fz/=fn;let rx=lerp(rxs[a],rxs[b]),ry=lerp(rys[a],rys[b]),rz=lerp(rzs[a],rzs[b]),dot=rx*fx+ry*fy+rz*fz;rx-=fx*dot;ry-=fy*dot;rz-=fz*dot;const rn=Math.hypot(rx,ry,rz)||1;rx/=rn;ry/=rn;rz/=rn;const ux=ry*fz-rz*fy,uy=rz*fx-rx*fz,uz=rx*fy-ry*fx;Object.assign(out,{x:lerp(centers[ix],centers[jx]),y:lerp(centers[ix+1],centers[jx+1]),z:lerp(centers[ix+2],centers[jx+2]),fx,fy,fz,rx,ry,rz,ux,uy,uz,width:10,loop:!!lockedAt(s)});return out;}
-  const sweepCandidates=[1860,3180,4550,6680,7870,9040,10620];
-  const hazards=[];for(let s=150,i=0;s<config.length-120;s+=245,i++){if(gapAt(s)||lockedAt(s,65)||skybreakMeta.gaps.some(([a,b])=>s>a-90&&s<b+70)||sweepCandidates.some(q=>Math.abs(q-s)<70))continue;hazards.push({id:hazards.length,s,x:[-2.8,0,2.8][i%3],type:i%3===1?'beam':'barrier',route:0});}
+  const sweepCandidates=config.sweeperPositions||[1860,3180,4550,6680,7870,9040,10620];
+  const hazards=[];for(let s=150,i=0;s<config.length-120;s+=245,i++){if(gapAt(s)||lockedAt(s,65)||meta.gaps.some(([a,b])=>s>a-90&&s<b+70)||sweepCandidates.some(q=>Math.abs(q-s)<70))continue;hazards.push({id:hazards.length,s,x:[-2.8,0,2.8][i%3],type:i%3===1?'beam':'barrier',route:0});}
   sweepCandidates.forEach((s,i)=>{if(s<config.length-80&&!gapAt(s)&&!lockedAt(s,65))hazards.push({id:hazards.length,s,x:0,type:'sweep',route:0,motion:'sweep',amp:2.7,speed:1.25+(i%3)*.22,phase:i*1.73});});hazards.sort((a,b)=>a.s-b.s);hazards.forEach((h,i)=>h.id=i);
-  const stuntRings=[];let ringId=0;skybreakMeta.gaps.forEach(([a,b],gi)=>{const xs=gi%2?[-1.8,1.8,0]:[1.8,-1.8,0],ys=[5.1,8.4,5.6],ts=[.22,.5,.78];for(let i=0;i<3;i++)stuntRings.push({id:ringId++,s:a+(b-a)*ts[i],x:xs[i],y:ys[i],kind:'air',set:gi});});
+  const stuntRings=[];let ringId=0;meta.gaps.forEach(([a,b],gi)=>{const xs=gi%2?[-1.8,1.8,0]:[1.8,-1.8,0],ys=[5.1,8.4,5.6],ts=[.22,.5,.78];for(let i=0;i<3;i++)stuntRings.push({id:ringId++,s:a+(b-a)*ts[i],x:xs[i],y:ys[i],kind:'air',set:gi});});
   loopMeta.forEach((l,li)=>{for(const [t,x]of [[.34,li%2?1.5:-1.5],[.68,li%2?-1.5:1.5]])stuntRings.push({id:ringId++,s:l.start+l.length*t,x,y:1.35,kind:'loop',set:10+li});});
   const energyGates=[];let gateId=0;for(const sec of locked){for(let s=sec.start+24;s<sec.end-12;s+=42)energyGates.push({id:gateId++,s,style:sec.kind==='roll'?'twist':sec.kind==='loop'?'halo':'wall'});}
-  const coins=[];for(let s=18;s<config.length-12;s+=7){const gap=skybreakMeta.gaps.find(([a,b])=>s>=a&&s<b),near=hazards.find(h=>Math.abs(h.s-s)<20),hx=near?.motion==='sweep'?0:near?.x,x=near?(hx===0?-2.8:0):Math.sin(Math.floor(s/110)*1.31)*2.25;let cy=1.1;if(gap){const u=(s-gap[0])/(gap[1]-gap[0]);cy=3+Math.sin(Math.PI*u)*13;}coins.push({id:coins.length,s,x,y:cy,route:0});}
+  const coins=[];for(let s=18;s<config.length-12;s+=7){const gap=meta.gaps.find(([a,b])=>s>=a&&s<b),near=hazards.find(h=>Math.abs(h.s-s)<20),hx=near?.motion==='sweep'?0:near?.x,x=near?(hx===0?-2.8:0):Math.sin(Math.floor(s/110)*1.31)*2.25;let cy=1.1;if(gap){const u=(s-gap[0])/(gap[1]-gap[0]);cy=3+Math.sin(Math.PI*u)*13;}coins.push({id:coins.length,s,x,y:cy,route:0});}
   const items=[],put=(type,s,x=0,extra={})=>{if(s>8&&s<config.length-8)items.push({id:items.length,type,s,x,route:0,y:type==='spring'||type==='dash'||type==='launch'?0:1.4,...extra});};
-  for(const [a,b]of skybreakMeta.gaps){put('dash',a-78,0);put('launch',a-30,0,{gapStart:a,gapEnd:b,landing:b+10});put('dash',b+20,0);}
-  for(const s of [1450,4920,9210])put('feather',s,0);
+  for(const [a,b]of meta.gaps){put('dash',a-78,0);put('launch',a-30,0,{gapStart:a,gapEnd:b,landing:b+10});put('dash',b+20,0);}
+  for(const s of (config.featherPositions||[1450,4920,9210]))put('feather',s,0);
   for(let s=600;s<config.length-300;s+=980)if(!gapAt(s)&&!lockedAt(s,80))put(s%1960<900?'shield':'magnet',s,0);
   const checkpoints=[];for(let target=850;target<config.length;target+=850){let s=target;while(s<config.length-80&&(gapAt(s)||lockedAt(s,20)))s+=25;checkpoints.push(Math.round(s));}
-  const safeSections=skybreakMeta.sections.filter(s=>!s.lock),stuntSigns=[...skybreakMeta.signs,...skybreakMeta.gaps.flatMap(([a,b,label])=>[{s:Math.max(8,a-125),text:'414 BOOST RAMP / STAY CENTER'},{s:Math.max(8,a-82),text:label||'MEGA GAP'}])];
+  const safeSections=meta.sections.filter(s=>!s.lock),stuntSigns=[...meta.signs,...meta.gaps.flatMap(([a,b,label])=>[{s:Math.max(8,a-125),text:(config.rampLabel||'414 BOOST RAMP')+' / STAY CENTER'},{s:Math.max(8,a-82),text:label||'MEGA GAP'}])];
   function edges(){return {left:-5,right:5,railLeft:true,railRight:true,sep:18};}
-  function cuts(start,end,spacing=2){const list=[start,end];for(let s=start+spacing;s<end;s+=spacing)list.push(s);for(const [a,b]of skybreakMeta.gaps)for(const q of [a,b])if(q>start&&q<end)list.push(q);for(const sec of skybreakMeta.sections)for(const q of [sec.start,sec.end])if(q>start&&q<end)list.push(q);return [...new Set(list)].sort((a,b)=>a-b);}
+  function cuts(start,end,spacing=2){const list=[start,end];for(let s=start+spacing;s<end;s+=spacing)list.push(s);for(const [a,b]of meta.gaps)for(const q of [a,b])if(q>start&&q<end)list.push(q);for(const sec of meta.sections)for(const q of [sec.start,sec.end])if(q>start&&q<end)list.push(q);return [...new Set(list)].sort((a,b)=>a-b);}
   return {config,hazards,coins,items,stuntRings,energyGates,checkpoints,loops:loopMeta,turns,sample,forkAt,loopAt,lockedAt,cornerAt,edges,loopStart:loopMeta[0].start,loopLength:loopMeta[0].length,gapAt,cuts,halfWidth:()=>5,stuntSigns,safeSections};
 }
 export function createCourse(id='coast'){
-  const config=courses.find(c=>c.id===id)||courses[0];if(config.id==='skybreak')return createSkybreakCourse(config);const city=config.id==='skyline',loops=config.loops.map(([start,radius],id)=>({id,start,radius,length:Math.round(radius*2*Math.PI),end:start+Math.round(radius*2*Math.PI)}));
+  const config=courses.find(c=>c.id===id)||courses[0];if(config.id==='skybreak'||config.id==='libertyswap')return createSkybreakCourse(config);const city=config.id==='skyline',loops=config.loops.map(([start,radius],id)=>({id,start,radius,length:Math.round(radius*2*Math.PI),end:start+Math.round(radius*2*Math.PI)}));
   const loopAt=(s,padding=0)=>loops.find(l=>s>l.start-padding&&s<l.end+padding),forkAt=s=>config.forks.find(f=>s>=f[0]&&s<=f[1]),gapAt=s=>config.gaps.find(([a,b])=>s>=a&&s<b);
   const turns=[];let heading=0;const baseTurns=[.85,-.8,1.08,-.65,0,-1.05,.72],remixTurns=[-.72,1.02,-.48,.9,-1.1,.35,-.88];const turnStarts=[];if(config.id==='coast'&&config.legacyLength){for(let start=90;start<config.legacyLength-200;start+=340)turnStarts.push({start,remix:false});for(let start=config.legacyLength+90;start<config.length-200;start+=340)turnStarts.push({start,remix:true});}else for(let start=90;start<config.length-200;start+=340)turnStarts.push({start,remix:false});let remixIndex=0;for(let i=0;i<turnStarts.length;i++){const {start,remix}=turnStarts[i],end=start+180;if(loops.some(l=>start<l.end+70&&end>l.start-70))continue;const to=remix?remixTurns[(remixIndex++*3+1)%remixTurns.length]:baseTurns[(i+config.index)%baseTurns.length];turns.push({id:turns.length,start,end,from:heading,to,direction:Math.sign(to-heading)});heading=to;}
   function yaw(s){let h=0;for(const t of turns){if(s<t.start)break;if(s>=t.end)h=t.to;else{const u=(s-t.start)/(t.end-t.start);return t.from+(t.to-t.from)*u*u*(3-2*u);}}return h;}

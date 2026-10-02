@@ -1,6 +1,6 @@
 {
     "build":  "PCOCK-VALLEY-BETA-20261002-r15",
-    "createdAt":  "2026-10-02T00:27:58.9580063Z",
+    "createdAt":  "2026-10-02T05:58:30.5154094Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -256,6 +256,11 @@
                       "path":  "assets\\runner\\coast.png",
                       "bytes":  376224,
                       "sha256":  "1d5c198c5cb9f53dd5d73a7bb30af980e604aee77d7dc990366e9903da59298c"
+                  },
+                  {
+                      "path":  "assets\\runner\\libertyswap.png",
+                      "bytes":  408767,
+                      "sha256":  "99b688b31d179245eddc43f995cb2388d277647b51763538b046ead5a9c48fae"
                   },
                   {
                       "path":  "assets\\runner\\skybreak.png",
@@ -524,13 +529,13 @@
                   },
                   {
                       "path":  "shared\\liberty-biomes.js",
-                      "bytes":  1596,
-                      "sha256":  "8f9c9973ca14dc820d8750f4cb3190f06d472344bee50ad4928d02424733d956"
+                      "bytes":  2058,
+                      "sha256":  "f116ae1524d376d1e73b27290ebfcdf281ca0f6100e11f0402aea9a41b0a91ef"
                   },
                   {
                       "path":  "shared\\liberty-entry.js",
-                      "bytes":  36993,
-                      "sha256":  "fabe19906cae8dfd99cba14d43ec2e055434289e2b666d5b864055e3de8bab52"
+                      "bytes":  37369,
+                      "sha256":  "77ad76eecf511539a6d191978ed63c4e4ba7abf2ae54b35fbb2c9d0a90705774"
                   },
                   {
                       "path":  "shared\\liberty-geometry.js",
@@ -539,8 +544,8 @@
                   },
                   {
                       "path":  "shared\\liberty-loop.js",
-                      "bytes":  11291,
-                      "sha256":  "dfb1aed3736ff4a95523cd3f693fd89a135350c2c434cb311f62df74e55052d5"
+                      "bytes":  11412,
+                      "sha256":  "c2f40368cf7ad7c203610eb2ba0b8fd114696fbec921683abe2609b1767d15c7"
                   },
                   {
                       "path":  "shared\\liberty-renderer.js",
@@ -559,18 +564,18 @@
                   },
                   {
                       "path":  "shared\\liberty-tour.js",
-                      "bytes":  2803,
-                      "sha256":  "445a9724fe877ad37b9119cd6d4d7e02ef2530b8174165d3b8bdaf5ab136efb5"
+                      "bytes":  2829,
+                      "sha256":  "eb6596024cd805176e8a5b298c4f076a952265a72b2532ecb4c3a1ec1bd3d33a"
                   },
                   {
                       "path":  "shared\\liberty-track.js",
-                      "bytes":  20074,
-                      "sha256":  "2f1cbc92d5d898fbbfee3935f244cfb0bf1815e469c044eac0a198cd64565337"
+                      "bytes":  27004,
+                      "sha256":  "bb838eb1ba04871e91698b981191510a9540c548be9e4d2ba554f81eecd6d856"
                   },
                   {
                       "path":  "shared\\liberty-world.js",
-                      "bytes":  29589,
-                      "sha256":  "f339fc45219af61b6e2c05985f6d7d908413de08de13141cde7192868b27f204"
+                      "bytes":  31108,
+                      "sha256":  "7f9a92ae779c8cec3bc907d890ff754ed9c3a350169bf5e145309671a750f778"
                   },
                   {
                       "path":  "shared\\mini-hud-editor.js",
@@ -808,5 +813,5 @@
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
                   }
               ],
-    "totalBytes":  7547320
+    "totalBytes":  7965521
 }
