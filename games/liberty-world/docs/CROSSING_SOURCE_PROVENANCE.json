@@ -1,19 +1,23 @@
 {
-  "build": "PCOCK-LIBERTY-CROSSING-R1",
-  "runnerBase": "bf9cefc",
-  "fleetSourceBuild": "Most-Wanted-R71-Mobile-Shadow-Tier",
-  "fleetFactorySHA256": "9dd30724e632990c9b6f57bf0fed3e283d07e3ef5e716a9f990c66f9cc8b376b",
-  "sceneryHelpersSHA256": "fbd16506762a7ae3523b52729604a86b1caf64dc1c7a155939c5e1f5fd69e541",
-  "sharedModules": [
-    "liberty-renderer.js",
-    "liberty-surfaces.js",
-    "assets.js",
-    "valley-tail.js",
-    "scene-kit.js",
-    "brand.js",
-    "audio.js",
-    "particles.js",
-    "mini-hud-editor.js"
-  ],
-  "newRulesOnly": "Four-direction crossing, analytic traffic, swept collisions, own scoring and isolated records."
+    "build":  "PCOCK-LIBERTY-CROSSING-R2",
+    "runnerBase":  "bf9cefc",
+    "fleetSourceBuild":  "Most-Wanted-R71-Mobile-Shadow-Tier",
+    "fleetFactorySHA256":  "9dd30724e632990c9b6f57bf0fed3e283d07e3ef5e716a9f990c66f9cc8b376b",
+    "sceneryHelpersSHA256":  "fbd16506762a7ae3523b52729604a86b1caf64dc1c7a155939c5e1f5fd69e541",
+    "sharedModules":  [
+                          "liberty-renderer.js",
+                          "liberty-surfaces.js",
+                          "assets.js",
+                          "valley-tail.js",
+                          "scene-kit.js",
+                          "brand.js",
+                          "audio.js",
+                          "particles.js",
+                          "mini-hud-editor.js"
+                      ],
+    "newRulesOnly":  "Four-direction crossing, analytic traffic, swept collisions, own scoring and isolated records.",
+    "additiveModules":  [
+                            "crossing-features.js",
+                            "crossing-details.js"
+                        ]
 }

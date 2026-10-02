@@ -1,8 +1,8 @@
 {
     "build":  "PCOCK-VALLEY-BETA-20261002-r16",
     "runnerBuild":  "LIBERTY-RUNNER-OBJECTIVES-R12",
-    "crossingBuild":  "PCOCK-LIBERTY-CROSSING-R1",
-    "createdAt":  "2026-10-02T14:44:14.0724112Z",
+    "crossingBuild":  "PCOCK-LIBERTY-CROSSING-R2",
+    "createdAt":  "2026-10-02T15:11:55.8167015Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -295,9 +295,14 @@
                       "sha256":  "618226ecc97d0a694221a3a5ffd2adf6aab8bf670ffa8486b3ab83a4bd0cab73"
                   },
                   {
+                      "path":  "docs\\CROSSING_R2.md",
+                      "bytes":  3395,
+                      "sha256":  "bca15be4ffab052203b9d1840203477416576dcfe26168198d81f50c34510e6b"
+                  },
+                  {
                       "path":  "docs\\CROSSING_SOURCE_PROVENANCE.json",
-                      "bytes":  665,
-                      "sha256":  "fd49663c24f149e753b4c11b71dfecdd189ec30f6e2ce5325542f27243ef756e"
+                      "bytes":  1063,
+                      "sha256":  "5af1d1cf3930538a970e6a201f0646a12c7ea0727913959ed5231cba06c894e7"
                   },
                   {
                       "path":  "docs\\FONT_PROVENANCE.json",
@@ -357,7 +362,7 @@
                   {
                       "path":  "games\\liberty-crossing.html",
                       "bytes":  1404,
-                      "sha256":  "12e5582efc92f972a0d7195ccaf63a213fa05b48a03a3077dc1b6636c8f098c0"
+                      "sha256":  "ba1d741356eacfd2ae3c39a2a0d0ffe57dd3d94da7810ffc09d791587d2918f3"
                   },
                   {
                       "path":  "index.html",
@@ -466,13 +471,23 @@
                   },
                   {
                       "path":  "shared\\crossing.css",
-                      "bytes":  10270,
-                      "sha256":  "0e2de6f3f3261216fcd67643e9b961e989f5d20e6825e810722a2aa99c0530c4"
+                      "bytes":  11666,
+                      "sha256":  "9faebef1c51c9ab6fa62775f904f1fbc5b457cf21b7287279d6301f8671a47b7"
+                  },
+                  {
+                      "path":  "shared\\crossing-details.js",
+                      "bytes":  5260,
+                      "sha256":  "27e8c8bce8a250f10482d9312b8e918ec26a15a21100037efa9c4b3e3a70e45e"
                   },
                   {
                       "path":  "shared\\crossing-entry.js",
-                      "bytes":  21914,
-                      "sha256":  "d45da878889eb35e9c53aa3bcea5e1efddecc6874dcdb0469c74bb92a8d3185d"
+                      "bytes":  24245,
+                      "sha256":  "344617cd468479140a9bff48ae786f566f0a035e1d63269694a4418bb51262c6"
+                  },
+                  {
+                      "path":  "shared\\crossing-features.js",
+                      "bytes":  2892,
+                      "sha256":  "9018dd334ac94f27b92da6f54de06d9e7f8ecc576f6d28f40ab7ca7db080af35"
                   },
                   {
                       "path":  "shared\\crossing-fleet.js",
@@ -481,8 +496,8 @@
                   },
                   {
                       "path":  "shared\\crossing-loop.js",
-                      "bytes":  7340,
-                      "sha256":  "7fdaf5a84ba341360036d8343d47f7353a92d9096c20f8c72cf00847705dd277"
+                      "bytes":  7570,
+                      "sha256":  "a3a496d8e880650bb453601c626b4e7db5f0366c5b225b4b5a8050318c105bd3"
                   },
                   {
                       "path":  "shared\\crossing-scenery.js",
@@ -491,8 +506,8 @@
                   },
                   {
                       "path":  "shared\\crossing-world.js",
-                      "bytes":  13159,
-                      "sha256":  "fbae1c009f386e30d722e92aa15aeadafeb9f7b367f6aefa2c0503df0d271c4a"
+                      "bytes":  13462,
+                      "sha256":  "45a4532723f16513e8801ce3fb28e44b0b374802b4c09cef51b642bd314214cf"
                   },
                   {
                       "path":  "shared\\debug.js",
@@ -885,5 +900,5 @@
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
                   }
               ],
-    "totalBytes":  8083540
+    "totalBytes":  8099745
 }
