@@ -1,6 +1,7 @@
 {
     "build":  "PCOCK-VALLEY-BETA-20261002-r15",
-    "createdAt":  "2026-10-02T05:58:30.5154094Z",
+    "runnerBuild":  "LIBERTY-RUNNER-OBJECTIVES-R12",
+    "createdAt":  "2026-10-02T12:57:15.763567+00:00",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -44,8 +45,8 @@
                   },
                   {
                       "path":  "assets\\fonts\\SOLOIST-TERMS.txt",
-                      "bytes":  667,
-                      "sha256":  "95eeeeeff5ba39c482742c65bc9b4390ae57ff0c31ba559de0e47f8d42f43511"
+                      "bytes":  651,
+                      "sha256":  "f0c3f607ff727caddd9c690be7f9aadc5835709f980af66905d520971fb92ec2"
                   },
                   {
                       "path":  "assets\\manifest.json",
@@ -138,14 +139,14 @@
                       "sha256":  "38c58778ba7c2c67a265a39f0f448acb82984d3f7c206a5a152c3069ce972ac9"
                   },
                   {
-                      "path":  "assets\\models\\env\\valley\\house.glb",
-                      "bytes":  74816,
-                      "sha256":  "04ab94aee628f11ad282c0790ac72c68d170d745cd000339b572fe76f9bf0df6"
-                  },
-                  {
                       "path":  "assets\\models\\env\\valley\\house-far.glb",
                       "bytes":  16056,
                       "sha256":  "6f58c9e743fe3e757f36c5c453ae7ec8fcbe5faa85f5cefc30b16f41a242dce9"
+                  },
+                  {
+                      "path":  "assets\\models\\env\\valley\\house.glb",
+                      "bytes":  74816,
+                      "sha256":  "04ab94aee628f11ad282c0790ac72c68d170d745cd000339b572fe76f9bf0df6"
                   },
                   {
                       "path":  "assets\\models\\env\\valley\\liberty-arch.glb",
@@ -178,14 +179,14 @@
                       "sha256":  "ac25173b7147d8ad75d2d3bd7915bc9a51d290e30f818db25543b6351afc7e4d"
                   },
                   {
-                      "path":  "assets\\models\\env\\valley\\rock.glb",
-                      "bytes":  11736,
-                      "sha256":  "69eb59c1b7872015e35dbd1eed1914581bf66d1908b1db595a27bd855516e408"
-                  },
-                  {
                       "path":  "assets\\models\\env\\valley\\rock-far.glb",
                       "bytes":  7416,
                       "sha256":  "9fd6058b87012e015a4754ca73b724f957f7ba5ff284e3a52dc839287eb56c07"
+                  },
+                  {
+                      "path":  "assets\\models\\env\\valley\\rock.glb",
+                      "bytes":  11736,
+                      "sha256":  "69eb59c1b7872015e35dbd1eed1914581bf66d1908b1db595a27bd855516e408"
                   },
                   {
                       "path":  "assets\\models\\env\\valley\\signal-lamp.glb",
@@ -198,14 +199,14 @@
                       "sha256":  "ebf05bd2af383b2e0f0215291e187a458f3408e173014a58ecd34c2b2701c46f"
                   },
                   {
-                      "path":  "assets\\models\\env\\valley\\tree.glb",
-                      "bytes":  24260,
-                      "sha256":  "22dff84e5fa2b427cfa28f6faa200bd4918a71f962f9a3156afcd803ffcbb5fc"
-                  },
-                  {
                       "path":  "assets\\models\\env\\valley\\tree-far.glb",
                       "bytes":  10000,
                       "sha256":  "fe968893f272533b2b388397328f90bc4af9134d92885592aa56e03d5bf14227"
+                  },
+                  {
+                      "path":  "assets\\models\\env\\valley\\tree.glb",
+                      "bytes":  24260,
+                      "sha256":  "22dff84e5fa2b427cfa28f6faa200bd4918a71f962f9a3156afcd803ffcbb5fc"
                   },
                   {
                       "path":  "assets\\models\\env\\valley\\windmill.glb",
@@ -294,8 +295,13 @@
                   },
                   {
                       "path":  "docs\\MODELS.md",
-                      "bytes":  1772,
-                      "sha256":  "66fab412967e71928ce34a2e5cba917de8a6affa787f57b4259b4fdc5332368f"
+                      "bytes":  1771,
+                      "sha256":  "676b919f5da881e5d18e0922280c6020a56889f2a102efc7db57a5729194e98e"
+                  },
+                  {
+                      "path":  "docs\\RUNNER_R12.md",
+                      "bytes":  3234,
+                      "sha256":  "ba4b93ec69b424afbb300afa2b7530ae908fa4499b3b2802f862c3ec958d1bca"
                   },
                   {
                       "path":  "docs\\VALLEY_ADVENTURE_R4.md",
@@ -314,8 +320,8 @@
                   },
                   {
                       "path":  "docs\\VALLEY_GUIDED_R3.md",
-                      "bytes":  4143,
-                      "sha256":  "ca48d9ad6826884c382778f976998d1ad63a87e761d5c010699e455bf74f58af"
+                      "bytes":  4141,
+                      "sha256":  "beb43f6b5973155f2816bbf4608097575efea28fa12046c70e1a8f4ee3c8385d"
                   },
                   {
                       "path":  "docs\\VALLEY_HUD_R7.md",
@@ -329,8 +335,8 @@
                   },
                   {
                       "path":  "games\\gasless-run.html",
-                      "bytes":  892,
-                      "sha256":  "f26c6e3e8d3da8b26c3947f7c383aee69adc804eb799e897c29344630388e50c"
+                      "bytes":  898,
+                      "sha256":  "f242d3a4ee245f2b68b667f8851636ef2d92479075318b040bd1337ea3196930"
                   },
                   {
                       "path":  "games\\ghost-route.html",
@@ -339,8 +345,8 @@
                   },
                   {
                       "path":  "index.html",
-                      "bytes":  292577,
-                      "sha256":  "104eaf952a399c088fedfc9870d1c6ee527b87ebe2b02f34f22a770f1398f5f6"
+                      "bytes":  287438,
+                      "sha256":  "0f84427a4f7478c912cf8fb55cb08e18e5e3bd28ad6ec7ecc9246b92d71d1d4f"
                   },
                   {
                       "path":  "libs\\addons\\libs\\meshopt_decoder.module.js",
@@ -368,6 +374,16 @@
                       "sha256":  "eda756a543145e5ce6738a5169b24e0fc433d6d53bb15aaf9e41ab89d2115b87"
                   },
                   {
+                      "path":  "libs\\three-global-shim.js",
+                      "bytes":  3282,
+                      "sha256":  "d02611160ed992f4957ca680d98908c0b65269c2a0915ad253d315aeb658641d"
+                  },
+                  {
+                      "path":  "libs\\THREE-LICENSE.txt",
+                      "bytes":  1081,
+                      "sha256":  "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
+                  },
+                  {
                       "path":  "libs\\three.core.js",
                       "bytes":  1403455,
                       "sha256":  "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20"
@@ -378,34 +394,24 @@
                       "sha256":  "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a"
                   },
                   {
-                      "path":  "libs\\three-global-shim.js",
-                      "bytes":  3351,
-                      "sha256":  "0e5244338d69182159a9c0847cb101b0e50797bd5ee69fe077e59bf60d602de0"
-                  },
-                  {
-                      "path":  "libs\\THREE-LICENSE.txt",
-                      "bytes":  1081,
-                      "sha256":  "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
-                  },
-                  {
                       "path":  "libs\\VERSIONS.md",
                       "bytes":  316,
                       "sha256":  "e8af9f87c0c1a4a8fa63b37ddf3702f38476b296744125583c004631dbe50e51"
                   },
                   {
                       "path":  "PLAY.cmd",
-                      "bytes":  55,
-                      "sha256":  "e6dcda548a4883714b6db7ab4d030740b64df748501c71971d101399635af79c"
-                  },
-                  {
-                      "path":  "README.md",
-                      "bytes":  1846,
-                      "sha256":  "ed041191b8de75eb181a2ba8711f43c8ebedf6dfb1e3d34ebcd8382e59760eaa"
+                      "bytes":  51,
+                      "sha256":  "b79cf35d7e1e6d47c92233abb216fca29ca19bd83b8195e8ee6d0d42ef1b7c93"
                   },
                   {
                       "path":  "README-FIRST.txt",
                       "bytes":  5558,
                       "sha256":  "1b0d07e4f1e8cd10bcb3ca325e30bfb78c1d624595aa567aed84d9b395ebc19c"
+                  },
+                  {
+                      "path":  "README.md",
+                      "bytes":  1846,
+                      "sha256":  "ed041191b8de75eb181a2ba8711f43c8ebedf6dfb1e3d34ebcd8382e59760eaa"
                   },
                   {
                       "path":  "shared\\arcade.css",
@@ -428,11 +434,6 @@
                       "sha256":  "f8175b9d7018544ee9724984595db41a889c0891d37eff0eb7e1a6372c89a9e2"
                   },
                   {
-                      "path":  "shared\\brand.js",
-                      "bytes":  3886,
-                      "sha256":  "e01a7a1bd2c5361f7f0351851be0243af3ee84f78308560b2503ac7016a0d337"
-                  },
-                  {
                       "path":  "shared\\brand-check.css",
                       "bytes":  6178,
                       "sha256":  "11a130ac7207d58562a46233a58bced1cf0503543b041489b4a922eb981a2995"
@@ -441,6 +442,11 @@
                       "path":  "shared\\brand-check.js",
                       "bytes":  2926,
                       "sha256":  "975f8d485f5450ed0d5de33250dc60738c9b3ac2c8ce602b42ffb09e2b85f6df"
+                  },
+                  {
+                      "path":  "shared\\brand.js",
+                      "bytes":  3886,
+                      "sha256":  "e01a7a1bd2c5361f7f0351851be0243af3ee84f78308560b2503ac7016a0d337"
                   },
                   {
                       "path":  "shared\\debug.js",
@@ -463,14 +469,14 @@
                       "sha256":  "9d3dc749a8285f206ac93a18076201b1fe43d1ca9f57845349abf4a89d0c6008"
                   },
                   {
-                      "path":  "shared\\foundation.css",
-                      "bytes":  14753,
-                      "sha256":  "e531f3665be7b122f2c0ae41ade47cd5db5d1a5575e64edf9a4ed69d91438ceb"
-                  },
-                  {
                       "path":  "shared\\foundation-entry.js",
                       "bytes":  19054,
                       "sha256":  "facbf263acd61481a1bf25b9e908c32d22f731bb58a057cb2efa212b98e9d883"
+                  },
+                  {
+                      "path":  "shared\\foundation.css",
+                      "bytes":  14753,
+                      "sha256":  "e531f3665be7b122f2c0ae41ade47cd5db5d1a5575e64edf9a4ed69d91438ceb"
                   },
                   {
                       "path":  "shared\\frame-clock.js",
@@ -484,8 +490,8 @@
                   },
                   {
                       "path":  "shared\\game-shell.js",
-                      "bytes":  19180,
-                      "sha256":  "a93fd328080d67cf85658c152c9102f2f1cda790079da48a60c04d7917d40126"
+                      "bytes":  19146,
+                      "sha256":  "5e64a9b5f2b5c31511764a1507e8a5ccc49cfb04002fad9897bda5e0663f7a33"
                   },
                   {
                       "path":  "shared\\ghost-data.js",
@@ -494,8 +500,8 @@
                   },
                   {
                       "path":  "shared\\ghost-entry.js",
-                      "bytes":  18467,
-                      "sha256":  "026e217eff383bc45b92b6e95e6d10133d45f53dd6f07080967ced7b30fc906b"
+                      "bytes":  18392,
+                      "sha256":  "0b03a8fd2baca8012af8d1b807dffe4a14062ca3468a5ab6bead652b85902d98"
                   },
                   {
                       "path":  "shared\\ghost-loop.js",
@@ -534,8 +540,13 @@
                   },
                   {
                       "path":  "shared\\liberty-entry.js",
-                      "bytes":  37369,
-                      "sha256":  "77ad76eecf511539a6d191978ed63c4e4ba7abf2ae54b35fbb2c9d0a90705774"
+                      "bytes":  45157,
+                      "sha256":  "675ff8a86fb4e4df33f96a948bcfb5e3dc2157a7e917c8d6f0d21f4f8aad68f4"
+                  },
+                  {
+                      "path":  "shared\\liberty-features.css",
+                      "bytes":  4175,
+                      "sha256":  "14c223223e8964c90516e330c47617df20d46798c7885fdf5764baf0e75169cf"
                   },
                   {
                       "path":  "shared\\liberty-geometry.js",
@@ -544,8 +555,18 @@
                   },
                   {
                       "path":  "shared\\liberty-loop.js",
-                      "bytes":  11412,
-                      "sha256":  "c2f40368cf7ad7c203610eb2ba0b8fd114696fbec921683abe2609b1767d15c7"
+                      "bytes":  12840,
+                      "sha256":  "d09b63a87ec18ef87f40aa3da8cec2053a65956683692b1062355446d6e12f1a"
+                  },
+                  {
+                      "path":  "shared\\liberty-objectives.js",
+                      "bytes":  3622,
+                      "sha256":  "e175e6dd13b7898a92a2ea6e73a4830b96a5877c3809db2b369d8c90114a473a"
+                  },
+                  {
+                      "path":  "shared\\liberty-presentation.js",
+                      "bytes":  6799,
+                      "sha256":  "a6ead735674af131a8ecf096ce653d9ea403e246ae5bfdf8a114e2ad6865100d"
                   },
                   {
                       "path":  "shared\\liberty-renderer.js",
@@ -553,34 +574,39 @@
                       "sha256":  "ab90879174ffc0eca600c0211c978524c8ae7fb9419b3348d8fde60dfbc34fe0"
                   },
                   {
+                      "path":  "shared\\liberty-runner-helpers.js",
+                      "bytes":  2937,
+                      "sha256":  "c283d94101d93f89cb3e7ad057384273ff0be1fab65c6ddc170e1ae1e316ffb7"
+                  },
+                  {
                       "path":  "shared\\liberty-runner.css",
-                      "bytes":  20569,
-                      "sha256":  "870e114bc229c5e996ccf79ff93310c633a890c0fe02873360dbb2ad2e24884d"
+                      "bytes":  20539,
+                      "sha256":  "c448fe3613d9015c7901ed2041a4778492224338ee77280a62d24bcba9c0521b"
                   },
                   {
                       "path":  "shared\\liberty-surfaces.js",
-                      "bytes":  10434,
-                      "sha256":  "54191a708b1797aa7ba1f8226671451961a8375cd419c908f090d0b3aabc44ad"
+                      "bytes":  10385,
+                      "sha256":  "4f60b2ecc397cc07b205c89947b7e7f3bb599889ccd8bc06a29da302ce3e69bc"
                   },
                   {
                       "path":  "shared\\liberty-tour.js",
-                      "bytes":  2829,
-                      "sha256":  "eb6596024cd805176e8a5b298c4f076a952265a72b2532ecb4c3a1ec1bd3d33a"
+                      "bytes":  2817,
+                      "sha256":  "6ab6bdfcb1a6801fa61f85311391edc2b3ab0a0b6d1a23e25d296270a1c96fcc"
                   },
                   {
                       "path":  "shared\\liberty-track.js",
-                      "bytes":  27004,
-                      "sha256":  "bb838eb1ba04871e91698b981191510a9540c548be9e4d2ba554f81eecd6d856"
+                      "bytes":  27224,
+                      "sha256":  "8267113dd22a57aa8c580a28acaab05b5de003080d41fd490669fb385395f7d0"
                   },
                   {
                       "path":  "shared\\liberty-world.js",
-                      "bytes":  31108,
-                      "sha256":  "7f9a92ae779c8cec3bc907d890ff754ed9c3a350169bf5e145309671a750f778"
+                      "bytes":  31321,
+                      "sha256":  "b07e21020fda53215489cbbfd76cb49fc53e3d134ca73800d9ada4a2783fabfa"
                   },
                   {
                       "path":  "shared\\mini-hud-editor.js",
-                      "bytes":  14390,
-                      "sha256":  "e61aa06960430ec81c810cac5b0cfb3c37b9d99cddd26a72fff32e4965150679"
+                      "bytes":  14265,
+                      "sha256":  "676681abdfab80f25777a9c25170c77328c84e7a10f6ff5ce454b4761d2fbe92"
                   },
                   {
                       "path":  "shared\\movement.js",
@@ -609,8 +635,8 @@
                   },
                   {
                       "path":  "shared\\runner-entry.js",
-                      "bytes":  30,
-                      "sha256":  "2a8f4342c33215ef4936cb12d6296d4fd9dd95f1300063494b4ccfb3aad7bb83"
+                      "bytes":  35,
+                      "sha256":  "5ffd20148fc2ce50595392ffdd38acf58e051c3516ff375ce105a0eb5059b0be"
                   },
                   {
                       "path":  "shared\\runner-loop.js",
@@ -658,11 +684,6 @@
                       "sha256":  "3778267590ee26e1e0514f1e36d5a187b4c5fa0ffe5dabf0f0cb14dfae48e1a6"
                   },
                   {
-                      "path":  "shared\\valley.css",
-                      "bytes":  19424,
-                      "sha256":  "0c431902c8eb17d7cd3946cd9135d4d5daa7ca90c7c74846c5b98a0abc5e3be6"
-                  },
-                  {
                       "path":  "shared\\valley-adventure.js",
                       "bytes":  10140,
                       "sha256":  "62fa564c729d96e54011d2281b5ac8a2371c61ae0886d8b174623816e6484742"
@@ -704,8 +725,8 @@
                   },
                   {
                       "path":  "shared\\valley-entry.js",
-                      "bytes":  21833,
-                      "sha256":  "25807ca5604c27190ecee2c4e78433f3ef197b47ed9a6f9d32bac59e725ad0d6"
+                      "bytes":  21744,
+                      "sha256":  "273ddb32e14635d104eb2fdc0c5bac74149d56543e2db3bd3d6fed13ed142c17"
                   },
                   {
                       "path":  "shared\\valley-expedition-data.js",
@@ -793,6 +814,11 @@
                       "sha256":  "aed4019937b41da36947580b155b6d55018d72e0f4fb194ded56b745179f0cf0"
                   },
                   {
+                      "path":  "shared\\valley.css",
+                      "bytes":  19422,
+                      "sha256":  "79ac0ded39a18a3d24bb6e7f108b153f0f4684a7283681eb0f0a8be5e4bf6637"
+                  },
+                  {
                       "path":  "shared\\world-palette.js",
                       "bytes":  1698,
                       "sha256":  "50c29689f4ce1f3a502bbeebb48001caafb4a3a7285ee7fed1962a8c5908f80e"
@@ -813,5 +839,5 @@
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
                   }
               ],
-    "totalBytes":  7965521
+    "totalBytes":  7990301
 }

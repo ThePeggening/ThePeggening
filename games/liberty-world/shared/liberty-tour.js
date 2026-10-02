@@ -1,4 +1,4 @@
-import {courses} from './liberty-track.js';
+import {courses} from './liberty-track.js?v=r12';
 // R5 keeps the original 9 km Liberty Coast best as a legacy record while the 18 km extension gets its own active best.
 export const freshTour=()=>({version:5,records:{},legacyRecords:{},claimed:[],daily:{},trail:'pulse'});
 export function dailyChallenge(date=new Date()){

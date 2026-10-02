@@ -1,3 +1,4 @@
+import {perkStats} from './liberty-runner-helpers.js?v=r12';
 // Long, deterministic routes; route versioning keeps short-course records intact.
 const skybreakPlan=Object.freeze([
   {kind:'straight',length:520,name:'Ignition Causeway',sign:'IGNITION / BUILD SPEED'},
@@ -100,10 +101,10 @@ export const courses=Object.freeze(layouts.map(([id,name,tag,length,speed,radius
   return Object.freeze({id,name,tag,length,speed,description,index,loops,loop:loops[0],forks,gaps,legacyLength:id==='coast'?9000:undefined,par:Math.round(length/speed*.93),coinGoal:Math.round(length/24),sections:id==='coast'?['Original Departure','Original High Road','Original Finish / Remix Gate','Remix Switchbacks','Remix Sky Loops','Remix Wild Run','Final Green Sprint']:['Departure','High Road','Switchback Run','Sky Loop','Wild Frontier','Summit Sprint','Final Stretch']});
 }));
 export const perks = Object.freeze([
-  {id:'magnet',title:'Magnetic personality',short:'Magnet',cost:120,growth:1.9,max:3,kind:'upgrade',effect:l=>`${(1.25+Math.min(3,l)*.9).toFixed(2)} m collection radius`,description:'Pull nearby $PDAI into your trail.'},
-  {id:'gasless',title:'Full throttle',short:'Boost',cost:180,growth:1.9,max:3,kind:'upgrade',effect:l=>`${(2.8+Math.min(3,l)*.55).toFixed(2)} s boost · faster recharge`,description:'Hold your speed for longer.'},
-  {id:'signature',title:'Spread your wings',short:'Glide',cost:160,growth:1.9,max:3,kind:'upgrade',effect:l=>`${(1.5+Math.min(3,l)*.5).toFixed(1)} s glide`,description:'Float farther after every jump.'},
-  {id:'runner-shield',title:'A little insurance',short:'Shield',cost:200,growth:1.9,max:3,kind:'upgrade',effect:l=>`${Math.min(3,l)} automatic dodges per run`,description:'Automatically jump or slide before an obstacle. An actual hit restarts the course.'}
+ {id:'magnet',title:'Magnetic personality',short:'Magnet',cost:120,growth:1.27,max:10,kind:'upgrade',effect:l=>`${perkStats({magnet:l}).magnet.toFixed(2)} m collection radius`,description:'Ten tiers of coin reach. Rare coins still reward deliberate steering.'},
+ {id:'gasless',title:'Full throttle',short:'Boost',cost:180,growth:1.27,max:10,kind:'upgrade',effect:l=>`${perkStats({gasless:l}).boost.toFixed(2)} s boost · ${perkStats({gasless:l}).recharge}/s recharge`,description:'Longer boosts and quicker recharge at every tier.'},
+ {id:'signature',title:'Spread your wings',short:'Glide',cost:160,growth:1.27,max:10,kind:'upgrade',effect:l=>`${perkStats({signature:l}).glide.toFixed(2)} s glide`,description:'More airtime on manual jumps. Launch ramps keep their smooth landing arc.'},
+ {id:'runner-shield',title:'A little insurance',short:'Shield',cost:200,growth:1.27,max:10,kind:'upgrade',effect:l=>`${perkStats({'runner-shield':l}).shield} automatic dodges per run`,description:'Insurance dodges before contact. Actual impacts still cost a life.'}
 ]);
 export const disclaimer='Fan-made game. Simulated only. Not financial advice. No real transactions. Nothing here predicts or promises any price.';
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));

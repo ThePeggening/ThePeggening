@@ -1,3 +1,4 @@
+import {objectiveSpec} from './liberty-objectives.js?v=r12';
 import * as THREE from 'three';
 import {brand} from './brand.js';
 import {runnerBiome} from './liberty-biomes.js';
@@ -5,7 +6,7 @@ import {Resources} from './disposal.js';
 import {authoredTemplates} from './scene-kit.js';
 import {mergeRunnerParts as mergeParts} from './liberty-geometry.js';
 import {runnerProfiles} from './liberty-renderer.js';
-import {makeFrame} from './liberty-track.js';
+import {makeFrame} from './liberty-track.js?v=r12';
 import {rng} from './rng.js';
 import {createRunnerSurfaces} from './liberty-surfaces.js';
 const B=brand.colors;
@@ -114,8 +115,8 @@ export function createLibertyWorld(scene,track,initialQuality=runnerProfiles.Med
   const coinRims=resources.own(new THREE.InstancedMesh(resources.own(new THREE.TorusGeometry(.56,.045,4,16)),resources.own(new THREE.MeshLambertMaterial({color:B.gold})),150));coinRims.frustumCulled=false;root.add(coinRims);
   const stripeMap=textureCanvas((c,w,h)=>{c.fillStyle=B.primary;c.fillRect(0,0,w,h);c.fillStyle=B.bg;for(let i=-w;i<w*2;i+=64){c.beginPath();c.moveTo(i,0);c.lineTo(i+30,0);c.lineTo(i+h+30,h);c.lineTo(i+h,h);c.fill();}},128,128);
   const obstacles=resources.own(new THREE.InstancedMesh(box,resources.own(new THREE.MeshLambertMaterial({map:stripeMap})),80));obstacles.frustumCulled=false;root.add(obstacles);
-  const itemColors={dash:B.pulseCyan,spring:B.primary,launch:B.gold,magnet:B.pulseMagenta,shield:B.pulseBlue,feather:B.gold},itemPools={};
-  for(const type of Object.keys(itemColors)){const map=textureCanvas((c,w,h)=>{c.fillStyle=itemColors[type];c.beginPath();if(type==='dash'||type==='spring'||type==='launch')c.roundRect(4,4,w-8,h-8,24);else c.arc(w/2,h/2,w/2-5,0,Math.PI*2);c.fill();c.strokeStyle=B.text;c.lineWidth=7;c.stroke();c.fillStyle=B.text;c.textAlign='center';c.textBaseline='middle';c.font=type==='launch'?'900 74px "Segoe UI"':'900 110px "Segoe UI"';c.fillText({dash:'⇈',spring:'↑',launch:theme==='libertyswap'?'LS':'414',magnet:'M',shield:'S',feather:'✦'}[type],w/2,h/2+3);});const mesh=resources.own(new THREE.InstancedMesh(resources.own(new THREE.PlaneGeometry(1,1)),resources.own(new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.3})),24));mesh.frustumCulled=false;root.add(mesh);itemPools[type]=mesh;}
+  const itemColors={dash:B.pulseCyan,spring:B.primary,launch:B.gold,magnet:B.pulseMagenta,shield:B.pulseBlue,feather:B.gold,relic:objectiveSpec(track.config.id).color,velocity:B.gold},itemPools={};
+  for(const type of Object.keys(itemColors)){const map=textureCanvas((c,w,h)=>{c.fillStyle=itemColors[type];c.beginPath();if(type==='dash'||type==='spring'||type==='launch')c.roundRect(4,4,w-8,h-8,24);else if(type==='relic'){for(let j=0;j<6;j++){const a=j*Math.PI/3-Math.PI/2,x=w/2+Math.cos(a)*(w/2-9),y=h/2+Math.sin(a)*(h/2-9);j?c.lineTo(x,y):c.moveTo(x,y);}c.closePath();}else c.arc(w/2,h/2,w/2-5,0,Math.PI*2);c.fill();c.strokeStyle=B.text;c.lineWidth=7;c.stroke();c.fillStyle=B.text;c.textAlign='center';c.textBaseline='middle';c.font=type==='launch'?'900 74px "Segoe UI"':'900 110px "Segoe UI"';c.fillText({dash:'⇈',spring:'↑',launch:theme==='libertyswap'?'LS':'414',magnet:'M',shield:'S',feather:'✦',relic:'R',velocity:'ϟ'}[type],w/2,h/2+3);});const mesh=resources.own(new THREE.InstancedMesh(resources.own(new THREE.PlaneGeometry(1,1)),resources.own(new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.3})),24));mesh.frustumCulled=false;root.add(mesh);itemPools[type]=mesh;}
   const stuntRingMesh=resources.own(new THREE.InstancedMesh(resources.own(new THREE.TorusGeometry(1.75,.13,6,28)),resources.own(new THREE.MeshBasicMaterial({color:theme==='libertyswap'?B.gold:B.pulseCyan,transparent:true,opacity:.94,depthWrite:false,blending:THREE.AdditiveBlending})),48));stuntRingMesh.frustumCulled=false;root.add(stuntRingMesh);
   const energyGateMesh=resources.own(new THREE.InstancedMesh(resources.own(new THREE.TorusGeometry(5.05,.08,4,30)),resources.own(new THREE.MeshBasicMaterial({color:theme==='libertyswap'?B.primary:B.pulseMagenta,transparent:true,opacity:.5,depthWrite:false,blending:THREE.AdditiveBlending})),160));energyGateMesh.frustumCulled=false;root.add(energyGateMesh);
   const signMaps=new Map();
@@ -135,5 +136,5 @@ export function createLibertyWorld(scene,track,initialQuality=runnerProfiles.Med
     track.sample(d,s.route,f);sky.position.set(f.x,f.y,f.z);water.position.x=f.x;water.position.z=f.z;if(theme==='skybreak'){voidMoon.position.set(f.x+f.rx*130+f.ux*92+f.fx*235,f.y+(f.ry||0)*130+f.uy*92+f.fy*235,f.z+f.rz*130+f.uz*92+f.fz*235);voidMoonRing.position.copy(voidMoon.position);voidMoonRing.rotation.y=time*.035;}else if(theme==='libertyswap'){voidMoon.position.set(f.x+f.rx*165+f.ux*135+f.fx*260,f.y+(f.ry||0)*165+f.uy*135+f.fy*260,f.z+f.rz*165+f.uz*135+f.fz*260);}surfaces.time.value=time;clouds.forEach((c,i)=>{c.position.x=f.x+c.userData.offsetX;c.position.z=f.z-220+(i*53)%440;});
     weather.visible=quality.detail>=2&&weatherCount>0;for(let i=0;i<weatherCount;i++){const [a,b,c]=weatherSeeds[i];if(theme==='skybreak'){const tw=Math.sin(time*.35+i*1.71)*1.8;weatherPositions.set([f.x+(a-.5)*220+tw,f.y+(b-.5)*150,f.z+(c-.5)*250+Math.cos(time*.28+i)*1.5],i*3);}else{const height=((b*22+(theme==='alpine'?-time*.8:time*1.2))%22+22)%22;weatherPositions.set([f.x+(a-.5)*45+Math.sin(time*.4+i)*.7,f.y+height,f.z+(c-.5)*60],i*3);}}weatherGeometry.attributes.position.needsUpdate=true;
   }
-  return {update,setQuality,dispose:()=>resources.dispose(),shadowTexture:surfaces.shadow,get activeChunks(){return activeChunks;},get poolSizes(){return {coins:150,obstacles:80,powerups:120,stuntRings:48,energyGates:160,chunks:chunkCache.size};},textureMB:surfaces.textureMB+(6*256*256+128*128+signMaps.size*512*100)*4*4/3/1048576,objects:()=>root.children.length,get ownedResources(){return resources.items.size;}};
+  return {update,setQuality,dispose:()=>resources.dispose(),shadowTexture:surfaces.shadow,get activeChunks(){return activeChunks;},get poolSizes(){return {coins:150,obstacles:80,powerups:Object.keys(itemPools).length*24,stuntRings:48,energyGates:160,chunks:chunkCache.size};},textureMB:surfaces.textureMB+(6*256*256+128*128+signMaps.size*512*100)*4*4/3/1048576,objects:()=>root.children.length,get ownedResources(){return resources.items.size;}};
 }

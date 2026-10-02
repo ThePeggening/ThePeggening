@@ -1,1 +1,1 @@
-import './liberty-entry.js';
+import './liberty-entry.js?v=r12';
