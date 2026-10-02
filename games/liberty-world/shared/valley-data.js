@@ -1,4 +1,4 @@
-import {gameEnabled} from './game-availability.js';
+import {gameEnabled} from './game-availability.js?v=s1';
 // ===== MODULE: DATA:VALLEY_PRODUCTS =====
 export const districts=Object.freeze([
  {id:'plaza',name:'Liberty Plaza',x:0,z:-20,key:'liberty-statue',scale:2.3},
@@ -23,7 +23,8 @@ export const namedResidents=Object.freeze([
 ]);
 export const gates=Object.freeze([
  {id:'gasless-run',name:'Liberty Runner',x:23,z:6,url:'./games/gasless-run.html?return=valley'},
- {id:'ghost-route',name:'Ghost Route',x:-51,z:-15,url:'./games/ghost-route.html?return=hub'}
+ {id:'ghost-route',name:'Ghost Route',x:-51,z:-15,url:'./games/ghost-route.html?return=hub'},
+ {id:'liberty-crossing',name:'Liberty Crossing',x:-23,z:6,url:'./games/liberty-crossing.html'}
 ].filter(game=>gameEnabled(game.id)));
 // ===== MODULE: DATA:SIDE_QUESTS =====
 export const sideQuests=Object.freeze([

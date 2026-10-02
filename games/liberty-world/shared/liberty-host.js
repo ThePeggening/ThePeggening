@@ -1,0 +1,28 @@
+// Parent-owned safety rail. Runs outside every child game and retains the original close handler.
+import {stageFor} from './liberty-stages.js?v=s1';
+if(!window.__LIBERTY_HOST_S1){
+ window.__LIBERTY_HOST_S1={version:'LIBERTY-CONTINUITY-S1'};
+ const entries=new Map(),base=new URL('../',import.meta.url),style=document.createElement('style');
+ style.textContent=`.lw-hosted-frame{top:38px!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;height:calc(100% - 38px)!important}.lw-host-rail{position:absolute;inset:0 0 auto 0;height:38px;z-index:6;display:flex;align-items:center;gap:12px;padding:0 max(8px,env(safe-area-inset-right)) 0 max(8px,env(safe-area-inset-left));box-sizing:border-box;background:#121a27;color:#fff4d1;font:700 11px/1.2 Arial,sans-serif;border-bottom:2px solid #f97316}.lw-host-rail button,.lw-host-rail #liberty-world-fallback-return,.lw-host-rail #atropa-arcade-back{position:static!important;transform:none!important;display:inline-flex!important;align-items:center;justify-content:center;min-height:28px!important;height:28px!important;padding:4px 10px!important;margin:0!important;white-space:nowrap;font:800 10px/1 Arial,sans-serif!important;background:#23253b!important;color:#fff4d1!important;border:1px solid #f7c868!important;border-radius:6px!important;cursor:pointer;touch-action:manipulation}.lw-host-context{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lw-host-status{color:#a7e9ed;font-size:10px}@media(max-width:720px){.lw-host-rail{gap:7px;font-size:9px}.lw-host-status{display:none}}`;
+ document.head.append(style);
+ function identify(f){try{const u=new URL(f.getAttribute('src'),location.href);if(u.origin!==location.origin||!u.pathname.startsWith(base.pathname))return null;const from=u.searchParams.get('from');if(from==='atropa'&&f.id==='liberty-world-frame')return {from,stage:stageFor(u.searchParams.get('stage'))};if(from==='website'&&f.closest('#atropa-standalone-arcade'))return {from,stage:null};}catch{}return null;}
+ function attach(f){
+  if(entries.has(f))return;const ctx=identify(f);if(!ctx)return;const parentNode=f.parentElement;if(!parentNode)return;
+  const native=document.getElementById(ctx.from==='atropa'?'liberty-world-fallback-return':'atropa-arcade-back');if(!native)return;
+  const rail=document.createElement('nav');rail.className='lw-host-rail';rail.setAttribute('aria-label','Persistent return to Atropa');
+  const label=document.createElement('span'),status=document.createElement('span');label.className='lw-host-context';status.className='lw-host-status';label.textContent=ctx.stage?`ATROPA · STAGE ${ctx.stage.n} · ${ctx.stage.place}`:'ATROPA · LIBERTY WORLD';status.textContent='Loading Liberty World…';
+  rail.append(native,label,status);parentNode.append(rail);f.classList.add('lw-hosted-frame');f.dataset.lwFrom=ctx.from;f.dataset.lwManaged='s1';if(ctx.stage)f.dataset.lwStage=ctx.stage.id;
+  native.setAttribute('aria-label',ctx.from==='atropa'?'Return to Atropa main game':'Return to Atropa website');
+  const onLoad=()=>{status.textContent='Liberty World · exit available';try{const page=new URL(f.contentWindow.location.href).pathname.split('/').pop();status.textContent=page==='index.html'?'Liberty World':page==='gasless-run.html'?'Runner · optional detour':page==='ghost-route.html'?'Ghost Route · optional detour':page==='liberty-crossing.html'?'Crossing · optional detour':'Exit always available';}catch{status.textContent='Exit always available';}};
+  const beforeExit=()=>{try{const u=new URL(f.contentWindow.location.href);if(u.origin===location.origin&&u.pathname.startsWith(base.pathname))f.contentWindow.__LIBERTY_NAV_BEFORE_EXIT?.();}catch{}};native.addEventListener('click',beforeExit,true);
+  native.hidden=false;const guard=new MutationObserver(()=>{if(native.hidden)native.hidden=false;});guard.observe(native,{attributes:true,attributeFilter:['hidden']});
+  f.addEventListener('load',onLoad);entries.set(f,{ctx,rail,native,status,onLoad,guard,beforeExit});
+ }
+ function sweep(){for(const [f,e]of entries)if(!f.isConnected){f.removeEventListener('load',e.onLoad);e.guard.disconnect();e.native.removeEventListener('click',e.beforeExit,true);e.rail.remove();entries.delete(f);}for(const f of document.querySelectorAll('#liberty-world-frame,#atropa-standalone-arcade iframe'))attach(f);}
+ function onMessage(e){if(e.origin!==location.origin||!e.data||typeof e.data!=='object')return;for(const [f,x]of entries){if(e.source!==f.contentWindow)continue;const d=e.data;if(d.type==='LIBERTY_NAV_READY')x.onLoad();if(d.type==='ATROPA_LIBERTY_STAGE_COMPLETE'&&d.stage===x.ctx.stage?.id&&d.milestone===x.ctx.stage.milestone)x.status.textContent='Assignment complete · return when ready';}}
+ addEventListener('message',onMessage);
+ // The old Atropa input trap must not swallow keyboard activation of its own return button.
+ addEventListener('keydown',e=>{const b=e.target.closest?.('.lw-host-rail button');if(!b)return;e.stopImmediatePropagation();if(e.key==='Enter'||e.key===' '){e.preventDefault();b.click();}else if(e.key==='Escape'){e.preventDefault();b.click();}},true);
+ function start(){sweep();let queued=false;const observer=new MutationObserver(rs=>{const relevant=rs.some(r=>[...r.addedNodes,...r.removedNodes].some(n=>n.nodeType===1&&(n.matches?.('iframe,#liberty-world-portal-overlay,#atropa-standalone-arcade,#atropa-arcade-back')||n.querySelector?.('iframe'))));if(relevant&&!queued){queued=true;queueMicrotask(()=>{queued=false;sweep();});}});observer.observe(document.body,{subtree:true,childList:true});}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+}

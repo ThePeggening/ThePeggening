@@ -5134,6 +5134,6 @@ window.PCOCK={ready:true,report:debugReport,settings,assetStates,player:()=>({x:
 $('load-progress').value=stressGroup?100:25;$('load-status').textContent=stressGroup?'Stress scene ready':'World ready · character models streaming';$('begin').textContent=stressGroup?'Start the stress scene':questState.introSeen?'Continue the adventure':'Enter the Toll Lands';$('begin').hidden=false;$('begin').onclick=()=>{$('loading').hidden=true;if(!stressGroup&&!questState.introSeen)startCutscene('prologue',()=>{questState.introSeen=true;saveProgress();});};applySettings();startLoop();if(!stressGroup)requestAnimationFrame(()=>loadAssets());
 </script>
 <!-- ===== MODULE: FOUNDATION_BOOT ===== -->
-<script type="module" src="./shared/valley-entry.js?v=r16"></script>
+<script type="module" src="./shared/valley-entry.js?v=continuity-s1"></script>
 </body>
 </html>

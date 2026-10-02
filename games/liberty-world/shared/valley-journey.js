@@ -1,6 +1,7 @@
+import {arcadeBest} from './liberty-arcade.js?v=s1';
 import {element,button} from './hud-kit.js';
 import {markNext} from './valley-guide.js';
-import {sideQuests} from './valley-data.js';
+import {sideQuests} from './valley-data.js?v=s1';
 import {content} from './valley-content.js';
 import {secrets} from './valley-extras.js';
 
@@ -19,7 +20,7 @@ export function createJourney({skills,adventure,state,save,world,mover,panel,clo
   if(group==='academy')return content.LESSONS.map(l=>({...l,title:l.title,done:state.academy.includes(l.id),kind:'guide-menu',label:'Open Guide · '+l.title}));
   if(group==='wardrobe')return content.COSMETICS.map(c=>({...c,title:c.name,done:save.state.profile.unlocks.includes(c.id)||(c.id==='torchbearer'&&state.feathers.length===7&&Object.values(state.side).filter(q=>q.done).length===12)||(c.unlock.type==='points'&&save.state.profile.xp>=c.unlock.value),kind:'guide-menu',label:'Open Guide · unlock '+c.name}));
   if(group==='extras')return[{id:'sprint',title:'Pulse Line Sprint',done:!!state.sprintComplete,kind:'guide-menu'},{id:'signals',title:'Read the Signal Tower',done:!!state.signalsRead,kind:'guide-menu'},{id:'photo',title:'Take a Valley photo',done:!!state.photoTaken,kind:'guide-menu'}];
-  return world.gates.map(g=>({...g,title:g.name,done:save.state.games[g.id]?.best>0,kind:'game-guide',label:'Visit '+g.name+' · optional'}));
+  return world.gates.map(g=>({...g,title:g.name,done:arcadeBest(g.id,save)>0,kind:'game-guide',label:'Visit '+g.name+' · optional'}));
  }
  function next(group){return entries(group).filter(e=>!e.done&&!e.locked).sort((a,b)=>distance(a)-distance(b))[0];}
  function recommend(){if(!state.finaleComplete)return {group:'story',entry:entries('story')[0]};for(const [group]of groups.slice(1,-1)){const entry=next(group);if(entry)return {group,entry};}return null;}

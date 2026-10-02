@@ -14,7 +14,7 @@ export {valleyHeight,roadDistance} from './valley-terrain.js';
 import {createSceneKit,mergeParts} from './scene-kit.js';
 import {campaignLocations} from './valley-campaign.js';
 import {secrets} from './valley-extras.js';
-import {districts,namedResidents,gates,sideQuests} from './valley-data.js';
+import {districts,namedResidents,gates,sideQuests} from './valley-data.js?v=s1';
 const protectedPlaces=[{x:-18,z:33},{x:-23,z:30},{x:-27,z:35},...campaignLocations,...secrets,...namedResidents,...sideQuests.map(q=>({x:q.tx,z:q.tz})),{x:-68,z:-15},{x:36,z:-25}];
 const B=brand.colors,roads=districts.filter(d=>!['plaza','spire'].includes(d.id));
 function grassTuft(){const points=[],normals=[];for(let i=0;i<3;i++){const a=i*Math.PI/3,c=Math.cos(a),s=Math.sin(a);for(const [x,y,z]of [[-.22,0,0],[.22,0,0],[.08,.63,.06],[-.22,0,0],[.08,.63,.06],[-.1,1,.1]]){points.push(x*c-z*s,y,x*s+z*c);normals.push(-s,0,c);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));return g;}
