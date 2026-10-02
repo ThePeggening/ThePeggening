@@ -2,7 +2,7 @@ import {element,button} from './hud-kit.js';
 import {markNext} from './valley-guide.js';
 import {regions,expeditions,harborCargo,courierCover} from './valley-expedition-data.js';
 export function createAdventure({root,state,save,world,mover,panel,close,notify,scenePlay,wallet,onRunner=()=>{}}){
- const data=state.expeditions||={completed:{},active:null,step:0,age:0,visited:[]};let cooldown=0;
+ const valid=state.expeditions&&typeof state.expeditions==='object'&&!Array.isArray(state.expeditions),data=state.expeditions=valid?state.expeditions:{completed:{},active:null,step:0,age:0,visited:[]};data.completed=data.completed&&typeof data.completed==='object'&&!Array.isArray(data.completed)?data.completed:{};data.active=typeof data.active==='string'?data.active:null;data.step=Number.isFinite(data.step)?Math.max(0,Math.floor(data.step)):0;data.age=Number.isFinite(data.age)?Math.max(0,data.age):0;data.visited=Array.isArray(data.visited)?data.visited.filter(v=>typeof v==='string'):[];let cooldown=0;
  const write=()=>save.write(),mission=()=>expeditions.find(e=>e.id===data.active),done=()=>Object.keys(data.completed).length;
  function point(e,index=data.step){const p=e.points[Math.min(index,e.points.length-1)],base=world.heightAt(e.x,e.z);return {x:p[0],z:p[1],y:e.type==='glide'?base+p[2]:world.heightAt(p[0],p[1])+.8};}
  const returnButton=button('↥ Return to launch perch',retry,'pc-button v-flight-return');returnButton.hidden=true;root?.append(returnButton);mover.configure({flightSupport:()=>{const e=mission();return e?.type==='glide'&&data.started&&!data.failed&&state.guideCategory==='expeditions'?{automatic:true,duration:12,speed:7.5,sinkPerMetre:.16}:null;}});

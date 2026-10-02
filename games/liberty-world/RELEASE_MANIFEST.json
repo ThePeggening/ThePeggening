@@ -1,6 +1,6 @@
 {
-    "build":  "PCOCK-VALLEY-BETA-20261002-r14",
-    "createdAt":  "2026-10-01T23:57:41.1651581Z",
+    "build":  "PCOCK-VALLEY-BETA-20261002-r15",
+    "createdAt":  "2026-10-02T00:27:58.9580063Z",
     "files":  [
                   {
                       "path":  ".nojekyll",
@@ -529,8 +529,8 @@
                   },
                   {
                       "path":  "shared\\liberty-entry.js",
-                      "bytes":  36182,
-                      "sha256":  "93c1cd8dadd14554ffd2af452caf5feb38b01b3c690fd0b31487563fadb15df8"
+                      "bytes":  36993,
+                      "sha256":  "fabe19906cae8dfd99cba14d43ec2e055434289e2b666d5b864055e3de8bab52"
                   },
                   {
                       "path":  "shared\\liberty-geometry.js",
@@ -559,13 +559,13 @@
                   },
                   {
                       "path":  "shared\\liberty-tour.js",
-                      "bytes":  2621,
-                      "sha256":  "08943e9359f80a6dc5fa17161b70434cea17c32764521ed90f0749c57dfe5bc5"
+                      "bytes":  2803,
+                      "sha256":  "445a9724fe877ad37b9119cd6d4d7e02ef2530b8174165d3b8bdaf5ab136efb5"
                   },
                   {
                       "path":  "shared\\liberty-track.js",
-                      "bytes":  18879,
-                      "sha256":  "3d7ffad5856f1226bb90b8bfe05e3fb576dbe3a64d75232fdf9cd88aca87710c"
+                      "bytes":  20074,
+                      "sha256":  "2f1cbc92d5d898fbbfee3935f244cfb0bf1815e469c044eac0a198cd64565337"
                   },
                   {
                       "path":  "shared\\liberty-world.js",
@@ -659,8 +659,8 @@
                   },
                   {
                       "path":  "shared\\valley-adventure.js",
-                      "bytes":  9630,
-                      "sha256":  "a8431376fa85e26e87b42575112090e4d7345f5fd49ccb531e37a7391209680b"
+                      "bytes":  10140,
+                      "sha256":  "62fa564c729d96e54011d2281b5ac8a2371c61ae0886d8b174623816e6484742"
                   },
                   {
                       "path":  "shared\\valley-camera.js",
@@ -699,8 +699,8 @@
                   },
                   {
                       "path":  "shared\\valley-entry.js",
-                      "bytes":  21050,
-                      "sha256":  "ea86209bdf6383b8c1aa5c6e917a1f338c4aa10eeee53361bf8564e6860bbc85"
+                      "bytes":  21833,
+                      "sha256":  "25807ca5604c27190ecee2c4e78433f3ef197b47ed9a6f9d32bac59e725ad0d6"
                   },
                   {
                       "path":  "shared\\valley-expedition-data.js",
@@ -709,8 +709,8 @@
                   },
                   {
                       "path":  "shared\\valley-extras.js",
-                      "bytes":  10204,
-                      "sha256":  "a0bbaeb330642f8e5380cd9b249d64735f0b725c4ee1456ac24ae49cc1bfc0a7"
+                      "bytes":  10348,
+                      "sha256":  "ec720768adb35d441aa1823a51e894fd5430ecc6d835243951730b5a13f954c1"
                   },
                   {
                       "path":  "shared\\valley-frontier.js",
@@ -749,13 +749,13 @@
                   },
                   {
                       "path":  "shared\\valley-skills.js",
-                      "bytes":  10205,
-                      "sha256":  "dddcad405c8955bf98afdb635a7c3149bfb5e41dbbfb2446a661f38697565e9b"
+                      "bytes":  10693,
+                      "sha256":  "f20114b3c56eb7afc69aaefb8ea7524afee9fb20ec41fb83abe2c2baf18e0dee"
                   },
                   {
                       "path":  "shared\\valley-story.js",
-                      "bytes":  28254,
-                      "sha256":  "2f416991d24dbf395a3ddb7bd147151383735542287d77bd5960c2042699c1e6"
+                      "bytes":  28999,
+                      "sha256":  "420e957333606db6077ea51f47dd721d08ec0885e940078514e12337940e231a"
                   },
                   {
                       "path":  "shared\\valley-swap.js",
@@ -779,8 +779,8 @@
                   },
                   {
                       "path":  "shared\\valley-wallet.js",
-                      "bytes":  3683,
-                      "sha256":  "c24e2114ee9d47ca55a6e6a52cf527a3db2f9185260d77f3d7239c00100f31f3"
+                      "bytes":  4358,
+                      "sha256":  "9d3c65cfb7e53eee7dcc66ec67cfb7b07bb01e8b0c1d77b47d510f544b4a874d"
                   },
                   {
                       "path":  "shared\\valley-world.js",
@@ -808,5 +808,5 @@
                       "sha256":  "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
                   }
               ],
-    "totalBytes":  7541787
+    "totalBytes":  7547320
 }
