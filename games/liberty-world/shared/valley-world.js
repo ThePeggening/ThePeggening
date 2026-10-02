@@ -12,7 +12,7 @@ import {harborCargo,courierCover} from './valley-expedition-data.js';
 import {valleyHeight,roadDistance,rawHeight,WORLD_EDGE} from './valley-terrain.js';
 export {valleyHeight,roadDistance} from './valley-terrain.js';
 import {createSceneKit,mergeParts} from './scene-kit.js';
-import {campaignLocations} from './valley-campaign.js';
+import {campaignLocations} from './valley-campaign.js?v=s2';
 import {secrets} from './valley-extras.js';
 import {districts,namedResidents,gates,sideQuests} from './valley-data.js?v=s1';
 const protectedPlaces=[{x:-18,z:33},{x:-23,z:30},{x:-27,z:35},...campaignLocations,...secrets,...namedResidents,...sideQuests.map(q=>({x:q.tx,z:q.tz})),{x:-68,z:-15},{x:36,z:-25}];

@@ -1,3 +1,4 @@
+import {neighborTaskObjective} from './valley-community-model.js?v=s2';
 import {arcadeBest} from './liberty-arcade.js?v=s1';
 import {element,button} from './hud-kit.js';
 import {markNext} from './valley-guide.js';
@@ -5,7 +6,7 @@ import {sideQuests} from './valley-data.js?v=s1';
 import {content} from './valley-content.js';
 import {secrets} from './valley-extras.js';
 
-export function createJourney({skills,adventure,state,save,world,mover,panel,close,notify,mainObjective,followSide,followSecret,clearTargets,extras,onPhoto,onSprint}){
+export function createJourney({skills,adventure,state,save,world,mover,panel,close,notify,mainObjective,followSide,followSecret,clearTargets,extras,onPhoto,onSprint,communityEnabled=false}){
  const groups=[['story','Main story'],['expeditions','Frontier expeditions'],['neighbors','Neighbor missions'],['skills','Skills & supply quests'],['discoveries','Easter eggs & lore'],['hunt','Hunt feathers'],['shrines','Feather Shrines'],['academy','Academy lessons'],['wardrobe','Tail wardrobe'],['extras','Sprint, signals & photos'],['games','Optional game gates']];
  state.guideCategory||='story';
  const distance=e=>Math.hypot((e.x??mover.player.position.x)-mover.player.position.x,(e.z??mover.player.position.z)-mover.player.position.z);
@@ -13,7 +14,7 @@ export function createJourney({skills,adventure,state,save,world,mover,panel,clo
   if(group==='skills')return skills.entries();
   if(group==='story'){const o=mainObjective();return[{id:'story',title:state.finaleComplete?'Seven feathers · story complete':o.label,done:!!state.finaleComplete,...o}];}
   if(group==='expeditions')return adventure.entries();
-  if(group==='neighbors')return sideQuests.map(q=>{const s=state.side[q.id],n=world.npcs.find(n=>n.name===q.giver),atGiver=!s||s.stage;return {...q,x:atGiver?(n?.x??q.x):q.tx,z:atGiver?(n?.z??q.z):q.tz,done:!!s?.done,kind:s?'side':'side-start',label:!s?'Talk to '+q.giver+' · '+q.title:s.stage?'Return to '+q.giver+' · '+q.title:q.description};});
+  if(group==='neighbors')return sideQuests.map(q=>{const s=state.side[q.id],n=world.npcs.find(n=>n.name===q.giver),atGiver=!s||s.stage;const task=communityEnabled?neighborTaskObjective(state,q):null;if(task)return {...q,...task,done:false};return {...q,x:atGiver?(n?.x??q.x):q.tx,z:atGiver?(n?.z??q.z):q.tz,done:!!s?.done,kind:s?'side':'side-start',label:!s?'Talk to '+q.giver+' · '+q.title:s.stage?'Return to '+q.giver+' · '+q.title:q.description};});
   if(group==='discoveries')return secrets.map(s=>({...s,done:state.secrets.includes(s.id),locked:s.id==='seven-colors'&&state.feathers.length<7,label:'Discover · '+s.title,kind:'secret'}));
   if(group==='hunt')return world.collectibles.map((f,i)=>({...f,title:'Hunt feather '+String(i+1).padStart(3,'0'),label:'Collect hunt feather '+String(i+1).padStart(3,'0')+' · walk through it',done:state.hunt.includes(f.id),kind:'hunt'}));
   if(group==='shrines')return world.shrines.map(s=>({id:s.id,x:s.x,z:s.z,title:s.name,label:'Discover '+s.name+' shrine · walk into the yellow ring',done:state.visited.includes(s.id),kind:'shrine-guide'}));

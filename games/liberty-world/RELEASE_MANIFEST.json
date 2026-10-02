@@ -1,8 +1,8 @@
 {
-    "build": "PCOCK-VALLEY-BETA-20261002-r17",
+    "build": "PCOCK-VALLEY-BETA-20261002-r18",
     "runnerBuild": "LIBERTY-RUNNER-OBJECTIVES-R12",
     "crossingBuild": "PCOCK-LIBERTY-CROSSING-R2",
-    "createdAt": "2026-10-02T18:42:27.494280+00:00",
+    "createdAt": "2026-10-02T20:36:00.512673+00:00",
     "files": [
         {
             "path": ".nojekyll",
@@ -335,9 +335,14 @@
             "sha256": "e10537c9eaf022e9282996554b52dd9edd74545af8950d9d1a82bae137c6b690"
         },
         {
+            "path": "docs\\LIBERTY_STORY_S2.md",
+            "bytes": 6644,
+            "sha256": "47aa7a5cec07ce11b40de95947f4d49f5f6048bda688f17121aad329da8a71f4"
+        },
+        {
             "path": "docs\\LIBERTY_WORLD_IMPROVEMENT_STAGES.md",
-            "bytes": 3059,
-            "sha256": "0ce6ea69e2a4f1cd91037413f83c36e8682815069e84243a1fd7f3652dd2ddc3"
+            "bytes": 3033,
+            "sha256": "1290c069adb76774ceb2300783a1b1380e436f5590b9e7a0904d229ae4658f50"
         },
         {
             "path": "docs\\MODELS.md",
@@ -396,8 +401,8 @@
         },
         {
             "path": "index.html",
-            "bytes": 287454,
-            "sha256": "b39ebbe6005a1bd5feffe8e1c31663421b92b19943c3505b4a25a4350218b876"
+            "bytes": 287449,
+            "sha256": "bf86e845c5eef5e98c05a5031047bf1c182fa8adacc72d51b54fb9fb236196bb"
         },
         {
             "path": "libs\\THREE-LICENSE.txt",
@@ -796,8 +801,8 @@
         },
         {
             "path": "shared\\valley-campaign.js",
-            "bytes": 12626,
-            "sha256": "57396df4bfe41dc9032d92793da3f427cfd8415b6bdd73371747975fbc8403ac"
+            "bytes": 13250,
+            "sha256": "1f0ef7f1616d27eaa9eb0e7e1ff8910362fb2a2cf0946198554d833452c814e7"
         },
         {
             "path": "shared\\valley-cinema.js",
@@ -808,6 +813,31 @@
             "path": "shared\\valley-collision.js",
             "bytes": 706,
             "sha256": "47cbe3735a6cd1a2c25e51314c075f405e4d36a16d11a4a1e5a230224892540c"
+        },
+        {
+            "path": "shared\\valley-community-data.js",
+            "bytes": 4997,
+            "sha256": "4942b0bf3a88580a195dfd125d3f12371d53f4604cef9129e2fc4579d6dbe2ba"
+        },
+        {
+            "path": "shared\\valley-community-model.js",
+            "bytes": 14231,
+            "sha256": "a6c3a0f5da8f383f61f6098864c4f6f71cef7a747c3180577e851d42c6649e15"
+        },
+        {
+            "path": "shared\\valley-community-world.js",
+            "bytes": 7398,
+            "sha256": "2260b59d7e8f256676925c7d849b814ef6e6024901cdb0da82fa49ef67df5c1b"
+        },
+        {
+            "path": "shared\\valley-community.css",
+            "bytes": 2829,
+            "sha256": "418b41a2ab2d9c81f23227f7521f9d397bcc38ad504bf41ad381f1ce5863dc05"
+        },
+        {
+            "path": "shared\\valley-community.js",
+            "bytes": 18323,
+            "sha256": "457754994be448789636045e8099355be9fda42333533c21073aa451137dceaf"
         },
         {
             "path": "shared\\valley-content.js",
@@ -826,8 +856,8 @@
         },
         {
             "path": "shared\\valley-entry.js",
-            "bytes": 22769,
-            "sha256": "45e4b4cd6c8766cc0216fc259227c523dd63773448b7763a49ff935cc29611ff"
+            "bytes": 23252,
+            "sha256": "df56fdb58df319d456dcfff469ecb0398291c837eaa92eff0ac5916bd66923df"
         },
         {
             "path": "shared\\valley-expedition-data.js",
@@ -851,8 +881,8 @@
         },
         {
             "path": "shared\\valley-journey.js",
-            "bytes": 7307,
-            "sha256": "56defa794e8c4290c5ca454bf1f14229f977cac10748e7777ffc928a58bacdc5"
+            "bytes": 7549,
+            "sha256": "cca2cddfd3062128ac341f626f7e093472023308eec8e5e75e8ad747c31e0e43"
         },
         {
             "path": "shared\\valley-kit.js",
@@ -901,8 +931,8 @@
         },
         {
             "path": "shared\\valley-story.js",
-            "bytes": 29705,
-            "sha256": "f1173e5d47c2c0af3c107eb358329c5398f35ae0b632667e52f8c001a67d4865"
+            "bytes": 30281,
+            "sha256": "88e7af5db401042d669df935618807523bc4fefb0e6a4c110ed468846e82a8d0"
         },
         {
             "path": "shared\\valley-swap.js",
@@ -926,13 +956,13 @@
         },
         {
             "path": "shared\\valley-wallet.js",
-            "bytes": 4358,
-            "sha256": "9d3c65cfb7e53eee7dcc66ec67cfb7b07bb01e8b0c1d77b47d510f544b4a874d"
+            "bytes": 4933,
+            "sha256": "badc7c328d26fdaf3a49b8f97bd95e7ee8dfc7c2734c9d3b9a0f3f474e78446b"
         },
         {
             "path": "shared\\valley-world.js",
-            "bytes": 16810,
-            "sha256": "0335c216667ed3f33adc39ad9f76f6df26f1984688c01ba9eb611e3cb88a908c"
+            "bytes": 16815,
+            "sha256": "6c074c727d0cbcdde000bb0b32303219a210e1987c77fc790c7f16c41b531adc"
         },
         {
             "path": "shared\\valley.css",
@@ -955,6 +985,7 @@
             "sha256": "b0ed232531977db15de18104af7274d8fe97e358cbc99040e75aa3a494702a57"
         }
     ],
-    "totalBytes": 8143936,
-    "continuityBuild": "LIBERTY-CONTINUITY-S1"
+    "totalBytes": 8200832,
+    "continuityBuild": "LIBERTY-CONTINUITY-S1",
+    "storyBuild": "LIBERTY-STORY-S2"
 }
