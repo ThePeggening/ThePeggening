@@ -86,6 +86,6 @@ export async function bootCrossing(){
 window.PCOCK={ready:false,report,get settings(){return {...settings};}};
   // Debug controls exist only behind the explicit QA query, never in normal play.
   if(query.get('qa')==='1')window.PCOCK.qa={loop:()=>loop,jumpToSafe(row){row=Math.max(1,Math.floor(row/8)*8+1);Object.assign(loop.state,{row,col:0,x:0,px:0,z:-row*STEP,pz:-row*STEP,hopY:0,previousHopY:0,maxRow:row,checkpoint:row,move:null,queued:null});cameraSnap=true;world.reset();},hit(){loop.hit({id:'qa-collision'});}};
-  runtime.setRunning(()=>screen==='run'&&!blockedOrientation());runtime.setQualityHandler(p=>world.setQuality(p));title();await renderer.compileAsync(scene,camera);runtime.start(fixed,interpolate);window.PCOCK.ready=true;
+  runtime.setRunning(()=>screen==='run'&&!blockedOrientation());runtime.setQualityHandler(p=>world.setQuality(p));title();if(window.__PEG_PREVIEW_ONLY){const {installDirector}=await import('../../../studio/director-runtime.js');installDirector({renderer,camera,scene,subject:actor.root},resources);}await renderer.compileAsync(scene,camera);runtime.start(fixed,interpolate);window.PCOCK.ready=true;
   resources.onDispose(()=>{hudEditor.dispose();audio.dispose();removeEventListener('keydown',onKey);removeEventListener('keyup',upKey);removeEventListener('blur',blur);removeEventListener('visibilitychange',visibility);removeEventListener('resize',resize);});addEventListener('pagehide',()=>resources.dispose(),{once:true});addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
 }

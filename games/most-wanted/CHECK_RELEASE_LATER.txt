@@ -1,0 +1,7 @@
+MOST WANTED R71 — DEFERRED HUMAN / DEVICE REVIEW — 3 OCTOBER 2026
+Galaxy S24 FE physical-phone comparison, browser/OS/quality, sustained FPS, heat and battery are unverified.
+User reports stuttering, FPS drops and heat after roughly 5–10 minutes.
+604-second desktop NVIDIA test is functional stability evidence, not phone thermal evidence.
+Human gameplay, picture quality and device feel remain deferred, not approved.
+The two R71 runtime parts are below 25 MB individually; the assembled repository and pre-existing root/R69 files still exceed historical release size budgets. No release-size gate passed.
+No publication, deployment or Git commit in this pass. The local phone server's reachability from the physical handset is unverified.
