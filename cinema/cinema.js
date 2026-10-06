@@ -1,4 +1,5 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.module.js';
+﻿import * as THREE from 'three';
+import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 
 /*
   414 Cinema
@@ -11,19 +12,19 @@ const CHANNEL_ID = 'UCDcD3nYM9TBMtAmMKZqo-QA';
 const FALLBACK_MEDIA = {
   channel: {
     name: 'Maria 414',
-    handle: '@靈脅用',
+    handle: '@éˆè„…ç”¨',
     url: 'https://www.youtube.com/@%E9%9D%88%E8%84%85%E7%94%A8',
     channelId: CHANNEL_ID
   },
   live: {
-    title: 'MARIA 414 — LIVE',
+    title: 'MARIA 414 â€” LIVE',
     description: "Always targets Maria's current YouTube live broadcast when the channel is live."
   },
   videos: [
-    { id: 'KPzYZSihQHc', title: 'Atropa Developer Zürich meetup #1 — Mariarahel', tag: 'ATROPA · ZÜRICH #1' },
-    { id: 'HbY4m5b1bgQ', title: 'ATROPA Developer Amsterdam PulseChain Tour', tag: 'ATROPA · AMSTERDAM TOUR' },
-    { id: 'hDN3AcExMMg', title: 'Atropa Developer Zürich meetup #2 — Mariarahel', tag: 'ATROPA · ZÜRICH #2' },
-    { id: 'kOUhEYYy2KQ', title: 'ATROPA DEV in Amsterdam', tag: 'ATROPA · AMSTERDAM' }
+    { id: 'KPzYZSihQHc', title: 'Atropa Developer ZÃ¼rich meetup #1 â€” Mariarahel', tag: 'ATROPA Â· ZÃœRICH #1' },
+    { id: 'HbY4m5b1bgQ', title: 'ATROPA Developer Amsterdam PulseChain Tour', tag: 'ATROPA Â· AMSTERDAM TOUR' },
+    { id: 'hDN3AcExMMg', title: 'Atropa Developer ZÃ¼rich meetup #2 â€” Mariarahel', tag: 'ATROPA Â· ZÃœRICH #2' },
+    { id: 'kOUhEYYy2KQ', title: 'ATROPA DEV in Amsterdam', tag: 'ATROPA Â· AMSTERDAM' }
   ]
 };
 
@@ -36,12 +37,11 @@ const els = {
   mediaList: document.getElementById('mediaList'),
   openLibrary: document.getElementById('openLibrary'),
   exitCinema: document.getElementById('exitCinema'),
-  watchMode: document.getElementById('watchMode'),
-  player: document.getElementById('youtubePlayer'),
+  screenControls: document.getElementById('screenControls'),
   nowPlaying: document.getElementById('nowPlaying'),
-  backToRoom: document.getElementById('backToRoom'),
-  changeVideo: document.getElementById('changeVideo'),
-  watchExit: document.getElementById('watchExit'),
+  screenPause: document.getElementById('screenPause'),
+  screenStop: document.getElementById('screenStop'),
+  screenChoose: document.getElementById('screenChoose'),
   stick: document.getElementById('stick'),
   nub: document.getElementById('nub'),
   mobileE: document.getElementById('mobileE')
@@ -68,7 +68,19 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
+renderer.domElement.style.position = 'absolute';
+renderer.domElement.style.inset = '0';
+renderer.domElement.style.zIndex = '1';
 els.stage.appendChild(renderer.domElement);
+
+const cssRenderer = new CSS3DRenderer();
+cssRenderer.setSize(innerWidth, innerHeight);
+cssRenderer.domElement.id = 'cinema-css3d';
+cssRenderer.domElement.style.position = 'absolute';
+cssRenderer.domElement.style.inset = '0';
+cssRenderer.domElement.style.zIndex = '2';
+cssRenderer.domElement.style.pointerEvents = 'none';
+els.stage.insertBefore(cssRenderer.domElement, renderer.domElement.nextSibling);
 
 const ROOM = { width: 30, depth: 48, height: 11 };
 const HALF_W = ROOM.width / 2;
@@ -77,9 +89,9 @@ const EYE = 1.72;
 const player = new THREE.Vector3(0, EYE, 18.2);
 let yaw = 0;
 let pitch = -0.02;
-let watchActive = false;
 let panelOpen = false;
 let currentMedia = null;
+let screenPaused = false;
 let lastFrame = performance.now();
 const keys = new Set();
 const colliders = [];
@@ -255,7 +267,43 @@ const screenY = 5.8;
 const screenZ = -HALF_D + .42;
 box(screenW + .65, screenH + .65, .32, trimMat, 0, screenY, screenZ - .13);
 const screenMat = new THREE.MeshStandardMaterial({ color: 0x5d5a64, emissive: 0x282531, emissiveIntensity: .55, roughness: .48 });
-box(screenW, screenH, .08, screenMat, 0, screenY, screenZ + .08);
+const screenSurface = box(screenW, screenH, .08, screenMat, 0, screenY, screenZ + .08);
+
+// A real DOM YouTube player is attached to the same 3D plane as the physical
+// cinema screen. CSS3DRenderer keeps its perspective locked to the camera as
+// the player walks around the auditorium. The iframe never becomes a separate
+// fullscreen/watch layer.
+const SCREEN_CSS_W = 1600;
+const SCREEN_CSS_H = Math.round(SCREEN_CSS_W * (screenH / screenW));
+const screenVideoElement = document.createElement('div');
+screenVideoElement.style.width = SCREEN_CSS_W + 'px';
+screenVideoElement.style.height = SCREEN_CSS_H + 'px';
+screenVideoElement.style.background = '#000';
+screenVideoElement.style.overflow = 'hidden';
+screenVideoElement.style.backfaceVisibility = 'hidden';
+screenVideoElement.style.boxShadow = 'inset 0 0 0 2px rgba(0,0,0,.55)';
+screenVideoElement.style.pointerEvents = 'none';
+
+const screenPlayer = document.createElement('iframe');
+screenPlayer.id = 'youtubePlayer';
+screenPlayer.title = 'Maria 414 YouTube player';
+screenPlayer.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+screenPlayer.setAttribute('allowfullscreen', '');
+screenPlayer.referrerPolicy = 'strict-origin-when-cross-origin';
+screenPlayer.style.width = '100%';
+screenPlayer.style.height = '100%';
+screenPlayer.style.border = '0';
+screenPlayer.style.display = 'block';
+screenPlayer.style.background = '#000';
+screenPlayer.style.pointerEvents = 'none';
+screenVideoElement.appendChild(screenPlayer);
+
+const screenVideoObject = new CSS3DObject(screenVideoElement);
+const screenCssScale = screenW / SCREEN_CSS_W;
+screenVideoObject.position.set(0, screenY, screenZ + .16);
+screenVideoObject.scale.setScalar(screenCssScale);
+screenVideoObject.visible = false;
+scene.add(screenVideoObject);
 
 const curtainMat = new THREE.MeshStandardMaterial({ map: curtainTexture(), roughness: .83, side: THREE.DoubleSide });
 for (const side of [-1, 1]) {
@@ -444,7 +492,6 @@ function leaveCinema() {
 }
 
 function useAction() {
-  if (watchActive) return;
   if (nearExit()) {
     leaveCinema();
     return;
@@ -464,34 +511,54 @@ function playerOrigin() {
 
 function startPlayback(item) {
   currentMedia = item;
-  watchActive = true;
   panelOpen = false;
+  screenPaused = false;
   els.mediaPanel.classList.remove('open');
-  document.exitPointerLock?.();
-  player.set(0, EYE, 7.2);
-  yaw = 0;
-  pitch = -.015;
-  updateCamera();
 
   let src;
   if (item.live) {
     const channel = media.channel?.channelId || CHANNEL_ID;
-    src = `https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(channel)}&autoplay=1&rel=0&playsinline=1&modestbranding=1${playerOrigin()}`;
+    src = `https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(channel)}&autoplay=1&rel=0&playsinline=1&modestbranding=1&enablejsapi=1${playerOrigin()}`;
   } else {
-    src = `https://www.youtube.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&playsinline=1&modestbranding=1${playerOrigin()}`;
+    src = `https://www.youtube.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&playsinline=1&modestbranding=1&enablejsapi=1${playerOrigin()}`;
   }
-  els.player.src = src;
-  els.nowPlaying.textContent = item.live ? '● MARIA 414 LIVE CHANNEL' : item.title;
-  els.watchMode.classList.add('active');
-  els.crosshair.style.opacity = '0';
+
+  screenPlayer.src = src;
+  screenVideoObject.visible = true;
+  screenSurface.visible = false;
+  els.nowPlaying.textContent = item.live ? 'â— MARIA 414 LIVE CHANNEL' : item.title;
+  els.screenPause.textContent = 'Pause';
+  els.screenControls.classList.add('active');
+
+
+}
+
+function sendYoutubeCommand(func) {
+  try {
+    screenPlayer.contentWindow?.postMessage(JSON.stringify({
+      event: 'command',
+      func,
+      args: []
+    }), '*');
+  } catch (_) {}
+}
+
+function toggleScreenPause() {
+  if (!currentMedia) return;
+  screenPaused = !screenPaused;
+  sendYoutubeCommand(screenPaused ? 'pauseVideo' : 'playVideo');
+  els.screenPause.textContent = screenPaused ? 'Play' : 'Pause';
 }
 
 function stopPlayback() {
-  watchActive = false;
   currentMedia = null;
-  els.player.src = 'about:blank';
-  els.watchMode.classList.remove('active');
-  els.crosshair.style.opacity = '1';
+  screenPaused = false;
+  screenPlayer.src = 'about:blank';
+  screenVideoObject.visible = false;
+  screenSurface.visible = true;
+  els.screenControls.classList.remove('active');
+  els.nowPlaying.textContent = '';
+  els.screenPause.textContent = 'Pause';
 }
 
 function renderMediaList() {
@@ -502,9 +569,9 @@ function renderMediaList() {
   live.innerHTML = `
     <span class="thumb" style="background-image:linear-gradient(135deg,#430b19,#13040c)"></span>
     <span class="tag"><span class="liveDot"></span>LIVE CHANNEL</span>
-    <span class="title">${media.live?.title || 'MARIA 414 — LIVE'}<br><small style="color:#a98fb7;font-weight:700">plays the channel's current livestream whenever Maria is live</small></span>
+    <span class="title">${media.live?.title || 'MARIA 414 â€” LIVE'}<br><small style="color:#a98fb7;font-weight:700">plays the channel's current livestream whenever Maria is live</small></span>
   `;
-  live.addEventListener('click', () => startPlayback({ live: true, title: media.live?.title || 'MARIA 414 — LIVE' }));
+  live.addEventListener('click', () => startPlayback({ live: true, title: media.live?.title || 'MARIA 414 â€” LIVE' }));
   els.mediaList.appendChild(live);
 
   for (const video of media.videos || []) {
@@ -524,21 +591,18 @@ renderMediaList();
 
 els.openLibrary.addEventListener('click', () => togglePanel());
 els.exitCinema.addEventListener('click', leaveCinema);
-els.watchExit.addEventListener('click', leaveCinema);
-els.backToRoom.addEventListener('click', stopPlayback);
-els.changeVideo.addEventListener('click', () => {
-  stopPlayback();
-  togglePanel(true);
-});
+els.screenPause.addEventListener('click', toggleScreenPause);
+els.screenStop.addEventListener('click', stopPlayback);
+els.screenChoose.addEventListener('click', () => togglePanel(true));
 els.mobileE.addEventListener('click', useAction);
 
 renderer.domElement.addEventListener('click', () => {
-  if (watchActive || panelOpen || matchMedia('(pointer:coarse)').matches) return;
+  if (panelOpen || matchMedia('(pointer:coarse)').matches) return;
   renderer.domElement.requestPointerLock?.();
 });
 
 addEventListener('mousemove', e => {
-  if (watchActive || panelOpen || document.pointerLockElement !== renderer.domElement) return;
+  if (panelOpen || document.pointerLockElement !== renderer.domElement) return;
   yaw -= e.movementX * .00235;
   pitch -= e.movementY * .00215;
   pitch = THREE.MathUtils.clamp(pitch, -1.08, .9);
@@ -550,22 +614,21 @@ addEventListener('keydown', e => {
     e.preventDefault();
     useAction();
   }
-  if (e.code === 'Escape') {
-    if (watchActive) stopPlayback();
-    else if (panelOpen) togglePanel(false);
+  if (e.code === 'Escape' && panelOpen) {
+    togglePanel(false);
   }
 });
 addEventListener('keyup', e => keys.delete(e.code));
 
 let touchLook = null;
 renderer.domElement.addEventListener('pointerdown', e => {
-  if (e.pointerType === 'mouse' || watchActive || panelOpen) return;
+  if (e.pointerType === 'mouse' || panelOpen) return;
   if (e.clientX < innerWidth * .42 && e.clientY > innerHeight * .58) return;
   touchLook = { id: e.pointerId, x: e.clientX, y: e.clientY };
   renderer.domElement.setPointerCapture?.(e.pointerId);
 });
 renderer.domElement.addEventListener('pointermove', e => {
-  if (!touchLook || touchLook.id !== e.pointerId || watchActive || panelOpen) return;
+  if (!touchLook || touchLook.id !== e.pointerId || panelOpen) return;
   const dx = e.clientX - touchLook.x;
   const dy = e.clientY - touchLook.y;
   touchLook.x = e.clientX;
@@ -611,7 +674,7 @@ els.stick.addEventListener('pointerup', clearStick);
 els.stick.addEventListener('pointercancel', clearStick);
 
 function updateMovement(dt) {
-  if (watchActive || panelOpen) return;
+  if (panelOpen) return;
   let forward = 0;
   let strafe = 0;
   if (keys.has('KeyW')) forward += 1;
@@ -638,13 +701,13 @@ function updateMovement(dt) {
 }
 
 function updatePrompt() {
-  if (watchActive || panelOpen) {
+  if (panelOpen) {
     setPrompt('');
     return;
   }
-  if (nearKiosk()) setPrompt('E / USE — MARIA 414 ARCHIVE');
-  else if (nearExit()) setPrompt('E / USE — RETURN TO ATROPA');
-  else if (player.z < -12) setPrompt('E / USE — CHOOSE WHAT PLAYS ON THE 414 SCREEN');
+  if (nearKiosk()) setPrompt('E / USE â€” MARIA 414 ARCHIVE');
+  else if (nearExit()) setPrompt('E / USE â€” RETURN TO ATROPA');
+  else if (player.z < -12) setPrompt('E / USE â€” CHOOSE WHAT PLAYS ON THE 414 SCREEN');
   else setPrompt('');
 }
 
@@ -661,6 +724,7 @@ function animate(now) {
   marquee.material.opacity = .9 + Math.sin(t * 1.3) * .08;
 
   renderer.render(scene, camera);
+  cssRenderer.render(scene, camera);
 }
 requestAnimationFrame(animate);
 
@@ -669,15 +733,16 @@ addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.65));
+  cssRenderer.setSize(innerWidth, innerHeight);
 });
 
 setTimeout(() => {
   els.loading.style.transition = 'opacity .45s ease';
   els.loading.style.opacity = '0';
   setTimeout(() => els.loading.remove(), 480);
-  togglePanel(true);
 }, 900);
 
 try {
   window.parent?.postMessage?.({ type: 'ATROPA_CINEMA_READY' }, '*');
 } catch (_) {}
+
