@@ -1,0 +1,34 @@
+{
+  "channel": {
+    "name": "Maria 414",
+    "handle": "@靈脅用",
+    "url": "https://www.youtube.com/@%E9%9D%88%E8%84%85%E7%94%A8",
+    "channelId": "UCDcD3nYM9TBMtAmMKZqo-QA"
+  },
+  "live": {
+    "title": "MARIA 414 — LIVE",
+    "description": "Always targets Maria's current YouTube live broadcast when the channel is live."
+  },
+  "videos": [
+    {
+      "id": "KPzYZSihQHc",
+      "title": "Atropa Developer Zürich meetup #1 — Mariarahel",
+      "tag": "ATROPA · ZÜRICH #1"
+    },
+    {
+      "id": "HbY4m5b1bgQ",
+      "title": "ATROPA Developer Amsterdam PulseChain Tour",
+      "tag": "ATROPA · AMSTERDAM TOUR"
+    },
+    {
+      "id": "hDN3AcExMMg",
+      "title": "Atropa Developer Zürich meetup #2 — Mariarahel",
+      "tag": "ATROPA · ZÜRICH #2"
+    },
+    {
+      "id": "kOUhEYYy2KQ",
+      "title": "ATROPA DEV in Amsterdam",
+      "tag": "ATROPA · AMSTERDAM"
+    }
+  ]
+}

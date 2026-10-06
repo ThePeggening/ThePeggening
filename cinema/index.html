@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#09030f">
+  <title>414 Cinema</title>
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050208;color:#f6ead0;font-family:Inter,Arial,sans-serif}
+    button{font:inherit}
+    #stage{position:fixed;inset:0}
+    canvas{display:block;width:100%;height:100%}
+    #hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+    #crosshair{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:#ffd76b;box-shadow:0 0 12px #ffd76b88;transition:.15s}
+    #prompt{position:absolute;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);padding:8px 14px;border:1px solid #b782ff88;border-radius:9px;background:#09030fdc;color:#f7e6ba;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:0;transition:.15s;white-space:nowrap}
+    #brand{position:absolute;top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));padding:8px 11px;border-left:2px solid #ffd76b;background:linear-gradient(90deg,#09030fd9,transparent);font:900 13px/1.1 Inter,Arial;letter-spacing:.18em}
+    #brand small{display:block;margin-top:4px;color:#bfa4e8;font-size:8px;letter-spacing:.25em}
+    .topButton{position:fixed;top:max(10px,env(safe-area-inset-top));z-index:30;padding:9px 12px;border:1px solid #6e4f99;border-radius:8px;background:#0b0612e8;color:#f4e6ca;font-weight:900;font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;backdrop-filter:blur(12px)}
+    .topButton:hover{border-color:#ffd76b;color:#ffd76b}
+    #exitCinema{right:max(10px,env(safe-area-inset-right))}
+    #openLibrary{right:max(142px,calc(env(safe-area-inset-right) + 142px))}
+    #mediaPanel{position:fixed;z-index:25;right:12px;top:62px;width:min(390px,calc(100vw - 24px));max-height:calc(100vh - 84px);overflow:auto;padding:14px;border:1px solid #6e4f99;border-radius:14px;background:linear-gradient(180deg,#100718f2,#07030cf5);box-shadow:0 24px 80px #000b;transform:translateX(calc(100% + 30px));transition:.28s ease;pointer-events:auto}
+    #mediaPanel.open{transform:translateX(0)}
+    #mediaPanel h1{margin:0;color:#ffd76b;font:1000 22px/1 Inter,Arial;letter-spacing:.08em}
+    #mediaPanel .sub{margin:6px 0 13px;color:#bca8d6;font-size:10px;line-height:1.4;letter-spacing:.08em}
+    #mediaList{display:grid;gap:9px}
+    .mediaCard{position:relative;min-height:82px;padding:11px 11px 11px 104px;border:1px solid #362347;border-radius:10px;background:#0a0510;overflow:hidden;cursor:pointer;text-align:left;color:#f7ecd8;transition:.15s}
+    .mediaCard:hover{border-color:#b782ff;transform:translateY(-1px);background:#12091b}
+    .mediaCard.live{border-color:#9f263a;background:linear-gradient(90deg,#29070e,#10050b)}
+    .mediaCard .thumb{position:absolute;left:0;top:0;width:94px;height:100%;background:#16091f center/cover no-repeat;border-right:1px solid #3a2547}
+    .mediaCard .tag{display:block;color:#c7a4ff;font-size:8px;font-weight:1000;letter-spacing:.12em;margin-bottom:4px}
+    .mediaCard.live .tag{color:#ff687e}
+    .mediaCard .title{display:block;font-size:11px;font-weight:900;line-height:1.35}
+    .liveDot{display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:#ff3454;box-shadow:0 0 12px #ff3454;animation:pulse 1.1s infinite}
+    @keyframes pulse{50%{opacity:.35}}
+    #watchMode{position:fixed;inset:0;z-index:20;display:none;pointer-events:none;background:radial-gradient(circle at center,transparent 0 45%,#0006 82%,#000b 100%)}
+    #watchMode.active{display:block}
+    #playerShell{position:absolute;left:50%;top:48%;width:min(76vw,calc(78vh * 16 / 9));aspect-ratio:16/9;transform:translate(-50%,-50%);border:5px solid #1a1024;border-radius:2px;background:#050505;box-shadow:0 0 0 2px #d1a13f,0 0 60px #6c38a355;pointer-events:auto;overflow:hidden}
+    #playerShell iframe{width:100%;height:100%;border:0;background:#000}
+    #watchControls{position:absolute;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;gap:8px;pointer-events:auto}
+    #watchControls button{padding:9px 13px;border:1px solid #5d406e;border-radius:8px;background:#0a0512e8;color:#f3e7d0;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    #watchControls button:hover{border-color:#ffd76b;color:#ffd76b}
+    #nowPlaying{position:absolute;left:50%;top:max(14px,env(safe-area-inset-top));transform:translateX(-50%);padding:7px 12px;background:#07030bd9;border:1px solid #4c335b;border-radius:8px;color:#e7d6f5;font-size:10px;font-weight:900;letter-spacing:.08em;pointer-events:none;max-width:80vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #loading{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,#1d0c2d,#050208 66%)}
+    #loading .box{text-align:center}
+    #loading .sig{font:1000 46px/1 Inter,Arial;color:#ffd76b;text-shadow:0 0 28px #ffd76b55}
+    #loading .line{margin-top:10px;color:#bca5d6;font-size:10px;letter-spacing:.22em;text-transform:uppercase}
+    #mobileControls{display:none;position:fixed;inset:0;z-index:12;pointer-events:none}
+    #stick{position:absolute;left:18px;bottom:18px;width:112px;height:112px;border-radius:50%;border:1px solid #a980d155;background:#0a061060;pointer-events:auto;touch-action:none}
+    #nub{position:absolute;width:46px;height:46px;border-radius:50%;left:33px;top:33px;background:#b782ff66;border:1px solid #d9bfff99}
+    #mobileE{position:absolute;right:24px;bottom:34px;width:70px;height:70px;border-radius:50%;border:1px solid #d3a948;background:#2a160dcc;color:#ffd76b;font-weight:1000;font-size:11px;pointer-events:auto;touch-action:manipulation}
+    #mobileHint{position:absolute;right:18px;bottom:118px;color:#bda7d2;font-size:9px;max-width:110px;text-align:center}
+    @media (pointer:coarse),(max-width:800px){
+      #mobileControls{display:block}
+      #brand{font-size:10px}
+      #openLibrary{right:118px}
+      .topButton{font-size:9px;padding:8px 9px}
+      #playerShell{width:min(94vw,calc(62vh * 16 / 9));top:44%}
+      #mediaPanel{top:54px;max-height:calc(100vh - 70px)}
+      #prompt{bottom:136px;max-width:80vw;white-space:normal;text-align:center}
+    }
+  </style>
+</head>
+<body>
+  <div id="stage"></div>
+  <div id="hud">
+    <div id="brand">414 CINEMA<small>MARIA 414 ARCHIVE</small></div>
+    <div id="crosshair"></div>
+    <div id="prompt"></div>
+  </div>
+
+  <button id="openLibrary" class="topButton" type="button">Maria Archive</button>
+  <button id="exitCinema" class="topButton" type="button">Return to Atropa</button>
+
+  <aside id="mediaPanel" aria-label="Maria 414 cinema archive">
+    <h1>MARIA 414</h1>
+    <div class="sub">LIVE CHANNEL + SELECTED ATROPA / PULSECHAIN ARCHIVE · VIDEO STREAMS DIRECTLY FROM YOUTUBE</div>
+    <div id="mediaList"></div>
+  </aside>
+
+  <section id="watchMode" aria-label="Cinema screen">
+    <div id="nowPlaying"></div>
+    <div id="playerShell"><iframe id="youtubePlayer" title="Maria 414 YouTube player" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+    <div id="watchControls">
+      <button id="backToRoom" type="button">Walk Around</button>
+      <button id="changeVideo" type="button">Choose Video</button>
+      <button id="watchExit" type="button">Return to Atropa</button>
+    </div>
+  </section>
+
+  <div id="mobileControls">
+    <div id="stick"><div id="nub"></div></div>
+    <button id="mobileE" type="button">E / USE</button>
+    <div id="mobileHint">drag screen to look</div>
+  </div>
+
+  <div id="loading">
+    <div class="box">
+      <div class="sig">414</div>
+      <div class="line">Opening Maria Cinema</div>
+    </div>
+  </div>
+
+  <script type="module" src="./cinema.js"></script>
+</body>
+</html>
