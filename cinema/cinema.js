@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
@@ -682,7 +682,7 @@ function nearExit() {
 }
 
 function nearScreenChoice() {
-  return player.z < -5.0 && Math.abs(player.x) < 7.0;
+  return player.z < 1.0 && Math.abs(player.x) < 9.0;
 }
 
 function setPrompt(text) {
