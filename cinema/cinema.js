@@ -1,5 +1,7 @@
 ﻿import * as THREE from 'three';
 import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 /*
   414 Cinema
@@ -42,6 +44,9 @@ const els = {
   screenPause: document.getElementById('screenPause'),
   screenStop: document.getElementById('screenStop'),
   screenChoose: document.getElementById('screenChoose'),
+  screenFullscreen: document.getElementById('screenFullscreen'),
+  viewToggle: document.getElementById('viewToggle'),
+  danceButton: document.getElementById('danceButton'),
   stick: document.getElementById('stick'),
   nub: document.getElementById('nub'),
   mobileE: document.getElementById('mobileE')
@@ -92,10 +97,15 @@ let pitch = -0.02;
 let panelOpen = false;
 let currentMedia = null;
 let screenPaused = false;
+let viewMode = 'first';
+let moveSpeedNow = 0;
+let moveFacing = Math.PI;
 let lastFrame = performance.now();
 const keys = new Set();
 const colliders = [];
 const clock = new THREE.Clock();
+let screenGuideLearned = false;
+try { screenGuideLearned = localStorage.getItem('atropa_cinema_screen_learned_v1') === '1'; } catch (_) {}
 
 const THEME = {
   carpetBase: '#1d071e',
@@ -276,6 +286,7 @@ const screenSurface = box(screenW, screenH, .08, screenMat, 0, screenY, screenZ 
 const SCREEN_CSS_W = 1600;
 const SCREEN_CSS_H = Math.round(SCREEN_CSS_W * (screenH / screenW));
 const screenVideoElement = document.createElement('div');
+screenVideoElement.id = 'screenVideoHost';
 screenVideoElement.style.width = SCREEN_CSS_W + 'px';
 screenVideoElement.style.height = SCREEN_CSS_H + 'px';
 screenVideoElement.style.background = '#000';
@@ -284,7 +295,7 @@ screenVideoElement.style.backfaceVisibility = 'hidden';
 screenVideoElement.style.boxShadow = 'inset 0 0 0 2px rgba(0,0,0,.55)';
 screenVideoElement.style.pointerEvents = 'none';
 
-const screenPlayer = document.createElement('iframe');
+let screenPlayer = document.createElement('iframe');
 screenPlayer.id = 'youtubePlayer';
 screenPlayer.title = 'Maria 414 YouTube player';
 screenPlayer.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
@@ -338,6 +349,50 @@ const marquee = new THREE.Mesh(
 );
 marquee.position.set(0, 9.1, -HALF_D + .72);
 scene.add(marquee);
+
+// First-visit quest tracker: a gold signal in the aisle guides the player to
+// the screen interaction point. It disappears permanently on this browser
+// once the player chooses something to watch.
+const screenGuide = new THREE.Group();
+screenGuide.name = '414 cinema screen quest guide';
+screenGuide.position.set(0, 0, -12.9);
+const guideRing = new THREE.Mesh(
+  new THREE.TorusGeometry(1.25, .08, 10, 40),
+  new THREE.MeshBasicMaterial({ color: 0xffd76b, transparent: true, opacity: .72 })
+);
+guideRing.rotation.x = Math.PI / 2;
+guideRing.position.y = .10;
+screenGuide.add(guideRing);
+const guideArrow = new THREE.Mesh(
+  new THREE.ConeGeometry(.42, 1.25, 18),
+  new THREE.MeshStandardMaterial({ color: 0xffd76b, emissive: 0xffc44d, emissiveIntensity: 1.1, roughness: .28 })
+);
+guideArrow.rotation.z = Math.PI;
+guideArrow.position.y = 2.45;
+screenGuide.add(guideArrow);
+const guideLabel = new THREE.Mesh(
+  new THREE.PlaneGeometry(5.2, 1.05),
+  new THREE.MeshBasicMaterial({
+    map: makeTextTexture(['SCREEN', 'E / USE - CHOOSE VIDEO'], { width: 1200, height: 300, fontSize: 70, color: '#ffd76b' }),
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  })
+);
+guideLabel.position.y = 3.45;
+screenGuide.add(guideLabel);
+const guideLight = new THREE.PointLight(0xffd76b, 7, 7, 2);
+guideLight.position.set(0, 2.0, 0);
+screenGuide.add(guideLight);
+screenGuide.visible = !screenGuideLearned;
+scene.add(screenGuide);
+
+function completeScreenGuide() {
+  if (screenGuideLearned) return;
+  screenGuideLearned = true;
+  screenGuide.visible = false;
+  try { localStorage.setItem('atropa_cinema_screen_learned_v1', '1'); } catch (_) {}
+}
 
 function createSeat(x, z, rowIndex) {
   const root = new THREE.Group();
@@ -445,10 +500,168 @@ for (const side of [-1, 1]) {
   }
 }
 
+// Maria is loaded lazily so first-person entry remains fast. Third-person
+// and Dance use the same GLB + clip names as the main Atropa character.
+const mariaAvatar = new THREE.Group();
+mariaAvatar.name = 'Maria 414 cinema avatar';
+mariaAvatar.visible = false;
+const mariaFill = new THREE.PointLight(0xd8b6ff, 5.0, 7, 2);
+mariaFill.position.set(0, 2.25, 1.4);
+mariaAvatar.add(mariaFill);
+scene.add(mariaAvatar);
+
+const mariaRig = {
+  ready:false, failed:false, loading:false, mixer:null, walk:null, run:null,
+  active:null, danceActions:[], activeDance:null, danceMode:null, danceIndex:-1,
+  playDanceIndex(index) {
+    if (!this.ready || !this.danceActions.length) return false;
+    const next=this.danceActions[index];
+    if (!next) return false;
+    if (this.active) { this.active.fadeOut(.10); this.active=null; }
+    if (this.activeDance && this.activeDance!==next) this.activeDance.fadeOut(.08);
+    this.danceIndex=index;
+    next.enabled=true; next.reset(); next.setLoop(THREE.LoopOnce,1);
+    next.clampWhenFinished=false; next.setEffectiveWeight(1); next.setEffectiveTimeScale(1);
+    next.fadeIn(.08).play(); this.activeDance=next; return true;
+  },
+  startDance(loop=false) {
+    if (!this.ready || !this.danceActions.length) return false;
+    this.stopDance(.04); this.danceMode=loop?'loop':'once'; this.danceIndex=0;
+    return this.playDanceIndex(0);
+  },
+  stopDance(fade=.10) {
+    if (this.activeDance) this.activeDance.fadeOut(fade);
+    this.activeDance=null; this.danceMode=null; this.danceIndex=-1;
+  },
+  onFinished(action) {
+    if (!this.danceMode || action!==this.activeDance) return;
+    this.activeDance=null;
+    const next=this.danceIndex+1;
+    if (next<this.danceActions.length) { this.playDanceIndex(next); return; }
+    if (this.danceMode==='loop') { this.playDanceIndex(0); return; }
+    this.danceMode=null; this.danceIndex=-1;
+  },
+  update(dt,speed) {
+    if (!this.ready || !this.mixer) return;
+    const moving=speed>.10;
+    if (this.danceMode) {
+      if (moving) this.stopDance(.08);
+      else { this.mixer.update(dt); return; }
+    }
+    if (!moving) {
+      if (this.active) { this.active.fadeOut(.10); this.active=null; }
+      this.mixer.update(dt); return;
+    }
+    const running=speed>5.0;
+    const next=running?(this.run||this.walk):(this.walk||this.run);
+    if (next) {
+      if (this.active!==next) {
+        if (this.active) this.active.fadeOut(.12);
+        next.reset().fadeIn(.12).play(); this.active=next;
+      } else if (!next.isRunning()) next.reset().play();
+      next.setEffectiveTimeScale(Math.max(.55,Math.min(1.9,speed/(running?7.1:4.5))));
+    }
+    this.mixer.update(dt);
+  }
+};
+
+let mariaLoadPromise=null;
+async function ensureMariaAvatar() {
+  if (mariaRig.ready) return true;
+  if (mariaRig.failed) return false;
+  if (mariaLoadPromise) return mariaLoadPromise;
+  mariaRig.loading=true;
+  els.viewToggle.disabled=true; els.danceButton.disabled=true;
+  const oldViewText=els.viewToggle.textContent;
+  els.viewToggle.textContent='Loading Maria...';
+  mariaLoadPromise=(async()=>{
+    try {
+      if (MeshoptDecoder?.ready) await MeshoptDecoder.ready;
+      const loader=new GLTFLoader();
+      if (MeshoptDecoder) loader.setMeshoptDecoder(MeshoptDecoder);
+      const gltf=await loader.loadAsync('../assets/models/maria-414.glb');
+      const model=gltf.scene;
+      model.traverse(o=>{
+        if (o.isMesh||o.isSkinnedMesh) {
+          o.castShadow=true; o.receiveShadow=false; o.frustumCulled=false;
+        }
+      });
+      model.updateMatrixWorld(true);
+      let bounds=new THREE.Box3().setFromObject(model);
+      const size=new THREE.Vector3(),center=new THREE.Vector3();
+      bounds.getSize(size);
+      model.scale.setScalar(2.8/Math.max(.01,size.y));
+      model.updateMatrixWorld(true);
+      bounds=new THREE.Box3().setFromObject(model);
+      bounds.getCenter(center);
+      model.position.set(-center.x,-bounds.min.y,-center.z);
+      mariaAvatar.add(model);
+
+      const mixer=new THREE.AnimationMixer(model);
+      const clips=gltf.animations||[];
+      const find=name=>clips.find(c=>c.name.toLowerCase()===name.toLowerCase());
+      const walkClip=find('Walking')||clips.find(c=>/walk/i.test(c.name));
+      const runClip=find('Running')||clips.find(c=>/run/i.test(c.name));
+      const walk=walkClip?mixer.clipAction(walkClip):null;
+      const run=runClip?mixer.clipAction(runClip):null;
+      for (const a of [walk,run]) if (a) {
+        a.setLoop(THREE.LoopRepeat,Infinity); a.clampWhenFinished=false; a.enabled=true;
+      }
+      const danceNames=['Breakdance_1990','Crystal_Beads','FunnyDancing_02','Groovy_Walk','jazz_danc'];
+      const danceActions=danceNames.map(find).filter(Boolean).map(c=>mixer.clipAction(c));
+      for (const a of danceActions) {
+        a.setLoop(THREE.LoopOnce,1); a.clampWhenFinished=false; a.enabled=true;
+      }
+      mariaRig.mixer=mixer; mariaRig.walk=walk; mariaRig.run=run; mariaRig.danceActions=danceActions;
+      mixer.addEventListener('finished',e=>mariaRig.onFinished(e.action));
+      mariaRig.ready=true; mariaRig.loading=false;
+      return true;
+    } catch (error) {
+      mariaRig.failed=true; mariaRig.loading=false;
+      console.error('[414 Cinema Maria]',error);
+      return false;
+    } finally {
+      els.viewToggle.disabled=false; els.danceButton.disabled=false;
+      els.viewToggle.textContent=viewMode==='third'?'1st Person':oldViewText;
+    }
+  })();
+  return mariaLoadPromise;
+}
+
+function lerpAngle(a,b,t) {
+  let d=(b-a+Math.PI)%(Math.PI*2)-Math.PI;
+  if (d<-Math.PI) d+=Math.PI*2;
+  return a+d*t;
+}
+
+async function setViewMode(mode) {
+  if (mode==='third') {
+    const ok=await ensureMariaAvatar();
+    if (!ok) return false;
+  }
+  viewMode=mode;
+  mariaAvatar.visible=mode==='third';
+  els.viewToggle.textContent=mode==='third'?'1st Person':'3rd Person';
+  els.viewToggle.classList.toggle('active',mode==='third');
+  updateCamera();
+  return true;
+}
+
 function updateCamera() {
-  camera.position.copy(player);
-  camera.rotation.y = yaw;
-  camera.rotation.x = pitch;
+  if (viewMode==='third') {
+    const target=new THREE.Vector3(player.x,1.45,player.z);
+    const dist=5.0;
+    const lift=2.55+THREE.MathUtils.clamp(pitch,-.7,.65)*2.1;
+    camera.position.set(
+      player.x+Math.sin(yaw)*dist,
+      target.y+lift,
+      player.z+Math.cos(yaw)*dist
+    );
+    camera.lookAt(target);
+  } else {
+    camera.position.copy(player);
+    camera.rotation.set(pitch,yaw,0,'YXZ');
+  }
 }
 updateCamera();
 
@@ -466,6 +679,10 @@ function nearKiosk() {
 
 function nearExit() {
   return Math.hypot(player.x, player.z - (HALF_D - 1.4)) < 3.8;
+}
+
+function nearScreenChoice() {
+  return player.z < -5.0 && Math.abs(player.x) < 7.0;
 }
 
 function setPrompt(text) {
@@ -500,7 +717,8 @@ function useAction() {
     togglePanel(true);
     return;
   }
-  if (player.z < -12) {
+  if (nearScreenChoice()) {
+    completeScreenGuide();
     togglePanel(true);
   }
 }
@@ -509,57 +727,144 @@ function playerOrigin() {
   return location.origin && location.origin !== 'null' ? '&origin=' + encodeURIComponent(location.origin) : '';
 }
 
+let youtubeApiPromise=null;
+let ytController=null;
+let playbackSerial=0;
+
+function ensureYoutubeApi() {
+  if (window.YT?.Player) return Promise.resolve(window.YT);
+  if (youtubeApiPromise) return youtubeApiPromise;
+  youtubeApiPromise=new Promise((resolve,reject)=>{
+    const prior=window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady=()=>{
+      try { prior?.(); } catch (_) {}
+      if (window.YT?.Player) resolve(window.YT);
+      else reject(new Error('YouTube IFrame API did not initialize'));
+    };
+    const script=document.createElement('script');
+    script.src='https://www.youtube.com/iframe_api';
+    script.async=true;
+    script.onerror=()=>reject(new Error('YouTube IFrame API failed to load'));
+    document.head.appendChild(script);
+    setTimeout(()=>{ if (window.YT?.Player) resolve(window.YT); },2500);
+  });
+  return youtubeApiPromise;
+}
+
+function resetScreenIframe(src='about:blank') {
+  ytController=null;
+  if (screenPlayer) screenPlayer.remove();
+  screenPlayer=document.createElement('iframe');
+  screenPlayer.id='youtubePlayer';
+  screenPlayer.title='Maria 414 YouTube player';
+  screenPlayer.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
+  screenPlayer.setAttribute('allowfullscreen','');
+  screenPlayer.referrerPolicy='strict-origin-when-cross-origin';
+  screenPlayer.style.width='100%'; screenPlayer.style.height='100%';
+  screenPlayer.style.border='0'; screenPlayer.style.display='block';
+  screenPlayer.style.background='#000'; screenPlayer.style.pointerEvents='none';
+  screenPlayer.src=src;
+  screenVideoElement.appendChild(screenPlayer);
+  return screenPlayer;
+}
+
+async function onArchiveVideoEnded(serial) {
+  if (serial!==playbackSerial || !currentMedia) return;
+  try {
+    const fs=document.fullscreenElement||document.webkitFullscreenElement;
+    if (fs) {
+      if (document.exitFullscreen) await document.exitFullscreen();
+      else document.webkitExitFullscreen?.();
+    }
+  } catch (_) {}
+  stopPlayback();
+  togglePanel(true);
+}
+
+async function attachYoutubeEndListener(serial,item) {
+  if (item.live) return;
+  try {
+    const YT=await ensureYoutubeApi();
+    if (serial!==playbackSerial || !currentMedia) return;
+    ytController=new YT.Player(screenPlayer,{
+      events:{
+        onStateChange:event=>{
+          if (serial!==playbackSerial) return;
+          if (event.data===YT.PlayerState.ENDED) void onArchiveVideoEnded(serial);
+        }
+      }
+    });
+  } catch (error) {
+    console.warn('[414 Cinema] YouTube end listener unavailable',error);
+  }
+}
+
 function startPlayback(item) {
-  currentMedia = item;
-  panelOpen = false;
-  screenPaused = false;
+  currentMedia=item;
+  panelOpen=false;
+  screenPaused=false;
+  completeScreenGuide();
   els.mediaPanel.classList.remove('open');
 
+  const serial=++playbackSerial;
   let src;
   if (item.live) {
-    const channel = media.channel?.channelId || CHANNEL_ID;
-    src = `https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(channel)}&autoplay=1&rel=0&playsinline=1&modestbranding=1&enablejsapi=1${playerOrigin()}`;
+    const channel=media.channel?.channelId||CHANNEL_ID;
+    src=`https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(channel)}&autoplay=1&rel=0&playsinline=1&modestbranding=1&enablejsapi=1${playerOrigin()}`;
   } else {
-    src = `https://www.youtube.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&playsinline=1&modestbranding=1&enablejsapi=1${playerOrigin()}`;
+    src=`https://www.youtube.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&playsinline=1&modestbranding=1&enablejsapi=1${playerOrigin()}`;
   }
-
-  screenPlayer.src = src;
-  screenVideoObject.visible = true;
-  screenSurface.visible = false;
-  els.nowPlaying.textContent = item.live ? 'â— MARIA 414 LIVE CHANNEL' : item.title;
-  els.screenPause.textContent = 'Pause';
+  resetScreenIframe(src);
+  screenVideoObject.visible=true;
+  screenSurface.visible=false;
+  els.nowPlaying.textContent=item.live?'MARIA 414 LIVE CHANNEL':item.title;
+  els.screenPause.textContent='Pause';
   els.screenControls.classList.add('active');
-
-
+  void attachYoutubeEndListener(serial,item);
 }
 
 function sendYoutubeCommand(func) {
   try {
-    screenPlayer.contentWindow?.postMessage(JSON.stringify({
-      event: 'command',
-      func,
-      args: []
-    }), '*');
+    if (ytController && typeof ytController[func]==='function') {
+      ytController[func]();
+      return;
+    }
+    screenPlayer.contentWindow?.postMessage(JSON.stringify({event:'command',func,args:[]}), '*');
   } catch (_) {}
 }
 
 function toggleScreenPause() {
   if (!currentMedia) return;
-  screenPaused = !screenPaused;
-  sendYoutubeCommand(screenPaused ? 'pauseVideo' : 'playVideo');
-  els.screenPause.textContent = screenPaused ? 'Play' : 'Pause';
+  screenPaused=!screenPaused;
+  sendYoutubeCommand(screenPaused?'pauseVideo':'playVideo');
+  els.screenPause.textContent=screenPaused?'Play':'Pause';
+}
+
+async function enterVideoFullscreen() {
+  if (!currentMedia || !screenVideoObject.visible) return;
+  try {
+    if (screenVideoElement.requestFullscreen) await screenVideoElement.requestFullscreen({navigationUI:'hide'});
+    else if (screenVideoElement.webkitRequestFullscreen) screenVideoElement.webkitRequestFullscreen();
+  } catch (error) {
+    console.warn('[414 Cinema] fullscreen unavailable',error);
+  }
 }
 
 function stopPlayback() {
-  currentMedia = null;
-  screenPaused = false;
-  screenPlayer.src = 'about:blank';
-  screenVideoObject.visible = false;
-  screenSurface.visible = true;
+  ++playbackSerial;
+  currentMedia=null;
+  screenPaused=false;
+  try { ytController?.stopVideo?.(); } catch (_) {}
+  ytController=null;
+  resetScreenIframe('about:blank');
+  screenVideoObject.visible=false;
+  screenSurface.visible=true;
   els.screenControls.classList.remove('active');
-  els.nowPlaying.textContent = '';
-  els.screenPause.textContent = 'Pause';
+  els.nowPlaying.textContent='';
+  els.screenPause.textContent='Pause';
 }
+
+window.__cinemaTestVideoEnded=()=>onArchiveVideoEnded(playbackSerial);
 
 function renderMediaList() {
   els.mediaList.innerHTML = '';
@@ -594,7 +899,66 @@ els.exitCinema.addEventListener('click', leaveCinema);
 els.screenPause.addEventListener('click', toggleScreenPause);
 els.screenStop.addEventListener('click', stopPlayback);
 els.screenChoose.addEventListener('click', () => togglePanel(true));
+els.screenFullscreen.addEventListener('click', () => void enterVideoFullscreen());
+els.viewToggle.addEventListener('click', () => void setViewMode(viewMode==='first'?'third':'first'));
 els.mobileE.addEventListener('click', useAction);
+
+let danceHoldTimer=0;
+let danceHoldLoop=false;
+let dancePointerDown=false;
+let dancePressAt=0;
+
+els.danceButton.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  dancePointerDown=true;
+  danceHoldLoop=false;
+  dancePressAt=performance.now();
+  clearTimeout(danceHoldTimer);
+
+  void (async()=>{
+    await setViewMode('third');
+    if (!mariaRig.ready || !dancePointerDown) return;
+    const remaining=Math.max(0,420-(performance.now()-dancePressAt));
+    danceHoldTimer=setTimeout(()=>{
+      if (!dancePointerDown || !mariaRig.ready) return;
+      danceHoldLoop=true;
+      mariaRig.startDance(true);
+      els.danceButton.classList.add('active');
+    },remaining);
+  })();
+});
+
+const finishDancePress=async e=>{
+  if (e) e.preventDefault();
+  const wasDown=dancePointerDown;
+  dancePointerDown=false;
+  clearTimeout(danceHoldTimer);
+  if (!wasDown) return;
+
+  await ensureMariaAvatar();
+  if (!mariaRig.ready) return;
+
+  if (danceHoldLoop) {
+    mariaRig.stopDance(.10);
+    danceHoldLoop=false;
+    els.danceButton.classList.remove('active');
+  } else {
+    mariaRig.startDance(false);
+    els.danceButton.classList.add('active');
+  }
+};
+
+const cancelDancePress=e=>{
+  if (e) e.preventDefault();
+  dancePointerDown=false;
+  clearTimeout(danceHoldTimer);
+  if (danceHoldLoop && mariaRig.ready) mariaRig.stopDance(.10);
+  danceHoldLoop=false;
+  els.danceButton.classList.remove('active');
+};
+
+els.danceButton.addEventListener('pointerup',e=>void finishDancePress(e));
+els.danceButton.addEventListener('pointercancel',cancelDancePress);
 
 renderer.domElement.addEventListener('click', () => {
   if (panelOpen || matchMedia('(pointer:coarse)').matches) return;
@@ -620,26 +984,48 @@ addEventListener('keydown', e => {
 });
 addEventListener('keyup', e => keys.delete(e.code));
 
+renderer.domElement.style.touchAction = 'none';
+
 let touchLook = null;
 renderer.domElement.addEventListener('pointerdown', e => {
   if (e.pointerType === 'mouse' || panelOpen) return;
+  // One finger is always enough to look. The lower-left movement zone is
+  // reserved for the thumbstick; every other free part of the canvas rotates.
   if (e.clientX < innerWidth * .42 && e.clientY > innerHeight * .58) return;
+  if (touchLook && touchLook.id !== e.pointerId) return;
+  e.preventDefault();
   touchLook = { id: e.pointerId, x: e.clientX, y: e.clientY };
-  renderer.domElement.setPointerCapture?.(e.pointerId);
-});
+  try { renderer.domElement.setPointerCapture(e.pointerId); } catch (_) {}
+}, { passive: false });
+
 renderer.domElement.addEventListener('pointermove', e => {
   if (!touchLook || touchLook.id !== e.pointerId || panelOpen) return;
-  const dx = e.clientX - touchLook.x;
-  const dy = e.clientY - touchLook.y;
-  touchLook.x = e.clientX;
-  touchLook.y = e.clientY;
-  yaw -= dx * .0062;
-  pitch -= dy * .0054;
-  pitch = THREE.MathUtils.clamp(pitch, -1.08, .9);
-});
-renderer.domElement.addEventListener('pointerup', e => {
-  if (touchLook?.id === e.pointerId) touchLook = null;
-});
+  e.preventDefault();
+  const samples = e.getCoalescedEvents?.() || [e];
+  for (const sample of samples) {
+    const dx = sample.clientX - touchLook.x;
+    const dy = sample.clientY - touchLook.y;
+    touchLook.x = sample.clientX;
+    touchLook.y = sample.clientY;
+    yaw -= dx * .0062;
+    pitch -= dy * .0054;
+    pitch = THREE.MathUtils.clamp(pitch, -1.08, .9);
+  }
+}, { passive: false });
+
+const clearTouchLook = e => {
+  if (touchLook?.id !== e.pointerId) return;
+  touchLook = null;
+  try { renderer.domElement.releasePointerCapture(e.pointerId); } catch (_) {}
+};
+renderer.domElement.addEventListener('pointerup', clearTouchLook);
+renderer.domElement.addEventListener('pointercancel', clearTouchLook);
+renderer.domElement.addEventListener('lostpointercapture', clearTouchLook);
+
+// Android/Brave can otherwise reserve a one-finger drag for page navigation
+// before Pointer Events become continuous. Explicitly consume those gestures.
+renderer.domElement.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+renderer.domElement.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
 let stick = { active: false, id: null, x: 0, y: 0 };
 function updateStick(e) {
@@ -674,6 +1060,7 @@ els.stick.addEventListener('pointerup', clearStick);
 els.stick.addEventListener('pointercancel', clearStick);
 
 function updateMovement(dt) {
+  moveSpeedNow=0;
   if (panelOpen) return;
   let forward = 0;
   let strafe = 0;
@@ -692,12 +1079,19 @@ function updateMovement(dt) {
   const speed = (keys.has('ShiftLeft') || keys.has('ShiftRight')) ? 7.1 : 4.5;
   const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
   const rx = Math.cos(yaw), rz = -Math.sin(yaw);
-  const vx = (fx * forward + rx * strafe) * speed * dt;
-  const vz = (fz * forward + rz * strafe) * speed * dt;
-  const nx = player.x + vx;
-  const nz = player.z + vz;
-  if (!isBlocked(nx, player.z)) player.x = nx;
-  if (!isBlocked(player.x, nz)) player.z = nz;
+  const dirX=(fx*forward+rx*strafe);
+  const dirZ=(fz*forward+rz*strafe);
+  const vx=dirX*speed*dt;
+  const vz=dirZ*speed*dt;
+  const nx=player.x+vx;
+  const nz=player.z+vz;
+  let moved=false;
+  if (!isBlocked(nx,player.z)) { player.x=nx; moved=moved||Math.abs(vx)>.00001; }
+  if (!isBlocked(player.x,nz)) { player.z=nz; moved=moved||Math.abs(vz)>.00001; }
+  if (moved) {
+    moveSpeedNow=speed*Math.min(1,Math.hypot(forward,strafe));
+    moveFacing=Math.atan2(dirX,dirZ);
+  }
 }
 
 function updatePrompt() {
@@ -705,9 +1099,9 @@ function updatePrompt() {
     setPrompt('');
     return;
   }
-  if (nearKiosk()) setPrompt('E / USE â€” MARIA 414 ARCHIVE');
-  else if (nearExit()) setPrompt('E / USE â€” RETURN TO ATROPA');
-  else if (player.z < -12) setPrompt('E / USE â€” CHOOSE WHAT PLAYS ON THE 414 SCREEN');
+  if (nearKiosk()) setPrompt('E / USE - MARIA 414 ARCHIVE');
+  else if (nearExit()) setPrompt('E / USE - RETURN TO ATROPA');
+  else if (nearScreenChoice()) setPrompt('E / USE - CHOOSE VIDEO FOR CINEMA SCREEN');
   else setPrompt('');
 }
 
@@ -719,9 +1113,23 @@ function animate(now) {
   updateCamera();
   updatePrompt();
 
-  const t = now * .001;
-  screenLight.intensity = 7.2 + Math.sin(t * .72) * .8;
-  marquee.material.opacity = .9 + Math.sin(t * 1.3) * .08;
+  const t=now*.001;
+  screenLight.intensity=7.2+Math.sin(t*.72)*.8;
+  marquee.material.opacity=.9+Math.sin(t*1.3)*.08;
+
+  if (screenGuide.visible) {
+    guideArrow.position.y=2.45+Math.sin(t*2.2)*.20;
+    guideRing.material.opacity=.52+Math.sin(t*2.0)*.18;
+    guideLabel.lookAt(camera.position);
+  }
+
+  if (mariaRig.ready) {
+    mariaAvatar.position.set(player.x,0,player.z);
+    mariaAvatar.rotation.y=lerpAngle(mariaAvatar.rotation.y,moveFacing,Math.min(1,dt*10));
+    mariaAvatar.visible=viewMode==='third';
+    mariaRig.update(dt,moveSpeedNow);
+    if (!mariaRig.danceMode) els.danceButton.classList.remove('active');
+  }
 
   renderer.render(scene, camera);
   cssRenderer.render(scene, camera);
