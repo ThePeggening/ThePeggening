@@ -1,0 +1,102 @@
+{
+  "prepared_date": "2026-10-07",
+  "validation_completed_utc": "2026-10-07T20:35:17.053385+00:00",
+  "integration_revision": "R53.17-414-RECLAIMED-SAME-NIGHT-R6",
+  "base_commit": "4586ee7f6b96f1777f24be43814825b10b569f83",
+  "maria_module_revision": 5,
+  "sommi_module_revision": 4,
+  "index_bytes": 71133998,
+  "index_sha256": "ee06e6489df52b589c985c5034cd5b153830194c8df0a2b8308b538c89ef836a",
+  "changes": [
+    "Nine original 414 environments with stone, brass, vaulted architecture and authored detail",
+    "Layered rooftop skyline with a bespoke animated night horizon",
+    "Segmented rifle containment rotor, animated carrier shader and turbine crown",
+    "Machined rifle mounts and district-specific reconstruction windows",
+    "Scan arches, emergency power banks and collapse debris with batched particles"
+  ],
+  "source_checks_passed": [
+    "test-maria-414-source.cjs",
+    "test-sommi-414-mirror.cjs",
+    "test-414-puzzles.cjs",
+    "test-414-depth.cjs",
+    "test-414-reliability.cjs",
+    "test-414-animation.cjs",
+    "test-414-service-lanes.cjs",
+    "test-maria-414-builder.py",
+    "test-414-three.mjs"
+  ],
+  "source_preservation": {
+    "unrelated_classic_source_unchanged": true,
+    "other_packed_packages_unchanged": 12,
+    "packed_modules_match_source_files": true
+  },
+  "browser_routes": {
+    "Maria": {
+      "objectives": 32,
+      "acts": 10,
+      "reward": 414,
+      "campaignUnchanged": true,
+      "replayNoReward": true,
+      "keyboardMovement": true,
+      "reloadResume": true,
+      "interiorMinimap": true,
+      "mobile": true,
+      "errors": []
+    },
+    "Sommi": {
+      "objectives": 32,
+      "acts": 10,
+      "reward": 414,
+      "campaignUnchanged": true,
+      "replayNoReward": true,
+      "keyboardMovement": true,
+      "reloadResume": true,
+      "interiorMinimap": true,
+      "mobile": true,
+      "errors": []
+    }
+  },
+  "native_raid_to_companion": {
+    "nativeComplete": true,
+    "companionStarted": true,
+    "caseCarried": true,
+    "campaignUnchanged": true,
+    "nativeSavePreserved": true,
+    "errors": []
+  },
+  "depth_touch_ui_combinations": 12,
+  "native_camera_renders": {
+    "count": 36,
+    "rooms": 9,
+    "desktop_and_portrait": true,
+    "chase_and_overhead": true,
+    "shader_errors": 0,
+    "minimum_draw_calls": 29,
+    "maximum_draw_calls": 149
+  },
+  "cinematic_render_evidence": {
+    "source": "Recovered same-day rendered review after final source changes",
+    "samples": 60,
+    "errors": []
+  },
+  "native_traversal_evidence": {
+    "maria414": {
+      "source": "Recovered same-day run after final source changes; not repeated during continuation",
+      "wall_seconds": 407,
+      "native_tap_to_walk": true,
+      "objective_teleports": false,
+      "cinematic_skips": false
+    },
+    "sommiMirror414": {
+      "source": "Recovered same-day run after final source changes; not repeated during continuation",
+      "wall_seconds": 406,
+      "native_tap_to_walk": true,
+      "objective_teleports": false,
+      "cinematic_skips": false
+    }
+  },
+  "physical_phone_tested": false,
+  "first_time_human_duration_measured": false,
+  "validation_environment": "Windows Chrome/Puppeteer; portrait touch emulation. Draw counts do not establish physical-phone FPS.",
+  "publish_destination": "GitHub main and existing GitHub Pages deployment"
+}

@@ -121,14 +121,14 @@ assert gzip.decompress(dec(packed))==raw, 'Roundtrip mismatch'
 tag=re.sub(r'data-raw-size="\d+"',f'data-raw-size="{len(raw)}"',match[1])
 tag=re.sub(r'data-raw-sha256="[a-f0-9]+"',f'data-raw-sha256="{sha}"',tag)
 result=html[:match.start()]+tag+packed+match[3]+html[match.end():]
-revision='R53.16-414-RECLAIMED-SAME-NIGHT-R5' if mirror_path.exists() else 'R53.16-MARIA-414-RECLAIMED-R4'
+revision='R53.17-414-RECLAIMED-SAME-NIGHT-R6' if mirror_path.exists() else 'R53.17-MARIA-414-RECLAIMED-R5'
 result=re.sub(r'data-integration-revision="[^"]+"',f'data-integration-revision="{revision}"',result,count=1)
 out=result.encode(encoding)
 # Every other packed payload is preserved exactly.
 old_packages=dict(re.findall(r'<script id="([^"]+)"[^>]*type="(?:application/octet-stream|text/plain)"[^>]*>(.*?)</script>',html,re.S))
 new_packages=dict(re.findall(r'<script id="([^"]+)"[^>]*type="(?:application/octet-stream|text/plain)"[^>]*>(.*?)</script>',result,re.S))
 assert all(new_packages.get(k)==v for k,v in old_packages.items() if k!='atropa-src')
-backup=root/('index.pre-414-r5.backup.html' if mirror_path.exists() else 'index.pre-maria414-r4.backup.html')
+backup=root/('index.pre-414-r6.backup.html' if mirror_path.exists() else 'index.pre-maria414-r5.backup.html')
 if not backup.exists():backup.write_bytes(original)
 tmp=path.with_suffix('.html.new');tmp.write_bytes(out);tmp.replace(path)
 print('Built',revision,len(out),'bytes; decoded source',len(raw),'bytes; SHA256',sha)

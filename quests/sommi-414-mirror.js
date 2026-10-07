@@ -1,9 +1,9 @@
-// SOMMI 414 — THE SAME NIGHT · R3. Embedded in the packed Classic game by build-maria-414.py.
+// SOMMI 414 — THE SAME NIGHT · R4. Embedded in the packed Classic game by build-maria-414.py.
 // Fictional story. Save state and rewards are independent of the main campaign.
 (() => {
  'use strict';
  if (Game.prototype.sommiMirror414Revision) return;
- Game.prototype.sommiMirror414Revision = 3;
+ Game.prototype.sommiMirror414Revision = 4;
  const KEY='atropa_sommi_414_same_night_v1', REWARD=414;
  const ACTS=["Borrowed", "No Silent Exit", "The Door That Knows", "Power Debt", "Under the House", "The Price of Borrowing", "Maria", "A Way Back", "The Truth Comes Home", "The Other Account"];
  const ORIGIN={x:900,y:12,z:-800}, WIDTH=56, DEPTH=70;
@@ -215,20 +215,211 @@
  }
  function rifle(g,x,y,z){
   const r=new THREE.Group();r.position.set(x,y,z);g.add(r);const steel=S('#6b7785'),dark=S('#101923');
-  box(r,2.8,.22,.2,dark);box(r,1.2,.09,.09,steel,1.7,.05);box(r,.2,.65,.18,dark,-.4,-.34);box(r,.23,.6,.16,steel,.2,-.29);box(r,.8,.3,.22,dark,-1.6);box(r,.58,.08,.12,steel,.2,.22);return r;
+  box(r,2.8,.22,.2,dark);box(r,1.2,.09,.09,steel,1.7,.05);box(r,.2,.65,.18,dark,-.4,-.34);box(r,.23,.6,.16,steel,.2,-.29);box(r,.8,.3,.22,dark,-1.6);box(r,.58,.08,.12,steel,.2,.22);
+  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,1.15,10),steel);barrel.rotation.z=Math.PI/2;barrel.position.set(1.8,.045,0);r.add(barrel);
+  box(r,.4,.17,.19,steel,2.3,.04);box(r,.34,.09,.12,S('#8c7660'),-.2,.16);box(r,.1,.3,.12,steel,-.56,-.32).rotation.z=-.35;
+  for(let n=0;n<8;n++)box(r,.04,.24,.21,steel,.65+n*.1,0);return r;
  }
  function ring(g,r,y,z,color){const mesh=new THREE.Mesh(new THREE.TorusGeometry(r,.14,8,64),BASIC(color));mesh.position.set(0,y,z);g.add(mesh);return mesh;}
+ // Original 414 art direction: inherited brass/stone above, a fractured return machine below.
+ // Repeated architectural details are instanced. No downloaded textures, bloom passes or
+ // scene-global renderer settings: these streamed rooms remain independent of the city.
+ const STYLES=[
+  ['#171820','#29202a','#776351','#f5c78b','#79aaa8'],
+  ['#141f30','#182d45','#617689','#8cc9eb','#edba81'],
+  ['#20202d','#35303d','#93816e','#ffe2ae','#c9a3ec'],
+  ['#131c20','#16292c','#697676','#ee9e54','#67a89f'],
+  ['#15202a','#203545','#5c788a','#84d8e1','#e0b477'],
+  ['#141424','#282236','#807159','#efbd81','#9e9ced'],
+  ['#202225','#323136','#8d7e65','#efd4a7','#81bfb4'],
+  ['#1d1821','#2d2530','#74636a','#ed7652','#e5bb79'],
+  ['#202025','#302731','#99806a','#ffdaa1','#91c7b6']
+ ];
+ function surface(color,kind='stone'){
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+  x.fillStyle=color;x.fillRect(0,0,256,256);
+  for(let n=0;n<64;n++){const a=(n*73+19)%256,b=(n*47+11)%256;
+   x.strokeStyle=n%3?'rgba(255,255,255,.045)':'rgba(0,0,0,.16)';x.lineWidth=kind==='metal'?1:2;x.beginPath();x.moveTo(a,b);
+   x.lineTo(kind==='metal'?a:((a+83)%256),kind==='metal'?256:((b+29)%256));x.stroke();
+  }
+  x.strokeStyle='rgba(0,0,0,.3)';x.lineWidth=3;x.strokeRect(3,3,250,250);
+  const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;
+  return new THREE.MeshStandardMaterial({color:'#ffffff',map,roughness:kind==='metal'?.34:.64,metalness:kind==='metal'?.72:.26});
+ }
+ function batch(g,material,parts,name){
+  if(!parts.length)return null;
+  const mesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),material,parts.length),o=new THREE.Object3D();mesh.name=name||'414-architectural-detail';
+  parts.forEach((p,i)=>{o.position.set(p[3]||0,p[4]||0,p[5]||0);o.scale.set(p[0],p[1],p[2]);o.rotation.set(0,p[7]||0,p[6]||0);o.updateMatrix();mesh.setMatrixAt(i,o.matrix);});
+  mesh.receiveShadow=true;g.add(mesh);return mesh;
+ }
+ function arch(g,width,rise,spring,z,material,name){
+  const p=[],n=22;for(let j=0;j<n;j++){
+   const a=j/n*Math.PI,b=(j+1)/n*Math.PI,x1=Math.cos(a)*width/2,y1=spring+Math.sin(a)*rise,x2=Math.cos(b)*width/2,y2=spring+Math.sin(b)*rise;
+   p.push([Math.hypot(x2-x1,y2-y1)+.08,.34,.48,(x1+x2)/2,(y1+y2)/2,z,Math.atan2(y2-y1,x2-x1)]);
+  }
+  p.push([.6,spring,.8,-width/2,spring/2,z],[.6,spring,.8,width/2,spring/2,z]);return batch(g,material,p,name||'414-vault-arch');
+ }
+ function glow(room,x,y,z,width,height,color,rotation=0){
+  if(!room.glowMap){const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d'),grad=ctx.createRadialGradient(64,64,0,64,64,64);grad.addColorStop(0,'rgba(255,255,255,.55)');grad.addColorStop(.3,'rgba(255,255,255,.18)');grad.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=grad;ctx.fillRect(0,0,128,128);room.glowMap=new THREE.CanvasTexture(c);}
+  const m=new THREE.MeshBasicMaterial({map:room.glowMap,color,transparent:true,opacity:.55,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}),mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,height),m);
+  mesh.position.set(x,y,z);mesh.rotation.y=rotation;room.root.add(mesh);return mesh;
+ }
+ function conduit(g,a,b,r,material){
+  const delta=V(...b).sub(V(...a)),length=delta.length(),mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,length,8),material);
+  mesh.position.set(...a.map((v,i)=>(v+b[i])/2));
+  mesh.quaternion.setFromUnitVectors(V(0,1,0),delta.normalize());g.add(mesh);return mesh;
+ }
+ function seal(room,x,z,r,label,color){
+  const c=document.createElement('canvas');c.width=c.height=512;const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,512,512);ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=3;
+  for(const rr of [203,219,239]){ctx.beginPath();ctx.arc(256,256,rr,0,Math.PI*2);ctx.stroke();}
+  for(let n=0;n<48;n++){const a=n/48*Math.PI*2;ctx.beginPath();ctx.moveTo(256+Math.cos(a)*222,256+Math.sin(a)*222);ctx.lineTo(256+Math.cos(a)*(n%4?231:239),256+Math.sin(a)*(n%4?231:239));ctx.stroke();}
+  ctx.textAlign='center';ctx.font='600 138px Georgia';ctx.fillText('414',256,291);ctx.font='17px Arial';ctx.fillText(label,256,340);
+  const map=new THREE.CanvasTexture(c);map.colorSpace=THREE.SRGBColorSpace;const mesh=new THREE.Mesh(new THREE.PlaneGeometry(r*2,r*2),new THREE.MeshBasicMaterial({map,transparent:true,opacity:.36,depthWrite:false}));mesh.rotation.x=-Math.PI/2;mesh.position.set(x,.048,z);room.root.add(mesh);return mesh;
+ }
+ function motes(room,color,count=34){
+  const mesh=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.045,0),BASIC(color),count);mesh.name='414-airborne-memory';room.root.add(mesh);
+  room.dust={mesh,count,dummy:new THREE.Object3D()};
+ }
+ function energySkin(room){
+  const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{time:{value:0},power:{value:1}},
+   vertexShader:'varying vec3 p; varying vec3 n; varying vec3 eye; void main(){p=position;n=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);eye=-mv.xyz;gl_Position=projectionMatrix*mv;}',
+   fragmentShader:'uniform float time;uniform float power;varying vec3 p;varying vec3 n;varying vec3 eye;void main(){float rim=pow(1.0-abs(dot(normalize(n),normalize(eye))),2.2);float flow=sin(p.y*8.0+sin(p.x*3.0+time)*1.7-time*2.0);float lattice=pow(max(0.0,sin(p.x*11.0+p.z*9.0-time*.8)*sin(p.y*12.0+time)),6.0);vec3 blue=vec3(.32,.65,.92);vec3 gold=vec3(1.0,.55,.19);vec3 col=mix(blue,gold,.5+.5*sin(p.y*.9-time*.45));gl_FragColor=vec4(col*(.65+rim+abs(flow)*.22),power*(.1+rim*.65+lattice*.18));}'});
+  const mesh=new THREE.Mesh(new THREE.IcosahedronGeometry(3.6,3),material);mesh.position.set(0,8,-2);mesh.name='414-living-carrier-surface';room.root.add(mesh);room.plasma=mesh;
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(.26,.5,19,12,1,true),new THREE.MeshBasicMaterial({color:'#ffe8be',transparent:true,opacity:.52,depthWrite:false,blending:THREE.AdditiveBlending}));beam.position.set(0,11,-2);room.root.add(beam);room.engineBeam=beam;
+ }
+ function horizon(room){
+  const g=room.root;
+  // The host's transparent cosmos layer otherwise draws over the opaque new horizon.
+  // Only this room-local copy is hidden; leaving restores the untouched native city sky.
+  if(room.sky)room.sky.visible=false;
+  const sky=new THREE.Mesh(new THREE.SphereGeometry(245,28,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{time:{value:0}},
+   vertexShader:'varying vec3 direction;void main(){direction=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+   fragmentShader:'uniform float time;varying vec3 direction;void main(){vec3 d=normalize(direction);float h=max(0.0,d.y);vec3 col=mix(vec3(.11,.18,.25),vec3(.008,.017,.055),smoothstep(0.0,.65,h));float ribbon=exp(-abs(d.y-.20-.035*sin(d.x*9.0+time*.03)-.03*sin(d.z*7.0))*31.0)*smoothstep(.0,.14,h);col+=ribbon*vec3(.12,.16,.18);gl_FragColor=vec4(col,1.0);}'}));sky.name='414-original-night-horizon';g.add(sky);room.horizon=sky;
+  const stars=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(.18,0),BASIC('#c1cfdf'),120),dummy=new THREE.Object3D();stars.name='414-distant-star-field';
+  for(let n=0;n<120;n++){const a=n*2.39996,y=45+(n*47%155),r=Math.sqrt(235*235-y*y);dummy.position.set(Math.cos(a)*r,y,Math.sin(a)*r);dummy.scale.setScalar(n%7?.6:1.3);dummy.updateMatrix();stars.setMatrixAt(n,dummy.matrix);}g.add(stars);
+  const moon=new THREE.Mesh(new THREE.SphereGeometry(14,24,16),BASIC('#c8bcb0'));moon.position.set(-66,63,-179);g.add(moon);
+  const eclipse=new THREE.Mesh(new THREE.SphereGeometry(13.5,24,16),BASIC('#0a1830'));eclipse.position.set(-62,64,-172);g.add(eclipse);glow(room,-66,63,-182,55,55,'#a7c5cd');
+ }
+ function architecture(room){
+  const g=room.root,i=room.i,c=STYLES[i],p=room.palette={stone:surface(c[1]),metal:surface(c[2],'metal'),dark:S(c[0]),warm:BASIC(c[3]),cool:BASIC(c[4])};
+  const rim=[],lights=[],panels=[],floor=[],relief=[];
+  // Deep perimeter bays create a lit silhouette. Interiors keep a continuous ground plane
+  // and a cutaway ceiling; nothing new blocks the native service lanes or character walk.
+  for(const side of [-1,1])for(let z=-28;z<=28;z+=8){
+   panels.push([.12,room.wallHeight-2,7.5,side*27.65,room.wallHeight/2,z]);
+   rim.push([.22,room.wallHeight-.8,.32,side*27.25,room.wallHeight/2,z-3.8]);
+   lights.push([.12,8,.14,side*27,5,z-3.55]);
+   for(let n=0;n<6;n++){relief.push([.06,5.8,.06,side*27.35,8,z-2.5+n]);relief.push([.06,.06,6,side*27.35,5+n,z]);}
+  }
+  if(i!==1){batch(g,p.stone,panels,'414-recessed-wall-bays');batch(g,p.metal,rim,'414-wall-ribs');batch(g,p.warm,lights,'414-practical-wall-lights');batch(g,p.metal,relief,'414-wall-relief');}
+  for(let x=-24;x<=24;x+=8)for(let z=-28;z<=28;z+=8)floor.push([7.8,.022,7.8,x,.012,z]);
+  batch(g,surface(c[0]),floor,'414-inlaid-stone-floor');
+  const inlay=[];for(const x of [-25.5,25.5])inlay.push([.08,.012,65,x,.038,0]);for(const z of [-32,32])inlay.push([51,.012,.08,0,.038,z]);batch(g,p.metal,inlay,'414-brass-floor-inlay');
+  const family=i===0||i===8;
+  if(family){
+   for(const z of [-29,-13,3,19]){arch(g,51,7,11,z,p.metal);arch(g,49.6,6.5,11,z-.4,p.warm,'414-archive-arch-light');}
+   const cases=[],spines=[],backs=[];
+   for(const side of [-1,1])for(const z of [-24,-8,8,24]){
+    cases.push([3.1,8,5.8,side*25.1,4,z]);backs.push([.12,6.9,5.2,side*23.49,4,z]);
+    for(let row=0;row<5;row++){cases.push([3.4,.12,6,side*25,1+row*1.35,z]);for(let n=0;n<16;n++)spines.push([.24,.72+(n%4)*.1,.22,side*23.3,1.55+row*1.35,z-2.4+n*.3]);}
+   }
+   batch(g,p.dark,cases,'414-family-memory-cabinets');batch(g,p.stone,backs,'414-cabinet-recesses');batch(g,p.metal,spines,'414-archived-memory-spines');
+   for(const x of [-15,15]){arch(g,13,3.1,6.4,-28,p.metal,'414-family-vault-surround').position.x=x;glow(room,x,6,-27.8,17,12,c[3]);}
+   for(const x of [-20,20]){const lamp=new THREE.Mesh(new THREE.CylinderGeometry(.75,1.2,.7,12),p.metal);lamp.position.set(x,6.3,20);g.add(lamp);box(g,.12,6,.12,p.metal,x,3,20);box(g,1,.08,1,p.warm,x,6,20);glow(room,x,6,19.8,6,6,c[3]);}
+   seal(room,0,22,6,'FAMILY / LOCAL ARCHIVE',c[3]);motes(room,c[3],28);
+   const mount=[],channels=[];for(let n=0;n<4;n++){channels.push([9,.53,.08,-15,2.1+n*.95,-26.69]);for(const x of [-17,-13]){mount.push([.2,.3,.36,x,2.1+n*.95,-26.4]);mount.push([.38,.08,.38,x,2+n*.95,-26.34]);}}
+   batch(g,p.dark,channels,'414-recessed-rifle-channels');batch(g,p.metal,mount,'414-machined-rifle-catches');
+  }else if(i===1){
+   horizon(room);
+   const vents=[],slats=[];for(const side of [-1,1])for(const z of [-25,-9,8,25]){vents.push([4,1.7,5,side*25,.85,z]);for(let n=0;n<12;n++)slats.push([3.8,.06,.1,side*25,1.73,z-2+n*.34]);}
+   batch(g,p.dark,vents,'414-rooftop-plant');batch(g,p.metal,slats,'414-vent-louvres');
+   for(const x of [-25,25])for(const z of [-30,29]){conduit(g,[x,0,z],[x,11,z],.12,p.metal);conduit(g,[x-2,8,z],[x+2,8,z],.08,p.metal);for(let n=0;n<3;n++)box(g,2.4,.06,.09,p.cool,x,9+n*.7,z);}
+   const circuit=[];for(const z of [-26,-10,6,22])circuit.push([42,.025,.05,0,.035,z]);for(const x of [-21,0,21])circuit.push([.05,.025,56,x,.035,0]);batch(g,p.cool,circuit,'414-rooftop-signal-traces');
+   motes(room,c[4],28);
+  }else if(i===2){
+   for(const z of [-29,-16,-3,10,23]){arch(g,49,10,9,z,p.metal,'414-copied-archive-ribs');arch(g,47.5,9.5,9,z-.25,p.warm,'414-false-welcome-light');}
+   const facade=[],fractures=[];for(let n=0;n<14;n++){const x=-12+(n%7)*4,y=6+Math.floor(n/7)*7;facade.push([3.6,6.5,.35,x,y,-29.5,n%2?.045:-.04]);fractures.push([.09,6.3,.12,x+1.8,y,-29.1,n%2?.045:-.04]);}
+   batch(g,p.stone,facade,'414-sealed-return-wall');batch(g,p.cool,fractures,'414-fractured-exit-lines');
+   arch(g,15,5,9,-27.7,p.warm,'414-deceptive-portal');glow(room,0,9,-27.5,26,24,c[3]);seal(room,0,1,9,'RETURN / ADDRESS NOT FOUND',c[3]);
+   for(let n=0;n<4;n++){const r=ring(g,8+n*2,10+n*.5,-29,c[4]);r.rotation.y=.12*n;room.animated.push({mesh:r,axis:'z',speed:(n%2?1:-1)*.035});}
+   motes(room,c[4],36);
+  }else if(i===3){
+   const banks=[],fins=[],power=[];for(const side of [-1,1])for(const z of [-25,-10,5,20]){
+    banks.push([7,12,5,side*23,6,z]);for(let n=0;n<9;n++){fins.push([7.2,.16,5.2,side*23,1+n*1.2,z]);power.push([.06,.44,.09,side*19.35,1.5+n*1.2,z+2.65]);}
+    for(const xoff of [-2,2])conduit(g,[side*23+xoff,12,z],[side*23+xoff,17,z],.24,p.metal);
+   }
+   batch(g,p.dark,banks,'414-emergency-capacitor-banks');batch(g,p.metal,fins,'414-capacitor-cooling-fins');room.busGlow=batch(g,p.warm,power,'414-manual-bus-indicators');
+   for(const z of [-26,-10,6,22])arch(g,40,5,12,z,p.metal,'414-power-vault');
+   for(const x of [-8,8])conduit(g,[x,1,-30],[x,13,-30],.35,p.metal);
+   for(let j=0;j<3;j++){const r=ring(g,7.5+j*.7,7,-30+j*.15,c[3]);r.material.color.set(j?'#513c28':c[3]);}
+   const cables=[];for(let n=0;n<6;n++)cables.push([.19,.18,64,-12+n*4,16,0]);batch(g,p.metal,cables,'414-overhead-bus-manifold');
+   seal(room,0,19,5,'EMERGENCY / MANUAL BUS',c[3]);motes(room,c[3],18);
+  }else if(i===4){
+   for(const z of [-28,-20,-12,-4,4,12,20,28]){arch(g,43,6,9,z,p.metal,'414-scan-vault');arch(g,41.5,5.6,9,z-.18,p.cool,'414-scan-rib-light');}
+   const stripes=[],route=[];for(const side of [-1,1])for(let z=-30;z<=30;z+=4){stripes.push([1.7,.025,.14,side*25,.037,z,0,side*.55]);route.push([.08,.025,3,side*23,.037,z]);}
+   batch(g,p.metal,stripes,'414-service-lane-chevrons');batch(g,p.warm,route,'414-safe-perimeter-lane');
+   room.scanVeils=[];for(const h of room.hazards){const plane=new THREE.Mesh(new THREE.PlaneGeometry(42,9),new THREE.MeshBasicMaterial({color:c[4],transparent:true,opacity:.035,depthWrite:false,side:THREE.DoubleSide}));plane.position.set(0,5,h.position.z);g.add(plane);room.scanVeils.push(plane);}
+   seal(room,0,23,5,'SUBLEVEL / CARRIER CONTROL',c[4]);motes(room,c[3],24);
+  }else if(i===5){
+   for(const z of [-30,-15,1,18]){arch(g,52,15,14,z,p.metal,'414-engine-cathedral-ribs');arch(g,50.8,14.5,14,z-.2,p.cool,'414-engine-arch-light');}
+   const buttress=[],segments=[],fins=[];for(const side of [-1,1])for(const z of [-26,-10,6,22]){buttress.push([2.6,22,3,side*26,11,z]);for(let n=0;n<8;n++)fins.push([3.1,.28,3.5,side*26,2+n*2.7,z]);}
+   batch(g,p.dark,buttress,'414-engine-buttresses');batch(g,p.metal,fins,'414-engine-buttress-armour');
+   const orbit=new THREE.Group();orbit.name='414-segmented-containment';orbit.position.set(0,8,-2);g.add(orbit);
+   for(let n=0;n<40;n++){const a=n/40*Math.PI*2;segments.push([1.1,.5,1.2,Math.cos(a)*9,Math.sin(a)*9,0,a+Math.PI/2]);}
+   batch(orbit,p.metal,segments,'414-rotor-segments');room.animated.push({mesh:orbit,axis:'y',speed:.095});
+   for(const r of [4.3,6.3,8.4,11.3]){const torus=new THREE.Mesh(new THREE.TorusGeometry(r,.28,8,64),p.metal);torus.rotation.x=Math.PI/2;torus.position.set(0,.32,-2);g.add(torus);}
+   seal(room,0,-2,13,'CARRIER / RETURN ENGINE',c[3]);
+   const cage=[],energy=[];for(let n=0;n<16;n++){const a=n/16*Math.PI*2,x=Math.cos(a)*5,z=Math.sin(a)*5-2;cage.push([.22,19,.22,x,12,z]);energy.push([.07,15,.07,x*.75,11,(z+2)*.75-2]);}
+   batch(g,p.metal,cage,'414-core-filament-cage');room.energy=batch(g,p.cool,energy,'414-captive-carrier-filaments');
+   energySkin(room);
+   const turbine=new THREE.Group();turbine.name='414-suspended-turbine-crown';turbine.position.set(0,20,-2);g.add(turbine);const blades=[];
+   for(let n=0;n<28;n++){const a=n/28*Math.PI*2;blades.push([1.8,.18,4,Math.cos(a)*5,0,Math.sin(a)*5,0,-a+.35]);}batch(turbine,p.metal,blades,'414-turbine-blades');room.animated.push({mesh:turbine,axis:'y',speed:.17});
+   for(const y of [3,20]){const cap=new THREE.Mesh(new THREE.CylinderGeometry(5.5,6,.8,32,1,true),p.metal);cap.position.set(0,y,-2);g.add(cap);}
+   for(let j=0;j<3;j++){const r=ring(g,4.1+j*.75,18+j*1.2,-2,c[3]);r.rotation.x=Math.PI/2;room.animated.push({mesh:r,axis:'z',speed:.07*(j+1)});}
+   for(const [x,z] of [[-21,15],[21,4],[-17,-24]]){conduit(g,[x,1.4,z],[Math.sign(x)*7,6,-2],.1,p.metal);conduit(g,[x,1.6,z],[Math.sign(x)*7,6.2,-2],.045,p.warm);}
+   arch(g,9,3,3,-29,p.metal,'414-rifle-cradle-surround').position.x=14;glow(room,14,3,-28.6,12,9,c[3]);
+   room.engineAuras=[glow(room,0,10,-2.3,20,26,c[4]),glow(room,0,10,-2.3,20,26,c[4],Math.PI/2)];motes(room,c[3],54);
+  }else if(i===6){
+   for(const z of [-30,-15,3,22]){arch(g,50,10,10,z,p.stone,'414-confession-arcade');arch(g,48.4,9.4,10,z-.2,p.metal,'414-arcade-brass-edge');}
+   const screens=[],pillars=[];for(const side of [-1,1])for(const z of [-24,-8,8,24]){pillars.push([2,11,2,side*25,5.5,z]);for(let n=0;n<10;n++)screens.push([.12,7,.22,side*26,7,z-2.5+n*.55]);}
+   batch(g,p.stone,pillars,'414-quiet-arcade-piers');batch(g,p.metal,screens,'414-archive-divider-fins');
+   const back=new THREE.Mesh(new THREE.PlaneGeometry(25,13),p.dark);back.position.set(0,7,-32);g.add(back);
+   arch(g,18,6,7,-30,p.warm,'414-confession-halo');glow(room,0,8,-30,29,24,c[3]);seal(room,0,-13,8,'THE SAME NIGHT / TWO ACCOUNTS',c[3]);motes(room,c[3],24);
+   for(const side of [-1,1]){box(g,12,.32,3,p.stone,side*18,.6,12);box(g,12,.14,2.8,p.metal,side*18,.85,12);glow(room,side*18,1,10.5,13,4,c[4]);}
+  }else if(i===7){
+   const armour=[],cracks=[];for(const side of [-1,1])for(let z=-28;z<=28;z+=8){armour.push([2,14,4,side*26,7,z,side*.045]);cracks.push([.1,12,.1,side*24.8,7,z+1,side*.035]);}
+   batch(g,p.metal,armour,'414-purge-corridor-armour');room.alarm=batch(g,p.warm,cracks,'414-purge-cracks');
+   for(const z of [-28,-12,4,20])arch(g,45,5,11,z,p.metal,'414-purge-vault');
+   const guide=[];for(const side of [-1,1])for(let z=-30;z<=30;z+=4)guide.push([.13,.025,2,side*21,.04,z]);batch(g,p.cool,guide,'414-return-corridor-guides');
+   arch(g,12,4,6,31,p.cool,'414-manual-return-door');glow(room,0,6,30.8,20,16,c[4]);motes(room,c[3],44);
+   const sparks=new THREE.InstancedMesh(new THREE.BoxGeometry(.025,.24,.025),BASIC('#ffbf73'),72);sparks.name='414-failing-conduit-sparks';g.add(sparks);room.sparks={mesh:sparks,dummy:new THREE.Object3D()};
+  }
+ }
+ function tickArchitecture(room,clock,visualStep,game){
+  const d=room.dust;if(d){for(let n=0;n<d.count;n++){const a=n*2.399963,x=Math.sin(a)*22,z=Math.cos(a*1.71)*29,y=.7+((n*.83+clock*(room.i===7?2.6:.13))%12);d.dummy.position.set(x,y,z);d.dummy.scale.setScalar(.5+(n%4)*.3);d.dummy.rotation.set(clock*.12,a,0);d.dummy.updateMatrix();d.mesh.setMatrixAt(n,d.dummy.matrix);}if(d.mesh.instanceMatrix)d.mesh.instanceMatrix.needsUpdate=true;}
+  if(room.scanVeils)room.scanVeils.forEach((m,i)=>{m.position.z=room.hazards[i].position.z;m.material.color.set(clock%5<2.7?'#ef7062':'#d5af62');m.material.opacity=clock%5<2.7?.045:.014;});
+  if(room.energy){const live=visualStep<20;room.energy.visible=live;room.engineAuras.forEach(m=>m.material.opacity=live?.38+Math.sin(clock*1.5)*.05:.08);}
+  if(room.plasma){room.plasma.position.y=room.engineCore.position.y;room.plasma.rotation.y=clock*.08;room.plasma.material.uniforms.time.value=clock;room.plasma.material.uniforms.power.value=visualStep<20?1:.12;room.engineBeam.visible=visualStep<20;}
+  if(room.horizon)room.horizon.material.uniforms.time.value=clock;
+  if(room.busGlow)room.busGlow.visible=!(game.sommiMirror414Cine?.act===3&&game.sommiMirror414Cine.t<6);
+  if(room.alarm)room.alarm.material.color.set(Math.sin(clock*3)>.5?'#f6a068':'#963c34');
+  if(room.sparks){const s=room.sparks;for(let n=0;n<72;n++){const age=(clock*3+n*.27)%5,side=n%2?1:-1;s.dummy.position.set(side*(24-age*.27),9-age*1.35,-26+(n%9)*6+Math.sin(n*3.3)*age*.4);s.dummy.rotation.set(0,0,side*.4);s.dummy.updateMatrix();s.mesh.setMatrixAt(n,s.dummy.matrix);}if(s.mesh.instanceMatrix)s.mesh.instanceMatrix.needsUpdate=true;}
+ }
  function reconstruction(room,x,z){
   const city=new THREE.Group();city.name='sommiMirror414-forensic-reconstruction';city.position.set(x,1.55,z);room.root.add(city);
-  const blocks=[];box(city,12,.12,9,S('#101f32'));
+  const blocks=[];box(city,12,.12,9,S('#101f32'));const frame=S('#9b8165'),windows=[[],[],[],[]];
+  for(const px of [-6.2,6.2])box(city,.12,.22,9.4,frame,px,.02);for(const pz of [-4.7,4.7])box(city,12.5,.22,.12,frame,0,.02,pz);
   for(let district=0;district<4;district++)for(let n=0;n<6;n++){
    const px=-4.6+(district%2)*5.3+(n%3)*1.2,pz=-3.2+Math.floor(district/2)*3.9+Math.floor(n/3)*1.25,h=.65+((district*7+n*3)%8)*.28;
-   box(city,.8,h,.8,S('#244856'),px,h/2,pz);
+   box(city,.8,h,.8,S('#244856'),px,h/2,pz);box(city,.46,.25,.46,S('#395766'),px,h+.15,pz);
+   for(let y=.25;y<h;y+=.3)for(let j=0;j<3;j++)windows[district].push([.1,.09,.012,px-.25+j*.25,y,pz+.41]);
    const light=box(city,.82,.12,.82,BASIC('#67c8d1'),px,h+.08,pz);blocks.push({light,district});
   }
-  for(let lane=-3;lane<=3;lane+=3)box(city,11,.025,.04,BASIC('#71a5b2'),0,.09,lane);
+  const districtWindows=windows.map((parts,i)=>batch(city,BASIC('#accdc1'),parts,'414-hologram-district-'+i));
+  for(let lane=-3;lane<=3;lane+=3){box(city,11,.025,.04,BASIC('#71a5b2'),0,.09,lane);box(city,.035,.025,8,BASIC('#71a5b2'),lane,.09);}
   const pulse=ring(city,2.7,.16,0,'#efc16c');pulse.rotation.x=Math.PI/2;
-  room.reconstruction={city,blocks,pulse,time:0};
+  room.reconstruction={city,blocks,pulse,districtWindows,time:0};
   textPanel(room.root,room.i===8?'RETURN CIRCUIT / DISTRICTS':'FORENSIC RECONSTRUCTION','LOCAL MODEL / HOUSE RECORDER / CARRIER 414',x,4.7,z-4.7,11,2.6);
  }
  function rooftop(room){
@@ -237,14 +428,17 @@
    const sky=buildCosmosSky(260);sky.name='sommiMirror414-rooftop-cosmos';sky.material.opacity=1;root.add(sky);room.sky=sky;
   }
   const skyline=new THREE.Group();skyline.name='sommiMirror414-rooftop-skyline';root.add(skyline);
-  // Distant silhouettes are scenery outside the solid playable roof.
+  // A layered city horizon, entirely outside the solid playable roof. Windows share one draw.
+  const facades=[],windows=[],spires=[];
   for(let n=0;n<40;n++){
    const side=n%4,lane=Math.floor(n/4),offset=-70+lane*15;
    const x=side===0?-80:side===1?80:offset,z=side===2?-95:side===3?95:offset;
-   const h=18+(n*17%48);box(skyline,8,h,9,building,x,h/2-12,z);
-   for(let y=0;y<5;y++)box(skyline,5,.18,.1,lit,x,y*6-8,z+4.6);
+   const h=18+(n*17%48);facades.push([8,h,9,x,h/2-12,z]);facades.push([5,h*.23,6,x,h-12+h*.115,z]);
+   for(let row=0;row<Math.floor(h/2.5);row++)for(let col=0;col<4;col++)if((row*13+col*3+n)%5){windows.push([.72,.85,.08,x-2.7+col*1.8,row*2.5-10,z+4.55]);windows.push([.08,.85,.72,x+(x>0?-4.05:4.05),row*2.5-10,z-2.7+col*1.8]);}
+   spires.push([.15,6,.15,x,h-9,z]);
    box(skyline,.14,1.4,.14,BASIC(n%3?'#6eaaad':'#d4af75'),x,h-11,z);
   }
+  batch(skyline,building,facades,'414-layered-city-towers');batch(skyline,lit,windows,'414-city-window-field');batch(skyline,S('#576b7a'),spires,'414-city-antennae');
   for(let z=-30;z<=30;z+=10)for(const x of [-26,26])box(root,.2,2.8,.2,S('#5b6e83'),x,1.4,z);
   textPanel(root,'ROOF RECEIVER / 414','CARRIER TRACE LIVE. THREE FRAGMENTS. ONE RETURN ADDRESS.',0,4,-33,17,3.5);
   const carrier=new THREE.Group();carrier.name='sommiMirror414-stolen-carrier';root.add(carrier);
@@ -254,55 +448,34 @@
  }
  function createRoom(game,i){
   const root=new THREE.Group();root.name='sommiMirror414-room-'+i;root.position.copy(point(i));root.visible=false;
-  const wall=S('#34465d'),floor=S('#304352'),metal=S('#485a72'),gold=BASIC('#d5a34f'),cyan=BASIC('#418c9c');
-  const roof=i===1,wallHeight=roof?1.25:16;
+  const c=STYLES[i],wall=S(c[1]),floor=S(c[0]),metal=S(c[2]),gold=BASIC(c[3]),cyan=BASIC(c[4]);
+  const roof=i===1,wallHeight=roof?1.25:i===5?32:22;
   box(root,WIDTH,.7,DEPTH,floor,0,-.35);box(root,.6,wallHeight,DEPTH,wall,-WIDTH/2,wallHeight/2);box(root,.6,wallHeight,DEPTH,wall,WIDTH/2,wallHeight/2);box(root,WIDTH,wallHeight,.6,wall,0,wallHeight/2,-DEPTH/2);
-  // Cutaway ceiling preserves overhead visibility. Ribs, ducts and coves frame the low camera.
-  if(!roof)for(let z=-30;z<=30;z+=12){box(root,WIDTH,.35,.45,metal,0,14,z);box(root,.25,.2,8,gold,-25,3,z);box(root,.25,.2,8,cyan,25,3,z);}
   box(root,22,wallHeight,.6,wall,-17,wallHeight/2,DEPTH/2);box(root,22,wallHeight,.6,wall,17,wallHeight/2,DEPTH/2);
-  const hemisphere=new THREE.HemisphereLight(0xc9dceb,0x48576c,2.6),ambient=new THREE.AmbientLight(0xa8bacb,2.2);root.add(hemisphere,ambient);
-  const light=new THREE.PointLight(i===3?0xe7ad5c:0x7dbacb,650,90,2);light.position.set(0,12,0);root.add(light);
-  const fill=new THREE.PointLight(0xc8b7dc,390,65,2);fill.position.set(-18,8,-20);root.add(fill);
-  const sign=textPanel(root,i===8?'414 HOUSE / RETURN':ACTS[Math.min(i,9)].toUpperCase(),'Private family archive. Local story record.',0,11,-34.5,18,5);
-  const room={root,i,light,fill,sign,hemisphere,ambient,animated:[],racks:[],hazards:[],drones:[],collars:[]};
-  // Floor inlays and wall bays provide depth without expensive texture downloads.
-  const tileGeo=new THREE.BoxGeometry(6.7,.035,6.7),tiles=new THREE.InstancedMesh(tileGeo,S('#4b5b6a'),63),dummy=new THREE.Object3D();
-  let ti=0;for(let tx=-3;tx<=3;tx++)for(let tz=-4;tz<=4;tz++){dummy.position.set(tx*7.1,.026,tz*7.1);dummy.updateMatrix();tiles.setMatrixAt(ti,dummy.matrix);tiles.setColorAt(ti,new THREE.Color(ti++%3?'#7a8998':'#5a7387'));}tiles.receiveShadow=true;root.add(tiles);
-  if(!roof)for(const side of [-1,1]){
-   box(root,.15,.13,DEPTH-2,cyan,side*26,.11);box(root,.16,.22,DEPTH-2,gold,side*27,6.8);
-   for(let zz=-28;zz<=28;zz+=14){box(root,1.1,11,.8,metal,side*27,5.5,zz);box(root,.3,.3,11,metal,side*25,10,zz);}
-   for(let yy=1;yy<=3;yy++){const pipe=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,60,10),metal);pipe.rotation.x=Math.PI/2;pipe.position.set(side*26.8,yy+7,0);root.add(pipe);}
-  }
-  if(i===0||i===1||i===6||i===8){
-   for(const side of [-1,1])for(const zz of [-10,12]){
-    const xx=side*18;box(root,6,.24,2.3,metal,xx,1.25,zz);for(const off of [-2.2,2.2])box(root,.25,1.25,.25,metal,xx+off,.63,zz);
-    box(root,1.9,.05,.6,S('#121c28'),xx,1.41,zz+.65);for(let key=0;key<8;key++)box(root,.12,.035,.38,cyan,xx-.6+key*.18,1.45,zz+.65);
-    box(root,.14,1.1,.14,metal,xx,1.9,zz-.6);textPanel(root,i===6?'MARIA / RETURN ROUTE':'414 / LOCAL NODE',i===0?'CAMERA BUFFER / MISSING INTERVAL':i===1?'CARRIER ACTIVE / SIGNAL LOST':'HOUSE BUS / LOCAL RECORD',xx,2.7,zz-.55,4.9,2.2);
-    const seat=box(root,1.8,.25,1.8,S('#493a45'),xx,.8,zz+2);box(root,1.8,1.5,.25,S('#493a45'),xx,1.5,zz+2.8);box(root,.15,.8,.15,metal,xx,.4,zz+2);
-   }
-  }
+  const hemisphere=new THREE.HemisphereLight(0xc9dceb,0x241c29,1.8),ambient=new THREE.AmbientLight(0xb9bbc8,1.05);root.add(hemisphere,ambient);
+  const light=new THREE.PointLight(i===0||i===8||i===6?0xffd29b:i===3?0xe7ad5c:0x9baddc,650,90,2);light.position.set(0,12,0);root.add(light);
+  const fill=new THREE.PointLight(i===5?0xd7a279:0x8ebfca,390,65,2);fill.position.set(-18,8,-20);root.add(fill);
+  const roomNotes=['FAMILY ARCHIVE / ACCESS LOG RETAINED','CITY RECEIVERS / STOLEN CARRIER LIVE','COPIED RETURN ADDRESS / NO OUTGOING ROUTE','EMERGENCY POWER / MANUAL SERVICE ONLY','SUBLEVEL CONTROL / RED ACTIVE / GOLD SAFE','FOUR RIFLE CHANNELS / ONE RETURN ENGINE','THE SAME NIGHT / TWO ACCOUNTS','PURGE ARMED / MANUAL RETURN STILL LIVE','FAMILY ARCHIVE / RETURN CIRCUIT RESTORATION'];
+  const sign=textPanel(root,i===8?'414 HOUSE / RETURN':ACTS[Math.min(i,9)].toUpperCase(),roomNotes[i],0,i===5?25:16,-34.5,18,4);
+  const room={root,i,wallHeight,light,fill,sign,hemisphere,ambient,animated:[],racks:[],hazards:[],drones:[],collars:[]};
   if(i===0||i===8){
    reconstruction(room,0,6);
-   for(const x of [-22,22])for(let z=-24;z<20;z+=10){box(root,3,8,3,metal,x,4,z);for(let n=0;n<6;n++){box(root,2.7,.6,.1,wall,x,1+n*1.1,z+1.56);for(let k=0;k<3;k++)box(root,.15,.12,.12,k===0?gold:cyan,x-.8+k*.6,1+n*1.1,z+1.63);}}
-   box(root,14,.6,5,metal,0,1.2,6);box(root,12,5,.5,wall,-15,3.4,-27);
+   box(root,14,.6,10,metal,0,1.2,6);for(const x of [-5,5])box(root,1.1,1.2,6,wall,x,.6,6);box(root,12,5,.5,wall,-15,3.4,-27);
    for(let n=0;n<4;n++){box(root,5,.09,.16,gold,-15,1.9+n*.95,-26.55);const r=rifle(root,-15,2.1+n*.95,-26.2);r.visible=i===8&&read().rifles===false;room.racks.push(r);}
    textPanel(root,'FAMILY RACK / 414','LOCAL ACCESS. CATCHES OPEN. NO FORCED ENTRY.',-15,7.3,-27,12,3);
    textPanel(root,'HOUSE RECORDER','Camera buffer: someone knew the alarm. The return carrier is 414.',15,4.4,-22,10,4);
   }else if(i===1){
    rooftop(room);
    box(root,8,.06,52,S('#0a2030'),0,.04,0);
-   for(const x of [-13,13])for(let z=-25;z<30;z+=10){box(root,.7,8,.7,metal,x,4,z);box(root,.14,6,.14,cyan,x,4,z+.5);}
+   for(const x of [-13,13])for(let z=-25;z<30;z+=10){box(root,.32,5.5,.32,metal,x,2.75,z);box(root,.1,4,.1,cyan,x,3,z+.25);}
   }else if(i===2){
    box(root,13,12,1,S('#312742'),0,6,-28);for(const x of [-7,7])box(root,.18,11,.2,gold,x,5.5,-27.4);
    textPanel(root,'EXIT / WELCOME HOME','RETURN CODE ACCEPTED. PLEASE REMAIN WHERE YOU ARE.',0,6,-27.3,11,4);
-   for(let x=-24;x<25;x+=8){box(root,3,7,3,metal,x,3.5,-2);box(root,2.8,.14,.16,cyan,x,6,-.4);}
   }else if(i===3){
    room.light.intensity=160;room.fill.intensity=100;
    for(let z=-28;z<28;z+=4){box(root,.16,.06,1.8,gold,-3,.05,z);box(root,.16,.06,1.8,gold,3,.05,z);}
-   for(let z=-25;z<=20;z+=15){box(root,8,12,5,metal,-20,6,z);box(root,8,12,5,metal,20,6,z);}
    const lift=ring(root,9,7,-29,'#c98a39');room.animated.push({mesh:lift,axis:'z',speed:.1});
   }else if(i===4){
-   for(let z=-28;z<=24;z+=8){box(root,WIDTH,.8,1,metal,0,12,z);box(root,1,12,1,metal,-22,6,z);box(root,1,12,1,metal,22,6,z);}
    for(let j=0;j<2;j++){const sweep=box(root,44,.07,.14,BASIC('#d56959'),0,.8,j? -12:10);room.hazards.push(sweep);}
    textPanel(root,'SCAN CYCLE','RED = ACTIVE. GOLD = SAFE. Cross between the sweeps.',0,8,-34,15,4);
   }else if(i===5){
@@ -310,11 +483,9 @@
    box(root,13,.12,20,metal,0,.06,-2);
    for(let j=0;j<5;j++){const r=ring(root,6+j*1.1,8,-2,j%2?'#b685b9':'#73c7cc');r.rotation.y=j*.5;room.animated.push({mesh:r,axis:j%2?'z':'y',speed:(j%2?-1:1)*(.09+j*.05)});}
    const core=new THREE.Mesh(new THREE.IcosahedronGeometry(3.1,1),new THREE.MeshStandardMaterial({color:'#142d42',metalness:.8,roughness:.35,emissive:'#327d90',emissiveIntensity:1.1}));core.position.set(0,8,-2);root.add(core);room.engineCore=core;room.animated.push({mesh:core,axis:'y',speed:.24});
-   for(let n=0;n<12;n++){const a=n/12*Math.PI*2;box(root,.8,8,.8,metal,Math.cos(a)*10,4,Math.sin(a)*10-2);}
    for(const [x,z] of [[-21,15],[21,4],[-17,-24]]){const cable=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,18,8),gold);cable.position.set(x*.55,5,z*.55);cable.rotation.z=Math.PI/3;root.add(cable);const collar=box(root,2,.3,2,BASIC('#f0c87b'),x,1.7,z);room.collars.push(collar);}
    box(root,7,2,3,metal,14,1,-28);for(let j=0;j<4;j++)room.racks.push(rifle(root,14,1.5+j*.3,-27));
   }else if(i===6){
-   for(let z=-28;z<28;z+=10){box(root,4,8,4,metal,-23,4,z);box(root,4,8,4,metal,23,4,z);}
    textPanel(root,'MARIA / RETURN ROUTE','HOUSE RECORDER / SAME NIGHT / TWO ACCOUNTS',-16,5,-25,12,4);
    // Use the registered Maria model; unavailable models get an explicit voice link.
    let packed;try{packed=undefined;}catch(error){packed=Promise.reject(error);}
@@ -323,11 +494,10 @@
     if(typeof PLAYER_SKINS==='undefined'||!PLAYER_SKINS.some(s=>s.id==='maria-414'))throw new Error('Maria model not available in this build');const actor=buildPlayerSkin('maria-414');actor.position.set(0,0,-24);actor.rotation.y=0;root.add(actor);room.actor=actor;
    }).catch(()=>{if(game.disposed||!root.parent)return;room.actorVoiceFallback=textPanel(root,'MARIA / VOICE LINK','The rifles come home. You open the way out.',0,4,-14,10,3);});
   }else if(i===7){
-   for(let z=-30;z<31;z+=8){box(root,1.4,14,1.4,metal,-24,7,z);box(root,1.4,14,1.4,metal,24,7,z);box(root,50,.3,1.4,metal,0,13,z);}
-   for(let n=0;n<18;n++){const debris=new THREE.Mesh(new THREE.TetrahedronGeometry(.25+n%3*.15),S('#76859a'));debris.position.set((n%2?-1:1)*(22+n%3),7+n%6,-28+n*3);root.add(debris);room.drones.push(debris);}
+   for(let n=0;n<18;n++){const debris=new THREE.Mesh(n%3?new THREE.TetrahedronGeometry(.45+n%3*.22):new THREE.BoxGeometry(2.4,.18,1.5),S('#76859a'));debris.position.set((n%2?-1:1)*(22+n%3),7+n%6,-28+n*3);root.add(debris);room.drones.push(debris);}
    textPanel(root,'MANUAL RETURN','SOLID FLOOR. FOLLOW RELAYS. DO NOT LEAVE THE CASE.',0,9,-34,16,4);
   }
-  game.scene.add(root);return room;
+  architecture(room);tickArchitecture(room,0,read().step,game);game.scene.add(root);return room;
  }
  function build(game){
   if(game.sommiMirror414World)return;
@@ -580,6 +750,7 @@
   const sceneShots={
    0:[ [[-10,7,-17],[-9,5,-21],[-15,3,-26]],[[10,9,20],[7,6,13],[0,3,6]],[[11,5,-7],[9,4,-13],[15,4,-22]] ],
    1:[ [[-24,12,26],[-18,9,19],[0,6,-45]],[[22,7,14],[16,5,2],[-8,2,-12]],[[-20,4,-16],[-17,3,-20],[-12,2,-23]] ],
+   2:[ [[-20,9,24],[-16,7,15],[0,9,-27]],[[13,5,-10],[9,4,-17],[0,6,-28]],[[-17,5,15],[-13,3,9],[-19,2,6]] ],
    3:[ [[-10,7,19],[-9,4,16],[-17,2,15]],[[10,7,8],[10,4,-8],[16,2,-20]],[[7,10,-19],[5,7,-23],[0,7,-29]] ],
    4:[ [[-20,9,24],[-16,5,18],[0,1,10]],[[20,6,9],[18,4,-3],[0,1,-12]],[[0,10,-12],[0,7,-20],[0,8,-34]] ],
    7:[ [[-21,12,27],[-19,9,19],[0,5,-18]],[[20,8,14],[20,5,1],[-16,2,-24]],[[7,5,17],[5,3,22],[0,3,29]] ],
@@ -587,7 +758,7 @@
    9:[ [[11,5,-12],[9,4,-16],[16,4,-22]],[[9,7,15],[6,5,12],[0,3,6]],[[0,4,15],[0,3,19],[0,3,-24]] ]
   };
   const poses=sceneShots[c.act]||[ [[-23,11,28],[-15,9,20],[0,5,-8]],[[19,7,15],[14,5,-7],[-10,3,-18]],[[-12,4,-6],[9,3,9],[0,2,17]] ];
-  if(c.act===5){poses[0]=[[-24,12,23],[-18,10,13],[0,8,-2]];poses[1]=[[18,7,16],[20,9,-8],[0,8,-2]];poses[2]=[[19,4,-15],[18,3,-20],[14,2,-27]];}
+  if(c.act===5){poses[0]=[[-23,14,25],[-20,11,18],[0,12,-2]];poses[1]=[[19,8,14],[20,11,-8],[0,11,-2]];poses[2]=[[19,4,-15],[18,3,-20],[14,2,-27]];}
   if(c.act===6){poses[0]=[[9,3.2,-12],[8,2.7,-10],[0,1.6,-18]];poses[1]=[[7,3,-5],[6,2.6,-7],[0,1.5,-12]];poses[2]=[[-8,3,-9],[-7,2.6,-9],[0,1.5,-9]];if(innerHeight>innerWidth)for(const pose of poses){pose[0][0]*=1.6;pose[1][0]*=1.6;}}
   const [a,b,l]=poses[segment];game.camera.position.lerpVectors(point(room,...a),point(room,...b),e);game.camera.lookAt(point(room,...l));
   const ix=Math.min(LINES[c.act].length-1,Math.floor(k*LINES[c.act].length));if(ix!==c.last){c.last=ix;c.el.querySelector('#sommiMirror414-speaker').textContent=LINES[c.act][ix][0];c.el.querySelector('#sommiMirror414-line').textContent=LINES[c.act][ix][1];game.sfx?.pickup?.();}
@@ -680,8 +851,10 @@
    const c=room.reconstruction;c.time+=dt;c.pulse.scale.setScalar(1+Math.sin(w.clock*1.1)*.045);
    const sting=game.sommiMirror414Cine?.act===9&&game.sommiMirror414Cine.t>=game.sommiMirror414Cine.duration*.75;
    c.blocks.forEach(({light,district})=>{const repaired=w.replaying||visualStep<29||q.puzzles.district.done[district];light.material.color.set(sting?'#203142':!repaired?'#30424c':room.i===8&&c.time<(district+1)*2?'#30424c':'#67c8d1');});
+   c.districtWindows.forEach((m,district)=>{const live=!sting&&(w.replaying||visualStep<29||q.puzzles.district.done[district])&&!(room.i===8&&c.time<(district+1)*2);m.material.color.set(live?'#accdc1':'#17232c');});
    if(room.i===8){room.light.intensity=sting?3:650;room.fill.intensity=sting?3:390;room.hemisphere.intensity=sting?.06:2.6;room.ambient.intensity=sting?.04:2.2;}
   }
+  tickArchitecture(room,w.clock,visualStep,game);
   for(const [ix,nd]of w.nodeMeshes){if(ix===q.step)nd.screen.quaternion.copy(game.camera.quaternion);if(ix===q.step&&STEPS[ix][6]==='pulse')nd.beam.material.color.set(w.clock%5<2.7?'#d56959':'#ffd078');}
   if(game.sommiMirror414Cine){if(w.guide)w.guide.visible=false;tickCine(game,dt);return;}
   if(store.get().panel)return;
@@ -718,7 +891,7 @@
  Game.prototype.sommiMirror414Replay=function(act=0,single=false){return replay(this,act,single);};
  Game.prototype.sommiMirror414Recordings=function(){return recordings(this);};
  window.__sommiMirror414Eligible=eligible;
- window.__sommiMirror414Quest={revision:3,acts:ACTS,steps:STEPS,read,snapshot:()=>({pls:store.get().pls,mainQuests:store.get().mainQuests,mainQuestIndex:store.get().mainQuestIndex}),begin:start,interact,replay,checkpoint:()=>read().step,depth:{engineFlow,districtSolution,districtSeed}};
+ window.__sommiMirror414Quest={revision:4,acts:ACTS,steps:STEPS,read,snapshot:()=>({pls:store.get().pls,mainQuests:store.get().mainQuests,mainQuestIndex:store.get().mainQuestIndex}),begin:start,interact,replay,checkpoint:()=>read().step,depth:{engineFlow,districtSolution,districtSeed}};
  const onKey=e=>{const g=window.__game;if(!g||(!g.sommiMirror414Inside&&!g.sommiMirror414Dialog))return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(g.sommiMirror414Dialog)closeDialog(g);else if(g.sommiMirror414Cine)finishCine(g,true);else{saveTime(g);leave(g);}}};window.addEventListener('keydown',onKey,true);
 })();
-// END SOMMI 414 — THE SAME NIGHT R3
+// END SOMMI 414 — THE SAME NIGHT R4

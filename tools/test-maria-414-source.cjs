@@ -5,13 +5,13 @@ class Vec{
 }
 class Color{constructor(value){this.set(value)}set(value){this.value=value;return this}}
 class Obj{
- constructor(){this.position=new Vec();this.rotation=new Vec();this.scale=new Vec(1,1,1);this.quaternion={copy(){}};this.children=[];this.userData={};this.visible=true;this.matrix={}}
+ constructor(){this.position=new Vec();this.rotation=new Vec();this.scale=new Vec(1,1,1);this.quaternion={copy(){},setFromUnitVectors(){}};this.children=[];this.userData={};this.visible=true;this.matrix={}}
  add(...objects){for(const obj of objects){obj.removeFromParent();obj.parent=this;this.children.push(obj)}}removeFromParent(){if(this.parent)this.parent.children=this.parent.children.filter(x=>x!==this);this.parent=null}updateMatrix(){}setMatrixAt(){}setColorAt(){}lookAt(p){this.lastLook=p.clone()}updateProjectionMatrix(){}
 }
 class Mat{constructor(opts={}){Object.assign(this,opts);this.color=new Color(opts.color)}}
 class Mesh extends Obj{constructor(geometry,material){super();this.geometry=geometry;this.material=material}}
 class Light extends Obj{constructor(color,b=1,intensity){super();this.intensity=intensity??b}}
-const draw=new Proxy({measureText:t=>({width:t.length*14})},{get:(t,k)=>k in t?t[k]:(()=>{})});
+const draw=new Proxy({measureText:t=>({width:t.length*14}),createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:(()=>{})});
 class El{
  constructor(tag,doc){this.tagName=tag;this.doc=doc;this.style={};this.children=[];this.dataset={};this.textContent='';this.queries={}}
  append(...els){this.children.push(...els)}appendChild(el){this.append(el)}remove(){if(this.id)this.doc.ids.delete(this.id);for(const x of this.children)x.remove()}
@@ -29,8 +29,8 @@ function setup(saved,options={}){
   constructor(){this.scene=options.THREE?new options.THREE.Scene():new Obj();this.scene.background=options.THREE?new options.THREE.Color('#171030'):{originalSky:true};this.scene.fog=options.THREE?new options.THREE.FogExp2('#171030',.001):{originalFog:true};this.player=new HostGroup();this.playerPos=new Vector(2,0,3);this.playerVel=new Vector();this.camera=options.THREE?new options.THREE.PerspectiveCamera(60,1.6,.1,1000):new Obj();this.camera.fov=60;this.scene.add(this.player,this.camera);this.interactables=[];this.playerYaw=0;this.camYaw=0;this.camPitch=0;this.viewBlend=1;this.viewBlendTarget=1;this.clock={getDelta(){}};this.canvas={focus(){}};this.sfx={pickup(){},win(){},burn(){}}}
   buildWorld(){}groundH(){return 0}interact(){}nearestInteractable(){return null}updatePlayer(){}questWaypointPos(){return new Vec()}questStepInfo(){return {text:'old'}}updateDayNight(){}saveFR(){this.savedPosition=this.playerPos.clone()}finishTutorial(){return true}dispose(){}
  }
- const THREE={Vector3:Vec,Color,Group:Obj,Object3D:Obj,Mesh,InstancedMesh:Mesh,MeshStandardMaterial:Mat,MeshBasicMaterial:Mat,HemisphereLight:Light,AmbientLight:Light,PointLight:Light,FogExp2:class{constructor(color,density){Object.assign(this,{color,density})}},CanvasTexture:class{},MathUtils:{clamp:(v,a,b)=>Math.max(a,Math.min(v,b))}};
- for(const k of ['BoxGeometry','PlaneGeometry','TorusGeometry','CylinderGeometry','IcosahedronGeometry','TetrahedronGeometry','ConeGeometry'])THREE[k]=class{};
+ const THREE={Vector3:Vec,Color,Group:Obj,Object3D:Obj,Mesh,InstancedMesh:Mesh,MeshStandardMaterial:Mat,MeshBasicMaterial:Mat,ShaderMaterial:Mat,HemisphereLight:Light,AmbientLight:Light,PointLight:Light,FogExp2:class{constructor(color,density){Object.assign(this,{color,density})}},CanvasTexture:class{},MathUtils:{clamp:(v,a,b)=>Math.max(a,Math.min(v,b))}};
+ for(const k of ['BoxGeometry','PlaneGeometry','TorusGeometry','CylinderGeometry','IcosahedronGeometry','TetrahedronGeometry','ConeGeometry','SphereGeometry'])THREE[k]=class{};
  const context={Game,THREE:options.THREE||THREE,CW:false,FR:false,loadSkinId:()=> options.skin||'maria-414',loadPrestigeSave:()=>({trialOutcome:'completed'}),campaignLegacyVeteranHasProgress:()=>false,store:{get:()=>state,set:next=>Object.assign(state,next),mutate:fn=>fn(state),pushFeed(){}},Quests:{toast(){}},storyCutsceneInputLocked:s=>!!(s.maria414CineActive||s.sommiMirror414CineActive),document:doc,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},innerHeight:900,innerWidth:1440,buildSommiPlayer:()=>new HostGroup(),console,...options.globals};
  const listeners=new Map();context.window=context;context.addEventListener=(name,fn)=>{if(!listeners.has(name))listeners.set(name,[]);listeners.get(name).push(fn);};
  vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../quests/maria-414-reclaimed.js'),'utf8'),context);

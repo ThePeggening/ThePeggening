@@ -6,9 +6,9 @@ import json,re
 root=Path(__file__).resolve().parents[1]
 s=(root/'quests'/'maria-414-reclaimed.js').read_text()
 s=s.replace('maria414','sommiMirror414').replace('maria-414-', 'sommi-mirror-414-')
-s=s.replace('// MARIA 414 — RECLAIMED · R4.', '// SOMMI 414 — THE SAME NIGHT · R3.').replace('// END MARIA 414 — RECLAIMED R4','// END SOMMI 414 — THE SAME NIGHT R3')
+s=s.replace('// MARIA 414 — RECLAIMED · R5.', '// SOMMI 414 — THE SAME NIGHT · R4.').replace('// END MARIA 414 — RECLAIMED R5','// END SOMMI 414 — THE SAME NIGHT R4')
 s=s.replace('atropa_maria_414_reclaimed_v1','atropa_sommi_414_same_night_v1')
-s=s.replace('sommiMirror414Revision = 4','sommiMirror414Revision = 3').replace('__sommiMirror414Quest={revision:4','__sommiMirror414Quest={revision:3')
+s=s.replace('sommiMirror414Revision = 5','sommiMirror414Revision = 4').replace('__sommiMirror414Quest={revision:5','__sommiMirror414Quest={revision:4')
 s=s.replace('Select the events in the order they happened.', 'Put your actions on record in the order they happened.')
 s=s.replace("const eligible=()=>!CW&&!FR&&loadSkinId()==='maria-414';", "const eligible=()=>{if(CW||FR||loadSkinId()!=='sommi')return false;try{const q=JSON.parse(localStorage.getItem('atropa_sommi_414_house_v1')||'null');return q?.v===1&&q.complete===true;}catch(_){return false;}};")
 s=s.replace('const ORIGIN={x:900,y:12,z:900}', 'const ORIGIN={x:900,y:12,z:-800}')

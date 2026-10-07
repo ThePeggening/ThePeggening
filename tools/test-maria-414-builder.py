@@ -37,12 +37,12 @@ for encoding,mirror in [('utf-8',False),('utf-16',False),('utf-8',True),('utf-16
   source=gzip.decompress(ns['dec'](match[1])).decode()
   assert 'const preservedSuffix = 414;' in source
   assert 'oldModuleSentinel' not in source
-  assert source.count('// MARIA 414 — RECLAIMED · R4.')==1
+  assert source.count('// MARIA 414 — RECLAIMED · R5.')==1
   assert '<script id="other-pkg" type="text/plain">UNCHANGED_PAYLOAD</script>' in decoded
-  backup='index.pre-414-r5.backup.html' if mirror else 'index.pre-maria414-r4.backup.html'
+  backup='index.pre-414-r6.backup.html' if mirror else 'index.pre-maria414-r5.backup.html'
   assert (fixture/backup).read_bytes()==html.encode(encoding)
   if mirror:
-   assert source.count('// SOMMI 414 — THE SAME NIGHT · R3.')==1
+   assert source.count('// SOMMI 414 — THE SAME NIGHT · R4.')==1
    assert '!this.sommi414Inside && !this.maria414Inside && !this.sommiMirror414Inside && !this.treasuryInside' in source
    assert '|| !!this.maria414Inside || !!this.sommiMirror414Inside;' in source
    assert '!storyLocked && !tradeFocus && !this.maria414Inside && !this.sommiMirror414Inside)' in source
