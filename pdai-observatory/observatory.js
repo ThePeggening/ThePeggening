@@ -97,6 +97,14 @@ const matInset = material(0x02090c, { roughness: .72, metalness: .18 });
 const matFloorGloss = material(0x0a242a, { roughness: .24, metalness: .46 });
 const matFloorMatte = material(0x031014, { roughness: .82, metalness: .12 });
 const matWarmMetal = material(0x43230b, { roughness: .30, metalness: .52, emissive: 0xff9b54, emissiveIntensity: .13 });
+
+// Information surfaces must stay readable under every spotlight.
+// MeshBasicMaterial means no reflections/specular hot-spots on the actual text boards.
+const matDisplayCyan = new THREE.MeshBasicMaterial({ color: 0x031216, toneMapped: false });
+const matDisplayPurple = new THREE.MeshBasicMaterial({ color: 0x100a18, toneMapped: false });
+const matDisplayGold = new THREE.MeshBasicMaterial({ color: 0x171205, toneMapped: false });
+const matDisplayOrange = new THREE.MeshBasicMaterial({ color: 0x190b05, toneMapped: false });
+const matDisplayNeutral = new THREE.MeshBasicMaterial({ color: 0x050b0e, toneMapped: false });
 const pulseMaterials = [];
 const spinObjects = [];
 const bobObjects = [];
@@ -158,7 +166,7 @@ function label(lines, w, h, x, y, z, opts = {}) {
   const tex = canvasTexture(lines, opts);
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(w, h),
-    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide })
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false })
   );
   mesh.position.set(x, y, z);
   scene.add(mesh);
@@ -475,6 +483,16 @@ function strip(w, h, d, mat, x, y, z) {
   return m;
 }
 
+function framedDisplay(w, h, x, y, z, faceMat, accentMat, depth = .18) {
+  // Deep outer casing catches room lighting; inner face never does.
+  box(w + .62, h + .62, depth + .20, matStructure, x, y, z - .09);
+  box(w, h, depth, faceMat, x, y, z + .06);
+  strip(w + .18, .055, .07, accentMat, x, y + h / 2 + .18, z + depth / 2 + .12);
+  strip(w + .18, .055, .07, accentMat, x, y - h / 2 - .18, z + depth / 2 + .12);
+  strip(.055, h + .18, .07, accentMat, x - w / 2 - .18, y, z + depth / 2 + .12);
+  strip(.055, h + .18, .07, accentMat, x + w / 2 + .18, y, z + depth / 2 + .12);
+}
+
 function neonArch(z, radius = 6.0, warm = false) {
   const glowMat = new THREE.MeshBasicMaterial({
     color: warm ? theme.orange : theme.cyan2,
@@ -680,6 +698,23 @@ const core = new THREE.Mesh(
 );
 core.position.y = 4.1;
 dais.add(core);
+
+const coreInner = new THREE.Mesh(
+  new THREE.OctahedronGeometry(1.08, 1),
+  new THREE.MeshBasicMaterial({ color: 0xeafffb, transparent:true, opacity:.88, toneMapped:false })
+);
+coreInner.position.y = 4.1;
+dais.add(coreInner);
+spinObjects.push({ obj: coreInner, speed: .34 });
+
+const coreWire = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(2.55, 2),
+  new THREE.MeshBasicMaterial({ color: theme.cyan2, wireframe:true, transparent:true, opacity:.15, toneMapped:false })
+);
+coreWire.position.y = 4.1;
+dais.add(coreWire);
+spinObjects.push({ obj: coreWire, speed: -.07 });
+
 const halo = new THREE.Mesh(new THREE.TorusGeometry(3.4, .055, 10, 96), new THREE.MeshBasicMaterial({ color: theme.cyan2, transparent: true, opacity: .55 }));
 halo.position.y = 4.1;
 halo.rotation.x = Math.PI / 2;
@@ -770,12 +805,16 @@ for (const x of [-31.6, -26.5, -21.4]) {
   const upl = new THREE.PointLight(x < -29 ? theme.cyan : x > -24 ? theme.gold : theme.purple, 6, 8, 2);
   upl.position.set(x, 1.0, -7.3); scene.add(upl);
 }
-label(['EVIDENCE WALL', 'OBSERVED · INTERPRETATION · REQUIREMENT'], 15.5, 2.8, -26.7, 8.4, -9.42, { fontSize: 70, subSize: 32, color: '#dffffa' });
+framedDisplay(15.7, 2.45, -26.7, 8.42, -9.30, matDisplayNeutral, stripPurpleMat, .14);
+label(['EVIDENCE WALL', 'OBSERVED · INTERPRETATION · REQUIREMENT'], 15.2, 2.35, -26.7, 8.4, -9.12, { fontSize: 70, subSize: 32, color: '#effffc', subColor: '#bcb4d9', glow:'rgba(0,0,0,0)', blur:0 });
 const evidenceColors = [theme.cyan, theme.purple, theme.gold];
 const evidenceIds = ['OBSERVED', 'INTERPRETATION', 'OPERATING REQUIREMENT'];
 for (let i = 0; i < 3; i++) {
-  const p = box(4.6, 2.8, .45, new THREE.MeshStandardMaterial({ color: 0x061419, emissive: evidenceColors[i], emissiveIntensity: .32, roughness: .45 }), -26.5 + (i - 1) * 5.2, 4.0, -9.55);
-  label(evidenceIds[i], 4.2, .9, p.position.x, 4.1, -9.28, { fontSize: evidenceIds[i].length > 12 ? 35 : 45, color: '#effffc' });
+  const ex = -26.5 + (i - 1) * 5.2;
+  const faceMat = i === 0 ? matDisplayCyan : i === 1 ? matDisplayPurple : matDisplayGold;
+  const edgeMat = i === 0 ? stripCyanMat : i === 1 ? stripPurpleMat : stripGoldMat;
+  framedDisplay(4.55, 2.75, ex, 4.0, -9.48, faceMat, edgeMat, .13);
+  label(evidenceIds[i], 4.1, .88, ex, 4.1, -9.27, { fontSize: evidenceIds[i].length > 12 ? 34 : 44, color: '#ffffff', glow:'rgba(0,0,0,0)', blur:0 });
 }
 addInteractable('evidence', -27, -5.5, 8.5, 'E / USE — INSPECT EVIDENCE CLASSIFICATION', showEvidence);
 
@@ -783,10 +822,12 @@ box(19.2, 9.8, .95, matStructure, -27, 5.25, -29.3);
 box(17.8, 8.4, .48, matMetal, -27, 5.0, -28.72);
 strip(18.2, .08, .10, stripGoldMat, -27, 9.75, -28.42);
 strip(18.2, .08, .10, stripCyanMat, -27, .72, -28.42);
-label(['STABILITY LOOP', 'SUPPLY · REPLENISHMENT · CIRCULATION'], 15.5, 2.8, -26.7, 8.0, -28.42, { fontSize: 68, subSize: 30, color: '#dffffa' });
+framedDisplay(15.7, 2.45, -26.7, 8.02, -28.30, matDisplayCyan, stripGoldMat, .14);
+label(['STABILITY LOOP', 'SUPPLY · REPLENISHMENT · CIRCULATION'], 15.2, 2.35, -26.7, 8.0, -28.12, { fontSize: 68, subSize: 30, color: '#ffffff', subColor:'#d6c995', glow:'rgba(0,0,0,0)', blur:0 });
 addInteractable('stability', -27, -24.5, 7.5, 'E / USE — INSPECT STABILITY / REPLENISHMENT LOOP', showStability);
 
-label(['FIVE PHASES', 'PROPOSED CONSTRUCTION PATH'], 15.5, 2.4, 26.5, 10.8, -2, { fontSize: 72, subSize: 30, color: '#dffffa' });
+framedDisplay(15.6, 2.25, 26.5, 10.82, -2.12, matDisplayCyan, stripCyanMat, .12);
+label(['FIVE PHASES', 'PROPOSED CONSTRUCTION PATH'], 15.0, 2.10, 26.5, 10.8, -1.94, { fontSize: 72, subSize: 30, color: '#ffffff', subColor:'#a9dbd7', glow:'rgba(0,0,0,0)', blur:0 });
 const phaseZ = [12, 5, -2, -9, -16];
 // Gallery spine and ceiling light path.
 box(12.5, .22, 38, matFloorGloss, 26.7, .11, -2.0);
@@ -801,13 +842,13 @@ for (let i = 0; i < highlights.phases.length; i++) {
   const z = phaseZ[i];
   box(10.8, .34, 5.6, i === 3 ? matWarmMetal : matStructure2, 27, .18, z);
   box(10.1, 5.9, 1.05, matStructure, 27, 3.45, z);
-  box(8.95, 4.70, .16, i === 3 ? matGold : matCyan, 27, 3.48, z + .57);
+  box(8.95, 4.70, .16, i === 3 ? matDisplayGold : matDisplayCyan, 27, 3.48, z + .57);
   strip(9.4, .07, .10, i === 3 ? stripGoldMat : stripCyanMat, 27, 6.32, z + .60);
   strip(9.4, .05, .10, i === 3 ? stripGoldMat : stripPurpleMat, 27, .62, z + .60);
   box(1.05, 1.55, 1.05, i === 3 ? matGold : matStructure2, 21.5, .78, z);
   const phaseLamp = new THREE.PointLight(i === 3 ? theme.gold : theme.cyan, 5.2, 7.5, 2);
   phaseLamp.position.set(21.5, 1.45, z); scene.add(phaseLamp);
-  label([String(i + 1).padStart(2, '0'), p.name], 8.3, 2.0, 26.55, 4.3, z + .68, { fontSize: 62, subSize: 30, color: i === 3 ? '#ffe5a0' : '#d8fffa' });
+  label([String(i + 1).padStart(2, '0'), p.name], 8.2, 1.95, 26.55, 4.3, z + .69, { fontSize: 62, subSize: 30, color: i === 3 ? '#fff0b9' : '#ffffff', subColor: i === 3 ? '#d8be72' : '#9bd4cf', glow:'rgba(0,0,0,0)', blur:0 });
   addInteractable('phase-' + i, 22.5, z, 5.5, 'E / USE — ' + p.name, () => {
     const row = '<div class="phaseRow"><div class="phaseNo">' + (i + 1) + '</div><div><div class="phaseName">' + htmlEscape(p.name) + '</div><div class="phaseText">' + htmlEscape(p.text) + '</div><div class="source">Source page ' + p.page + '</div></div></div>';
     panel('PHASE ' + (i + 1) + ' / 5', p.name, '<div class="notice">One phase in the paper’s proposed construction sequence.</div>' + row + '<p><button id="allPhases" class="smallBtn">SHOW ALL FIVE PHASES</button></p>');
@@ -820,7 +861,8 @@ box(20.0, 9.7, .92, matStructure, 25.5, 5.3, 29.35);
 box(18.7, 8.5, .48, matMetal, 25.5, 5.0, 28.76);
 strip(19.0, .08, .10, stripCyanMat, 25.5, 9.62, 28.46);
 strip(19.0, .08, .10, stripGoldMat, 25.5, .75, 28.46);
-label(['PARTICIPANT OUTCOMES', 'HOLDERS · BORROWERS · LPs · USERS'], 16.4, 2.5, 25.2, 8.1, 28.46, { fontSize: 64, subSize: 30, color: '#dffffa' });
+framedDisplay(16.5, 2.35, 25.2, 8.12, 28.56, matDisplayNeutral, stripCyanMat, .13);
+label(['PARTICIPANT OUTCOMES', 'HOLDERS · BORROWERS · LPs · USERS'], 16.0, 2.20, 25.2, 8.1, 28.75, { fontSize: 64, subSize: 30, color: '#ffffff', subColor:'#a9d8d4', glow:'rgba(0,0,0,0)', blur:0 });
 addInteractable('participants', 25, 24, 7.8, 'E / USE — WHO IS THE PROPOSED SERVICE FOR?', showParticipants);
 
 // Appendix 27 chamber — warm, denser, deliberately different from the cyan main hall.
@@ -834,7 +876,8 @@ for (const x of [11.4, 32.6]) {
   strip(.08, 9.5, .10, stripOrangeMat, x + (x < 22 ? .38 : -.38), 5.7, -29.20);
 }
 for (const x of [14.5, 29.5]) serverTower(x, -23.3, true, 0);
-label(['APPENDIX 27', 'ATROPA LIQUIDITY CONNECTIONS'], 20, 3.0, 22, 9.6, -29.35, { fontSize: 82, subSize: 34, color: '#ffd6ad', subColor: '#ff9b54', glow: 'rgba(255,155,84,.35)' });
+framedDisplay(20.5, 2.85, 22, 9.62, -29.18, matDisplayOrange, stripOrangeMat, .15);
+label(['APPENDIX 27', 'ATROPA LIQUIDITY CONNECTIONS'], 19.8, 2.65, 22, 9.6, -28.98, { fontSize: 82, subSize: 34, color: '#fff4e7', subColor: '#ffb16d', glow:'rgba(0,0,0,0)', blur:0 });
 {
   const archMat = new THREE.MeshBasicMaterial({color:theme.orange,transparent:true,opacity:.60,blending:THREE.AdditiveBlending,depthWrite:false});
   const chamberArch = new THREE.Mesh(new THREE.TorusGeometry(7.6,.12,10,72,Math.PI),archMat);
@@ -877,13 +920,13 @@ addInteractable('atropa', 22, -20, 9.0, 'E / USE — OPEN ATROPA APPENDIX 27', s
 // Archive bay — proper console desk + flanking data towers.
 box(16.5, .45, 9.0, matFloorGloss, 0, .22, -34.8);
 box(13.8, 5.8, 5.2, matStructure, 0, 2.9, -35.4);
-box(12.4, 4.0, .28, matCyan, 0, 4.25, -32.72);
+box(12.4, 4.0, .28, matDisplayCyan, 0, 4.25, -32.72);
 box(12.8, .68, 2.4, matStructure2, 0, 1.25, -31.8);
 strip(11.8, .07, .11, stripCyanMat, 0, 1.59, -30.64);
 serverTower(-8.6,-35.6,false,.08);
 serverTower(8.6,-35.6,false,-.08);
 const archiveLamp = new THREE.PointLight(theme.cyan2,8,11,2); archiveLamp.position.set(0,6.4,-31.4); scene.add(archiveLamp);
-label(['73 APPENDICES', 'SEARCH THE FULL RESEARCH'], 10.8, 2.4, 0, 4.4, -32.52, { fontSize: 66, subSize: 31, color: '#dffffa' });
+label(['73 APPENDICES', 'SEARCH THE FULL RESEARCH'], 10.8, 2.4, 0, 4.4, -32.50, { fontSize: 66, subSize: 31, color: '#ffffff', subColor:'#9dd9d4', glow:'rgba(0,0,0,0)', blur:0 });
 addInteractable('archive', 0, -28.5, 7.5, 'E / USE — SEARCH ALL 73 APPENDICES', archiveShell);
 
 const questBeacon = new THREE.Group();
@@ -1091,6 +1134,7 @@ function animate(now) {
   atropaCore.rotation.y -= dt * .34;
   for (const it of spinObjects) {
     it.obj.rotation.z += dt * it.speed;
+    if (it.obj === coreInner || it.obj === coreWire) it.obj.rotation.y += dt * it.speed * .65;
   }
   if (ambientParticles) {
     ambientParticles.rotation.y += dt * .006;
