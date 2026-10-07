@@ -1,0 +1,61 @@
+{
+  "prepared_date": "2026-10-07",
+  "integration_revision": "R53.16-414-RECLAIMED-SAME-NIGHT-R5",
+  "pc_review_url": "http://127.0.0.1:8416/index.html?classic",
+  "review_index_bytes": 71119106,
+  "review_sha256": "fc224b1f225913fa9f300bf000c135c4e620ff1e68c006d4f4cf8765eeebc48b",
+  "original_sha256": "8e52d941a8e39c4c794d8c971bf28f65c03d014975481f62a94fa0191daaa39b",
+  "other_packed_payloads_preserved": 12,
+  "browser_routes": {
+    "Maria": {
+      "objectives": 32,
+      "acts": 10,
+      "reward": 414,
+      "errors": []
+    },
+    "Sommi": {
+      "objectives": 32,
+      "acts": 10,
+      "reward": 414,
+      "errors": []
+    }
+  },
+  "campaign_unchanged": true,
+  "replay_no_reward": true,
+  "reload_resume": true,
+  "native_sommi_transition_passed": true,
+  "depth_ui_combinations_passed": 12,
+  "mobile_emulation": {
+    "width": 390,
+    "height": 844,
+    "touch_input": true,
+    "minimum_cell_pixels": 44
+  },
+  "rendered_cinematic_samples": 60,
+  "portrait_encounters_rendered": 2,
+  "native_walking": {
+    "Maria": {
+      "wall_seconds": 408,
+      "reading_words": 957
+    },
+    "Sommi": {
+      "wall_seconds": 408,
+      "reading_words": 944
+    },
+    "objective_teleports": false,
+    "cinematic_skips": false,
+    "time_scaling": false,
+    "known_puzzle_solutions": true,
+    "prompt_dialogue_clicks": true,
+    "errors": []
+  },
+  "first_time_human_duration_measured": false,
+  "physical_phone_tested": false,
+  "github_published": false,
+  "final_combined_exit_codes": {
+    "build": 0,
+    "Maria": 0,
+    "Sommi": 0,
+    "touch": 0
+  }
+}
