@@ -29,6 +29,8 @@ const errors=[];
    if(step===8){for(let n=0;n<4;n++){visit(w.depthMeshes.get('8:'+n).it);[...document.querySelectorAll('#'+p+'-dialog button')].find(b=>b.textContent==='RECORD CABLE EVIDENCE').click()}}
    visit(step===29?w.depthMeshes.get('29:0').it:w.nodeMeshes.get(step).it);
   },{p,step});
+  const help=await page.evaluate(({p,step})=>{const api=window['__'+p+'Quest'],before=JSON.stringify(api.read().puzzles),label=step===8?'OPTIONAL HELP / REVEAL A ROUTE':step===17?'OPTIONAL HELP / NEXT CORRECT TILE':'OPTIONAL HELP / NEXT CORRECT MOVE',b=[...document.querySelectorAll('#'+p+'-dialog button')].find(b=>b.textContent===label);if(!b)throw Error('Missing optional help '+label);b.click();const feedback=document.querySelector('#'+p+'-feedback').textContent;if(!feedback)throw Error('Optional help gave no guidance');return {feedback,unchanged:before===JSON.stringify(api.read().puzzles)}},{p,step});
+  if(!help.unchanged)throw Error('Optional help changed puzzle state '+p+' '+step);
   const rects=await page.evaluate(p=>{const card=document.querySelector('#'+p+'-dialog').children[0],r=card.getBoundingClientRect();return {card:{x:r.x,y:r.y,width:r.width,height:r.height},viewport:{width:innerWidth,height:innerHeight},cells:[...card.querySelectorAll('[data-depth-cell]')].map(b=>{const r=b.getBoundingClientRect();return {x:r.x,width:r.width,height:r.height}}),overflow:card.scrollHeight>card.clientHeight}},p);
   if(rects.card.x<0||rects.card.x+rects.card.width>rects.viewport.width+1||rects.card.y<0||rects.card.y+rects.card.height>rects.viewport.height+1)throw Error('Card outside viewport '+p+' '+step);
   if(rects.cells.some(r=>r.width<43.9||r.height<43.9||r.x<0||r.x+r.width>rects.viewport.width+1))throw Error('Grid cell sizing '+p+' '+step);

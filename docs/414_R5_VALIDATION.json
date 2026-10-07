@@ -57,5 +57,14 @@
     "Maria": 0,
     "Sommi": 0,
     "touch": 0
+  },
+  "optional_help": {
+    "timeline": true,
+    "codes": true,
+    "power_routes": true,
+    "conduit_routes": true,
+    "engine_tiles": true,
+    "district_moves": true,
+    "changes_state": false
   }
 }

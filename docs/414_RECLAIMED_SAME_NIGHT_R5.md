@@ -10,6 +10,8 @@ The three engine stabilizers now require distinct 4×4 circuit repairs. Players 
 
 The return floor now has four district consoles: homes, clinic, workshop and transit. Each has a solvable 5×5 neighbour-toggle relay board. A press flips its own node and adjacent nodes; all twenty-five must be live. Optional hints identify one step in a valid remaining repair without making that step. The physical consoles display their changing lamp states, and corresponding districts in the city model relight when repaired. All four must be committed before the recorder continues.
 
+Every interface that expects an exact answer now includes an optional help button. Help remains blank until pressed and reveals only the next event, digit, route, tile orientation or valid relay move. It never changes puzzle state or completes an action for the player.
+
 Evidence, cable settings, rotated pipe segments, partially repaired relay boards and district completion are saved after each change. Guidance targets unfinished physical terminals before their main console. Retry and pause retain progress. Older saves past these objectives infer completed sub-puzzles; completed saves remain completed. Both routes retain their original 32 objective indices and ten acts. Maria starts after onboarding; Sommi starts after his existing native theft raid. Character saves and native raid saves remain separate.
 
 ## Retained R4 work
@@ -42,7 +44,7 @@ Copy quests/, tools/ and docs/ into an isolated copy of today's latest checkout,
 python3 tools/build-maria-414.py
 ```
 
-The builder saves the first input as index.pre-414-r5.backup.html, validates codec roundtrip and JavaScript syntax, and preserves all other twelve packed payloads. Missing anchors stop the build before output is written. The final review index.html is 71,119,106 bytes, SHA256 fc224b1f225913fa9f300bf000c135c4e620ff1e68c006d4f4cf8765eeebc48b. The original working checkout was retained and its SHA256 remains 8e52d941a8e39c4c794d8c971bf28f65c03d014975481f62a94fa0191daaa39b. These results were recorded before GitHub publication.
+The builder saves the first input as index.pre-414-r5.backup.html, validates codec roundtrip and JavaScript syntax, and preserves all other twelve packed payloads. Missing anchors stop the build before output is written. The final review index.html is 71,119,106 bytes, SHA256 fc224b1f225913fa9f300bf000c135c4e620ff1e68c006d4f4cf8765eeebc48b. The original working checkout was retained and its SHA256 remains 8e52d941a8e39c4c794d8c971bf28f65c03d014975481f62a94fa0191daaa39b. No GitHub publication was made.
 
 Source verification:
 
