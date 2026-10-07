@@ -32,8 +32,8 @@ const [manifest, highlights] = await Promise.all([
 ]);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x010608);
-scene.fog = new THREE.FogExp2(0x031318, 0.0115);
+scene.background = new THREE.Color(0x02090d);
+scene.fog = new THREE.FogExp2(0x04151c, 0.0074);
 
 const camera = new THREE.PerspectiveCamera(66, innerWidth / innerHeight, 0.05, 240);
 camera.rotation.order = 'YXZ';
@@ -45,7 +45,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 1.30;
 renderer.domElement.style.touchAction = 'none';
 els.stage.appendChild(renderer.domElement);
 
@@ -58,14 +58,15 @@ let yaw = 0;
 let pitch = -0.02;
 let panelOpen = false;
 let lastFrame = performance.now();
+let lastPanelRender = 0;
 const keys = new Set();
 const colliders = [];
 const interactables = [];
 const loadedDocs = new Map();
 
 const theme = {
-  floor: 0x02090c,
-  wall: 0x061115,
+  floor: 0x06151a,
+  wall: 0x0a1c22,
   cyan: 0x55e7da,
   cyan2: 0x8dfff2,
   purple: 0xb88cff,
@@ -84,11 +85,24 @@ function material(color, opts = {}) {
   });
 }
 
-const matFloor = material(theme.floor, { roughness: .82, metalness: .12 });
-const matWall = material(theme.wall, { roughness: .78 });
+const matFloor = material(theme.floor, { roughness: .72, metalness: .10 });
+const matWall = material(theme.wall, { roughness: .68, metalness: .12 });
 const matMetal = material(0x0b1d23, { roughness: .34, metalness: .78 });
 const matCyan = material(0x0c3b40, { roughness: .32, metalness: .42, emissive: theme.cyan, emissiveIntensity: .22 });
 const matGold = material(0x3b2c0e, { roughness: .36, metalness: .55, emissive: theme.gold, emissiveIntensity: .24 });
+const matOrange = material(0x3a1a09, { roughness: .40, metalness: .38, emissive: theme.orange, emissiveIntensity: .24 });
+const matStructure = material(0x0a1b20, { roughness: .36, metalness: .58 });
+const matStructure2 = material(0x103039, { roughness: .30, metalness: .48 });
+const matInset = material(0x02090c, { roughness: .72, metalness: .18 });
+const matFloorGloss = material(0x0a242a, { roughness: .24, metalness: .46 });
+const matFloorMatte = material(0x031014, { roughness: .82, metalness: .12 });
+const matWarmMetal = material(0x43230b, { roughness: .30, metalness: .52, emissive: 0xff9b54, emissiveIntensity: .13 });
+const pulseMaterials = [];
+const spinObjects = [];
+const bobObjects = [];
+let ambientParticles = null;
+let centralBeam = null;
+let atropaBeam = null;
 
 function box(w, h, d, mat, x, y, z, parent = scene) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
@@ -345,8 +359,8 @@ async function runArchiveSearch(raw) {
   results.innerHTML = '';
   const descs = [{ ...manifest.mainReport, title: manifest.title }, ...manifest.appendices];
   const hits = [];
-  for (let start = 0; start < descs.length; start += 5) {
-    const batch = descs.slice(start, start + 5);
+  for (let start = 0; start < descs.length; start += 12) {
+    const batch = descs.slice(start, start + 12);
     const docs = await Promise.all(batch.map(d => loadDoc(d).then(data => ({ d, data })).catch(() => null)));
     for (const item of docs) {
       if (!item) continue;
@@ -425,12 +439,226 @@ floorGrid.position.y = .025;
 floorGrid.material.opacity = .16;
 floorGrid.material.transparent = true;
 scene.add(floorGrid);
-scene.add(new THREE.HemisphereLight(0x8ceee6, 0x031219, .68));
-scene.add(new THREE.AmbientLight(0x224c54, .52));
+scene.add(new THREE.HemisphereLight(0xb6fff7, 0x071217, .92));
+scene.add(new THREE.AmbientLight(0x4c7a82, .88));
 for (const x of [-28, -14, 0, 14, 28]) {
-  const l = new THREE.PointLight(theme.cyan, 7, 25, 2);
-  l.position.set(x, 12, 2);
+  const l = new THREE.PointLight(theme.cyan, 5.5, 24, 2);
+  l.position.set(x, 12.5, 2);
   scene.add(l);
+}
+
+// Broad soft fill from the entrance and rear archive gives dark materials readable faces.
+{
+  const frontFill = new THREE.DirectionalLight(0xc9fff8, 1.05);
+  frontFill.position.set(0, 12, 34);
+  scene.add(frontFill);
+  const rearFill = new THREE.DirectionalLight(0x88b8ff, .55);
+  rearFill.position.set(-18, 10, -38);
+  scene.add(rearFill);
+  const warmFill = new THREE.DirectionalLight(0xffb46b, .42);
+  warmFill.position.set(28, 8, -26);
+  scene.add(warmFill);
+}
+
+// ---------------------------------------------------------------------------
+// INTERIOR ART PASS — architectural shell, lighting, props, atmosphere
+// ---------------------------------------------------------------------------
+const stripCyanMat = new THREE.MeshBasicMaterial({ color: theme.cyan2, transparent: true, opacity: .82 });
+const stripGoldMat = new THREE.MeshBasicMaterial({ color: theme.gold, transparent: true, opacity: .72 });
+const stripPurpleMat = new THREE.MeshBasicMaterial({ color: theme.purple, transparent: true, opacity: .50 });
+const stripOrangeMat = new THREE.MeshBasicMaterial({ color: theme.orange, transparent: true, opacity: .64 });
+
+function strip(w, h, d, mat, x, y, z) {
+  const m = box(w, h, d, mat, x, y, z);
+  m.castShadow = false;
+  m.receiveShadow = false;
+  return m;
+}
+
+function neonArch(z, radius = 6.0, warm = false) {
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: warm ? theme.orange : theme.cyan2,
+    transparent: true, opacity: warm ? .64 : .72,
+    blending: THREE.AdditiveBlending, depthWrite: false
+  });
+  const arch = new THREE.Mesh(new THREE.TorusGeometry(radius, .10, 10, 64, Math.PI), glowMat);
+  arch.position.set(0, .72, z);
+  scene.add(arch);
+  box(.34, radius + .2, .48, matStructure, -radius, (radius + .2) / 2, z);
+  box(.34, radius + .2, .48, matStructure, radius, (radius + .2) / 2, z);
+  strip(.05, radius - .4, .08, warm ? stripOrangeMat : stripCyanMat, -radius + .19, radius / 2, z + .25);
+  strip(.05, radius - .4, .08, warm ? stripOrangeMat : stripCyanMat, radius - .19, radius / 2, z + .25);
+  return arch;
+}
+
+function pillar(x, z, warm = false, height = 12.5) {
+  box(.72, height, .72, warm ? matWarmMetal : matStructure, x, height / 2, z);
+  box(1.08, .20, 1.08, warm ? matGold : matCyan, x, .12, z);
+  box(1.02, .16, 1.02, warm ? matGold : matCyan, x, height - .08, z);
+  strip(.10, height - 1.0, .10, warm ? stripGoldMat : stripCyanMat, x + .37, height / 2, z + .37);
+}
+
+function wallBay(side, z, accent = 'cyan') {
+  const x = side * (HALF_W - .46);
+  const led = accent === 'gold' ? stripGoldMat : accent === 'purple' ? stripPurpleMat : accent === 'orange' ? stripOrangeMat : stripCyanMat;
+  const dark = accent === 'orange' ? matWarmMetal : matStructure2;
+  box(.24, 7.2, 7.4, dark, x - side * .12, 4.25, z);
+  box(.34, 7.9, .38, matStructure, x - side * .18, 4.55, z - 3.65);
+  box(.34, 7.9, .38, matStructure, x - side * .18, 4.55, z + 3.65);
+  strip(.10, 6.3, .16, led, x - side * .38, 4.2, z - 3.20);
+  strip(.10, 6.3, .16, led, x - side * .38, 4.2, z + 3.20);
+  strip(.10, .11, 6.1, led, x - side * .39, 7.35, z);
+}
+
+function serverTower(x, z, warm = false, rot = 0) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  scene.add(g);
+  const shell = warm ? matWarmMetal : matStructure;
+  box(2.0, 5.4, 1.65, shell, 0, 2.7, 0, g);
+  box(1.65, 4.7, .10, matInset, 0, 2.72, .84, g);
+  const ledMat = warm ? stripOrangeMat : stripCyanMat;
+  for (let y = .7; y <= 4.7; y += .62) {
+    strip(1.28, .05, .04, ledMat, 0, y, .91, g);
+  }
+  strip(.07, 4.6, .04, warm ? stripGoldMat : stripPurpleMat, -.72, 2.7, .92, g);
+  return g;
+}
+
+// Main ceiling ribs turn the empty box into a facility.
+for (let z = -38; z <= 34; z += 8) {
+  box(ROOM.width - 4.0, .34, .54, matStructure, 0, 15.55, z);
+  strip(ROOM.width - 6.0, .055, .11, (z % 16 === 0) ? stripGoldMat : stripCyanMat, 0, 15.30, z);
+  for (const x of [-31, 31]) {
+    box(.48, 2.9, .78, matStructure, x, 14.0, z);
+  }
+}
+
+// Wall bays and structural columns.
+for (const z of [-34, -24, -14, -4, 6, 16, 26]) {
+  wallBay(-1, z, z < -20 ? 'purple' : 'cyan');
+  wallBay(1, z, z < -20 ? 'orange' : 'cyan');
+}
+for (const z of [-36, -24, -12, 0, 12, 24, 36]) {
+  pillar(-33.7, z, false, 11.8);
+  pillar(33.7, z, z < -20, 11.8);
+}
+
+// Entry tunnel gives a clear architectural reveal into the main hall.
+for (const z of [34.5, 30.5, 26.5, 22.5]) {
+  box(11.8, .34, .60, matStructure2, 0, 8.0, z);
+  box(.50, 8.0, .72, matStructure, -5.7, 4.0, z);
+  box(.50, 8.0, .72, matStructure, 5.7, 4.0, z);
+  strip(10.6, .06, .10, stripCyanMat, 0, 7.78, z + .06);
+}
+neonArch(18.5, 7.2, false);
+neonArch(8.0, 8.0, false);
+neonArch(-13.5, 8.6, false);
+for (let z = 21; z <= 36; z += 3.1) {
+  box(7.8, .10, 2.5, matFloorGloss, 0, .06, z);
+  strip(.08, .025, 2.45, stripCyanMat, -3.82, .12, z);
+  strip(.08, .025, 2.45, stripCyanMat, 3.82, .12, z);
+}
+
+// Main floor lanes / exhibit circulation.
+for (let z = -27; z <= 18; z += 4.0) {
+  box(7.4, .08, 3.5, (Math.round(z) % 8 === 0) ? matFloorGloss : matFloorMatte, 0, .045, z);
+}
+strip(.08, .025, 49, stripCyanMat, -3.82, .105, -4.5);
+strip(.08, .025, 49, stripCyanMat, 3.82, .105, -4.5);
+
+// Side gallery floor strips.
+for (const x of [-20.0, 20.0]) {
+  for (let z = -28; z <= 23; z += 5.2) {
+    box(8.0, .075, 4.6, matFloorGloss, x, .045, z);
+  }
+  strip(.055, .025, 55, x < 0 ? stripPurpleMat : stripOrangeMat, x - 4.0, .105, -2.5);
+  strip(.055, .025, 55, x < 0 ? stripPurpleMat : stripOrangeMat, x + 4.0, .105, -2.5);
+}
+
+// Low side benches and research consoles.
+for (const [x, z, warm] of [
+  [-28, 20, false], [-28, 9, false], [-28, -20, false],
+  [28, 21, true], [28, -22, true], [15, 30, false], [-15, 30, false]
+]) {
+  box(5.2, .70, 1.45, warm ? matWarmMetal : matStructure2, x, .35, z);
+  strip(4.5, .05, .08, warm ? stripOrangeMat : stripCyanMat, x, .73, z + .72);
+}
+
+// Transparent architectural screens fill empty volumes and catch zone colors.
+for (const [x, y, z, w, h, color, rotY] of [
+  [-13.5, 5.0, 13.0, 7.5, 4.4, theme.cyan, .18],
+  [13.5, 5.0, 13.0, 7.5, 4.4, theme.cyan2, -.18],
+  [-14.5, 5.2, -19.0, 7.0, 4.8, theme.purple, .14],
+  [14.5, 5.2, -19.0, 7.0, 4.8, theme.orange, -.14]
+]) {
+  const pm = new THREE.MeshBasicMaterial({
+    color, transparent:true, opacity:.055, side:THREE.DoubleSide,
+    depthWrite:false, blending:THREE.AdditiveBlending
+  });
+  const pane = new THREE.Mesh(new THREE.PlaneGeometry(w,h), pm);
+  pane.position.set(x,y,z); pane.rotation.y=rotY; scene.add(pane);
+  const frameMat = color === theme.orange ? stripOrangeMat : color === theme.purple ? stripPurpleMat : stripCyanMat;
+  strip(w,.045,.06,frameMat,x,y+h/2,z);
+  strip(w,.045,.06,frameMat,x,y-h/2,z);
+}
+
+// Floor energy nodes make the approach readable even on dark mobile screens.
+for (let z = 31; z >= -27; z -= 6.5) {
+  const node = new THREE.Mesh(
+    new THREE.RingGeometry(.22,.36,24),
+    new THREE.MeshBasicMaterial({color: z < -12 ? theme.gold : theme.cyan2, transparent:true, opacity:.72, side:THREE.DoubleSide})
+  );
+  node.rotation.x=-Math.PI/2; node.position.set(0,.13,z); scene.add(node);
+}
+
+// Archive hardware / server banks.
+for (const [x, z, warm, rot] of [
+  [-7.7, -35.4, false, 0], [7.7, -35.4, false, 0],
+  [-10.2, -31.0, false, .32], [10.2, -31.0, true, -.32],
+  [-31.2, -29.2, false, 0], [31.0, -29.2, true, 0]
+]) {
+  serverTower(x, z, warm, rot);
+}
+
+// Ambient dust/data motes, one cheap Points draw-call.
+{
+  const count = 180;
+  const pos = new Float32Array(count * 3);
+  const col = new Float32Array(count * 3);
+  const cyanColor = new THREE.Color(theme.cyan2);
+  const goldColor = new THREE.Color(theme.gold);
+  for (let i = 0; i < count; i++) {
+    pos[i * 3] = THREE.MathUtils.randFloatSpread(66);
+    pos[i * 3 + 1] = THREE.MathUtils.randFloat(.7, 14.5);
+    pos[i * 3 + 2] = THREE.MathUtils.randFloatSpread(80);
+    const c = Math.random() < .82 ? cyanColor : goldColor;
+    col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const pm = new THREE.PointsMaterial({
+    size: .06, vertexColors: true, transparent: true, opacity: .40,
+    depthWrite: false, blending: THREE.AdditiveBlending
+  });
+  ambientParticles = new THREE.Points(g, pm);
+  scene.add(ambientParticles);
+}
+
+// Zone spotlights.
+for (const [x, y, z, tx, tz, color, power] of [
+  [0, 14, 0, 0, -3, theme.cyan2, 95],
+  [-27, 11, -4, -27, -10, theme.purple, 70],
+  [27, 12, 4, 27, -2, theme.cyan, 72],
+  [22, 13, -22, 22, -28, theme.orange, 95],
+  [0, 12, -27, 0, -35, theme.cyan2, 78]
+]) {
+  const sp = new THREE.SpotLight(color, power, 32, .45, .55, 1.6);
+  sp.position.set(x, y, z);
+  sp.target.position.set(tx, 1.5, tz);
+  scene.add(sp, sp.target);
 }
 
 label(['pDAI RESEARCH OBSERVATORY', 'PULSECHAIN · 04 OCTOBER 2026'], 25, 4, 0, 10.8, 40.2, { fontSize: 84, subSize: 34, color: '#d9fff9', subColor: '#6fcfc7' });
@@ -456,6 +684,41 @@ const halo = new THREE.Mesh(new THREE.TorusGeometry(3.4, .055, 10, 96), new THRE
 halo.position.y = 4.1;
 halo.rotation.x = Math.PI / 2;
 dais.add(halo);
+// Layered central research dais.
+{
+  const step1 = new THREE.Mesh(new THREE.CylinderGeometry(9.5, 9.8, .32, 72), matStructure);
+  step1.position.set(0, .16, -3); step1.receiveShadow = true; scene.add(step1);
+  const step2 = new THREE.Mesh(new THREE.CylinderGeometry(7.3, 7.7, .34, 72), matFloorGloss);
+  step2.position.set(0, .48, -3); step2.receiveShadow = true; scene.add(step2);
+  const step3 = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.7, .35, 64), matStructure2);
+  step3.position.set(0, .80, -3); scene.add(step3);
+
+  const edge1 = new THREE.Mesh(new THREE.TorusGeometry(9.25, .055, 10, 96), new THREE.MeshBasicMaterial({ color: theme.cyan, transparent: true, opacity: .75 }));
+  edge1.rotation.x = Math.PI / 2; edge1.position.set(0, .36, -3); scene.add(edge1);
+  const edge2 = new THREE.Mesh(new THREE.TorusGeometry(7.05, .05, 10, 96), new THREE.MeshBasicMaterial({ color: theme.gold, transparent: true, opacity: .58 }));
+  edge2.rotation.x = Math.PI / 2; edge2.position.set(0, .68, -3); scene.add(edge2);
+
+  centralBeam = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.55, 2.9, 12.5, 32, 1, true),
+    new THREE.MeshBasicMaterial({ color: theme.cyan2, transparent: true, opacity: .055, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  );
+  centralBeam.position.set(0, 7.2, -3);
+  scene.add(centralBeam);
+
+  const ceilingDish = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 4.2, .34, 48), matStructure2);
+  ceilingDish.position.set(0, 15.4, -3); scene.add(ceilingDish);
+  const ceilingRing = new THREE.Mesh(new THREE.TorusGeometry(3.65, .09, 12, 72), new THREE.MeshBasicMaterial({ color: theme.cyan2, transparent: true, opacity: .76 }));
+  ceilingRing.rotation.x = Math.PI / 2; ceilingRing.position.set(0, 15.18, -3); scene.add(ceilingRing);
+
+  for (const [r, tilt, speed] of [[4.15,.25,.12],[5.15,-.35,-.09]]) {
+    const rr = new THREE.Mesh(new THREE.TorusGeometry(r,.045,8,96), new THREE.MeshBasicMaterial({ color: r < 5 ? theme.cyan2 : theme.purple, transparent:true, opacity:.38 }));
+    rr.position.set(0,4.1,-3);
+    rr.rotation.set(Math.PI/2 + tilt, tilt*.4, 0);
+    scene.add(rr);
+    spinObjects.push({ obj: rr, speed });
+  }
+}
+
 label(['pDAI', 'WORKING THESIS'], 8.4, 2.4, 0, 8.0, -3, { fontSize: 90, subSize: 36, color: '#cffff9' });
 addInteractable('thesis', 0, 2.5, 8.5, 'E / USE — OPEN THE WORKING THESIS', showThesis);
 
@@ -474,8 +737,40 @@ for (let i = 0; i < routePositions.length; i++) {
   lineBetween(new THREE.Vector3(...routePositions[i]), new THREE.Vector3(...routePositions[(i + 1) % routePositions.length]), i === 2 ? theme.gold : theme.cyan, .35);
 }
 
-box(17, 8.5, .5, matMetal, -27, 5.1, -10);
-label(['EVIDENCE WALL', 'OBSERVED · INTERPRETATION · REQUIREMENT'], 15.5, 2.8, -26.7, 8.4, -9.7, { fontSize: 70, subSize: 32, color: '#dffffa' });
+// Suspended transparent data panes around the core add depth without texture cost.
+const holoCards = [];
+for (let i = 0; i < 6; i++) {
+  const a = (i / 6) * Math.PI * 2;
+  const radius = i % 2 ? 6.7 : 5.6;
+  const pm = new THREE.MeshBasicMaterial({
+    color: i % 3 === 0 ? theme.gold : (i % 2 ? theme.purple : theme.cyan2),
+    transparent: true, opacity: .085, depthWrite: false,
+    side: THREE.DoubleSide, blending: THREE.AdditiveBlending
+  });
+  const card = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 1.5), pm);
+  card.position.set(Math.cos(a) * radius, 4.0 + (i % 2) * 1.5, -3 + Math.sin(a) * radius);
+  card.lookAt(new THREE.Vector3(0, 4.2, -3));
+  scene.add(card);
+  holoCards.push(card);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,2.6,8), new THREE.MeshBasicMaterial({color:theme.cyan2,transparent:true,opacity:.30}));
+  pole.position.set(card.position.x, card.position.y - 1.7, card.position.z);
+  scene.add(pole);
+}
+
+// Evidence exhibit — recessed bay with physical frame and uplighting.
+box(19.2, 10.3, .95, matStructure, -27, 5.55, -10.30);
+box(17.8, 8.9, .48, matMetal, -27, 5.2, -9.74);
+strip(18.2, .08, .10, stripPurpleMat, -27, 10.12, -9.42);
+strip(18.2, .08, .10, stripCyanMat, -27, .68, -9.42);
+for (const x of [-34.9, -19.1]) {
+  box(.55, 9.6, .75, matStructure2, x, 5.2, -9.9);
+  strip(.08, 8.3, .10, x < -27 ? stripPurpleMat : stripCyanMat, x + .28, 5.2, -9.40);
+}
+for (const x of [-31.6, -26.5, -21.4]) {
+  const upl = new THREE.PointLight(x < -29 ? theme.cyan : x > -24 ? theme.gold : theme.purple, 6, 8, 2);
+  upl.position.set(x, 1.0, -7.3); scene.add(upl);
+}
+label(['EVIDENCE WALL', 'OBSERVED · INTERPRETATION · REQUIREMENT'], 15.5, 2.8, -26.7, 8.4, -9.42, { fontSize: 70, subSize: 32, color: '#dffffa' });
 const evidenceColors = [theme.cyan, theme.purple, theme.gold];
 const evidenceIds = ['OBSERVED', 'INTERPRETATION', 'OPERATING REQUIREMENT'];
 for (let i = 0; i < 3; i++) {
@@ -484,17 +779,35 @@ for (let i = 0; i < 3; i++) {
 }
 addInteractable('evidence', -27, -5.5, 8.5, 'E / USE — INSPECT EVIDENCE CLASSIFICATION', showEvidence);
 
-box(17, 8, .5, matMetal, -27, 5, -29);
-label(['STABILITY LOOP', 'SUPPLY · REPLENISHMENT · CIRCULATION'], 15.5, 2.8, -26.7, 8.0, -28.7, { fontSize: 68, subSize: 30, color: '#dffffa' });
+box(19.2, 9.8, .95, matStructure, -27, 5.25, -29.3);
+box(17.8, 8.4, .48, matMetal, -27, 5.0, -28.72);
+strip(18.2, .08, .10, stripGoldMat, -27, 9.75, -28.42);
+strip(18.2, .08, .10, stripCyanMat, -27, .72, -28.42);
+label(['STABILITY LOOP', 'SUPPLY · REPLENISHMENT · CIRCULATION'], 15.5, 2.8, -26.7, 8.0, -28.42, { fontSize: 68, subSize: 30, color: '#dffffa' });
 addInteractable('stability', -27, -24.5, 7.5, 'E / USE — INSPECT STABILITY / REPLENISHMENT LOOP', showStability);
 
 label(['FIVE PHASES', 'PROPOSED CONSTRUCTION PATH'], 15.5, 2.4, 26.5, 10.8, -2, { fontSize: 72, subSize: 30, color: '#dffffa' });
 const phaseZ = [12, 5, -2, -9, -16];
+// Gallery spine and ceiling light path.
+box(12.5, .22, 38, matFloorGloss, 26.7, .11, -2.0);
+strip(.10, .025, 38, stripOrangeMat, 20.55, .24, -2.0);
+strip(.10, .025, 38, stripCyanMat, 32.85, .24, -2.0);
+for (let z = -18; z <= 14; z += 8) {
+  box(12.6, .28, .42, matStructure, 26.7, 12.8, z);
+  strip(11.4, .05, .08, stripCyanMat, 26.7, 12.59, z);
+}
 for (let i = 0; i < highlights.phases.length; i++) {
   const p = highlights.phases[i];
   const z = phaseZ[i];
-  box(9.5, 5.2, .75, i === 3 ? matGold : matCyan, 27, 3.2, z);
-  label([String(i + 1).padStart(2, '0'), p.name], 8.7, 2.1, 26.55, 4.3, z + .42, { fontSize: 62, subSize: 30, color: i === 3 ? '#ffe5a0' : '#d8fffa' });
+  box(10.8, .34, 5.6, i === 3 ? matWarmMetal : matStructure2, 27, .18, z);
+  box(10.1, 5.9, 1.05, matStructure, 27, 3.45, z);
+  box(8.95, 4.70, .16, i === 3 ? matGold : matCyan, 27, 3.48, z + .57);
+  strip(9.4, .07, .10, i === 3 ? stripGoldMat : stripCyanMat, 27, 6.32, z + .60);
+  strip(9.4, .05, .10, i === 3 ? stripGoldMat : stripPurpleMat, 27, .62, z + .60);
+  box(1.05, 1.55, 1.05, i === 3 ? matGold : matStructure2, 21.5, .78, z);
+  const phaseLamp = new THREE.PointLight(i === 3 ? theme.gold : theme.cyan, 5.2, 7.5, 2);
+  phaseLamp.position.set(21.5, 1.45, z); scene.add(phaseLamp);
+  label([String(i + 1).padStart(2, '0'), p.name], 8.3, 2.0, 26.55, 4.3, z + .68, { fontSize: 62, subSize: 30, color: i === 3 ? '#ffe5a0' : '#d8fffa' });
   addInteractable('phase-' + i, 22.5, z, 5.5, 'E / USE — ' + p.name, () => {
     const row = '<div class="phaseRow"><div class="phaseNo">' + (i + 1) + '</div><div><div class="phaseName">' + htmlEscape(p.name) + '</div><div class="phaseText">' + htmlEscape(p.text) + '</div><div class="source">Source page ' + p.page + '</div></div></div>';
     panel('PHASE ' + (i + 1) + ' / 5', p.name, '<div class="notice">One phase in the paper’s proposed construction sequence.</div>' + row + '<p><button id="allPhases" class="smallBtn">SHOW ALL FIVE PHASES</button></p>');
@@ -503,15 +816,51 @@ for (let i = 0; i < highlights.phases.length; i++) {
   });
 }
 
-box(18, 8, .5, matMetal, 25.5, 5, 29);
-label(['PARTICIPANT OUTCOMES', 'HOLDERS · BORROWERS · LPs · USERS'], 16.4, 2.5, 25.2, 8.1, 28.7, { fontSize: 64, subSize: 30, color: '#dffffa' });
+box(20.0, 9.7, .92, matStructure, 25.5, 5.3, 29.35);
+box(18.7, 8.5, .48, matMetal, 25.5, 5.0, 28.76);
+strip(19.0, .08, .10, stripCyanMat, 25.5, 9.62, 28.46);
+strip(19.0, .08, .10, stripGoldMat, 25.5, .75, 28.46);
+label(['PARTICIPANT OUTCOMES', 'HOLDERS · BORROWERS · LPs · USERS'], 16.4, 2.5, 25.2, 8.1, 28.46, { fontSize: 64, subSize: 30, color: '#dffffa' });
 addInteractable('participants', 25, 24, 7.8, 'E / USE — WHO IS THE PROPOSED SERVICE FOR?', showParticipants);
 
-box(23, 11, .65, matMetal, 22, 5.7, -30);
-label(['APPENDIX 27', 'ATROPA LIQUIDITY CONNECTIONS'], 20, 3.0, 22, 9.6, -29.6, { fontSize: 82, subSize: 34, color: '#ffd6ad', subColor: '#ff9b54', glow: 'rgba(255,155,84,.35)' });
+// Appendix 27 chamber — warm, denser, deliberately different from the cyan main hall.
+box(25.5, 12.8, 1.05, matStructure, 22, 6.45, -30.5);
+box(23.3, 11.1, .52, matWarmMetal, 22, 5.85, -29.75);
+box(25.2, .34, 18.0, matFloorGloss, 22, .18, -24.5);
+strip(24.0, .07, .11, stripOrangeMat, 22, 11.95, -29.40);
+strip(24.0, .07, .11, stripGoldMat, 22, .82, -29.40);
+for (const x of [11.4, 32.6]) {
+  box(.72, 10.8, .88, matWarmMetal, x, 5.7, -29.65);
+  strip(.08, 9.5, .10, stripOrangeMat, x + (x < 22 ? .38 : -.38), 5.7, -29.20);
+}
+for (const x of [14.5, 29.5]) serverTower(x, -23.3, true, 0);
+label(['APPENDIX 27', 'ATROPA LIQUIDITY CONNECTIONS'], 20, 3.0, 22, 9.6, -29.35, { fontSize: 82, subSize: 34, color: '#ffd6ad', subColor: '#ff9b54', glow: 'rgba(255,155,84,.35)' });
+{
+  const archMat = new THREE.MeshBasicMaterial({color:theme.orange,transparent:true,opacity:.60,blending:THREE.AdditiveBlending,depthWrite:false});
+  const chamberArch = new THREE.Mesh(new THREE.TorusGeometry(7.6,.12,10,72,Math.PI),archMat);
+  chamberArch.position.set(22,.8,-20.4); scene.add(chamberArch);
+  box(.42,7.6,.52,matWarmMetal,14.4,3.8,-20.4);
+  box(.42,7.6,.52,matWarmMetal,29.6,3.8,-20.4);
+}
 const atropaCore = new THREE.Mesh(new THREE.DodecahedronGeometry(1.45, 1), new THREE.MeshStandardMaterial({ color: 0x3a1609, emissive: theme.orange, emissiveIntensity: .72, metalness: .42, roughness: .28 }));
 atropaCore.position.set(22, 4.4, -25);
 scene.add(atropaCore);
+{
+  const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 4.4, .78, 48), matWarmMetal);
+  pedestal.position.set(22, .39, -25); scene.add(pedestal);
+  const pedRing = new THREE.Mesh(new THREE.TorusGeometry(3.8, .075, 10, 72), new THREE.MeshBasicMaterial({ color: theme.orange, transparent:true, opacity:.72 }));
+  pedRing.rotation.x = Math.PI/2; pedRing.position.set(22,.80,-25); scene.add(pedRing);
+
+  atropaBeam = new THREE.Mesh(
+    new THREE.CylinderGeometry(.85, 2.1, 11.5, 28, 1, true),
+    new THREE.MeshBasicMaterial({ color: theme.orange, transparent:true, opacity:.06, depthWrite:false, blending:THREE.AdditiveBlending, side:THREE.DoubleSide })
+  );
+  atropaBeam.position.set(22,6.4,-25); scene.add(atropaBeam);
+
+  const overhead = new THREE.Mesh(new THREE.TorusGeometry(3.0,.09,10,64), new THREE.MeshBasicMaterial({color:theme.gold,transparent:true,opacity:.62}));
+  overhead.rotation.x=Math.PI/2; overhead.position.set(22,13.5,-25); scene.add(overhead);
+  spinObjects.push({obj:overhead,speed:-.10});
+}
 for (let i = 0; i < highlights.atropa.pools.length; i++) {
   const p = highlights.atropa.pools[i];
   const angle = -Math.PI / 2 + (i - 1) * .72;
@@ -525,8 +874,15 @@ for (let i = 0; i < highlights.atropa.pools.length; i++) {
 }
 addInteractable('atropa', 22, -20, 9.0, 'E / USE — OPEN ATROPA APPENDIX 27', showAtropa);
 
-box(13, 5.2, 4.8, matMetal, 0, 2.6, -35);
-box(11.8, 3.5, .25, matCyan, 0, 4.0, -32.7);
+// Archive bay — proper console desk + flanking data towers.
+box(16.5, .45, 9.0, matFloorGloss, 0, .22, -34.8);
+box(13.8, 5.8, 5.2, matStructure, 0, 2.9, -35.4);
+box(12.4, 4.0, .28, matCyan, 0, 4.25, -32.72);
+box(12.8, .68, 2.4, matStructure2, 0, 1.25, -31.8);
+strip(11.8, .07, .11, stripCyanMat, 0, 1.59, -30.64);
+serverTower(-8.6,-35.6,false,.08);
+serverTower(8.6,-35.6,false,-.08);
+const archiveLamp = new THREE.PointLight(theme.cyan2,8,11,2); archiveLamp.position.set(0,6.4,-31.4); scene.add(archiveLamp);
 label(['73 APPENDICES', 'SEARCH THE FULL RESEARCH'], 10.8, 2.4, 0, 4.4, -32.52, { fontSize: 66, subSize: 31, color: '#dffffa' });
 addInteractable('archive', 0, -28.5, 7.5, 'E / USE — SEARCH ALL 73 APPENDICES', archiveShell);
 
@@ -713,15 +1069,44 @@ function animate(now) {
   requestAnimationFrame(animate);
   const dt = Math.min(.05, Math.max(.001, (now - lastFrame) / 1000));
   lastFrame = now;
+
+  if (panelOpen) {
+    setPrompt('');
+    if (now - lastPanelRender > 320) {
+      updateCamera();
+      renderer.render(scene, camera);
+      lastPanelRender = now;
+    }
+    return;
+  }
+
   updateMovement(dt);
   updateCamera();
-  const it = panelOpen ? null : nearestInteractable();
+  const it = nearestInteractable();
   setPrompt(it ? it.prompt : '');
   core.rotation.y += dt * .42;
   core.rotation.x += dt * .17;
   halo.rotation.z += dt * .12;
   atropaCore.rotation.x += dt * .26;
   atropaCore.rotation.y -= dt * .34;
+  for (const it of spinObjects) {
+    it.obj.rotation.z += dt * it.speed;
+  }
+  if (ambientParticles) {
+    ambientParticles.rotation.y += dt * .006;
+    ambientParticles.position.y = Math.sin(now * .00018) * .16;
+  }
+  if (centralBeam) {
+    centralBeam.material.opacity = .045 + Math.sin(now * .0015) * .014;
+  }
+  for (let i = 0; i < holoCards.length; i++) {
+    const h = holoCards[i];
+    h.material.opacity = .065 + Math.sin(now * .001 + i * .7) * .025;
+    h.position.y += Math.sin(now * .0012 + i) * .0007;
+  }
+  if (atropaBeam) {
+    atropaBeam.material.opacity = .050 + Math.sin(now * .0018 + 1.2) * .015;
+  }
   for (let i = 0; i < routeMeshes.length; i++) {
     routeMeshes[i].position.y = 3.0 + Math.sin(now * .0017 + i) * .18;
   }
