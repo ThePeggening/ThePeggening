@@ -6,7 +6,15 @@ Grand Inquisitor Cicero receives a character-exclusive introduction in ATROPA: T
 
 The story uses original fictional dialogue and Atropa imagery, including Ethereum/PulseChain mirror ledgers, the pDAI record, and the final 414 reveal.
 
-Play the hosted update: [Atropa P50 — Grand Inquisitor](https://thepeggening.github.io/ThePeggening/Atropa-P50-Grand-Inquisitor-Update.html).
+Play from the normal game link: [ATROPA: The Peggening](https://thepeggening.github.io/ThePeggening/).
+
+Direct update link: [Atropa P50 — Grand Inquisitor](https://thepeggening.github.io/ThePeggening/Atropa-P50-Grand-Inquisitor-Update.html).
+
+## R2 — Normal entry and character chooser
+
+The normal game entry now opens the P50 update. The character chooser shows all twelve bodies, labels Grand Inquisitor Cicero **XII**, and uses a responsive grid so the final choice remains visible on narrow screens. Character buttons have a minimum height of 44 pixels; compact layouts use two rows of six.
+
+R2 changes the entry route, wrapper layout, and selector numeral. The quest world, presentation, and lifecycle modules are identical to R1.
 
 ## Starting, saving, and returning
 
@@ -48,7 +56,7 @@ Dialogue is subtitled; audio uses synthesized ambience and effects, without spok
 
 ## Build and local preview
 
-Requirements: Python 3, Node.js, the unchanged base `index.html`, the existing game assets, and all three quest modules in `quests/`.
+Requirements: Python 3, Node.js, the authoritative base Classic payload in `index.html`, the existing game assets, and all three quest modules in `quests/`.
 
 From the repository root:
 
@@ -57,7 +65,15 @@ python3 tools/build-grand-inquisitor.py .
 python3 -m http.server 8765 --bind 127.0.0.1
 ```
 
-Open `http://127.0.0.1:8765/Atropa-P50-Grand-Inquisitor-Update.html`.
+Open `http://127.0.0.1:8765/Atropa-P50-Grand-Inquisitor-Update.html`. The default build leaves `index.html` unchanged.
+
+To install or refresh the normal-entry route as part of the build, use:
+
+```bash
+python3 tools/build-grand-inquisitor.py . --promote
+```
+
+Then open `http://127.0.0.1:8765/`.
 
 The builder emits:
 
@@ -65,22 +81,38 @@ The builder emits:
 - `quests/grand-inquisitor-runtime.pkg`
 - `quests/grand-inquisitor-runtime.manifest.json`
 
-It validates checked source anchors, JavaScript syntax, source checksums, packed-source roundtripping, and preservation of unrelated host payloads. It does not rewrite `index.html`. The update page loads the complete existing Atropa host with the new compiled Classic runtime; it requires the repository's existing assets. Rebuild the update after changing the base host or any quest module.
+The builder validates checked source anchors, JavaScript syntax, source checksums, packed-source roundtripping, and preservation of unrelated host payloads. The optional `--promote` flag adds a small head script to `index.html` while preserving every packed game payload. A failed promoted build restores the original index bytes.
+
+The entry script routes an HTTP(S) root or `index.html` URL to the P50 page in the same directory. It retains existing query values and the fragment and adds `atropa-update=P50-R2`. The named P50 page bypasses the redirect, as does `index.html?atropa-base=1`. If the P50 loader fails, its **Open previous version** action uses that explicit bypass.
+
+The update page loads the complete existing Atropa host with the new compiled Classic runtime; it requires the repository's existing assets. Rebuild the update after changing the base host, wrapper, or any quest module.
 
 ## Validation record
 
-The R3 tests ran against the full existing game host and completed all six playable trials. R4 verified the final camera adjustment and native touch controls against the compiled build below.
+The current release is R2. Its world, presentation, and quest lifecycle modules are unchanged from the validated R1 release. The complete quest and camera/mobile results below are R1 evidence. R2 additionally checks the normal website entry and visible character selection.
 
-- Build revision: `P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R1`.
-- Compiled source SHA-256: `77992a4191e8ab2904b7ca91a88af3afc789d7c6978ac8103843dc8dfe6e4351`.
-- Packed runtime SHA-256: `f778fc5daad9c3452a8165d531144beaa341c814a6783bf95f4cbad75635df09`.
-- Final mobile coverage is limited to Chrome emulation at **390 × 844** and **915 × 412**.
+- Build revision: `P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R2`.
+- Compiled source SHA-256: `26d9229d34a0bc90781e8992f55b69eabc3b568f6350a50de6c9f4a31c196143`.
+- Packed runtime SHA-256: `e243916c980ac9961275ca89820ef2813ada3f840ea8775fbb3f619ca7ce9acb`.
+
+### R2 entry and selector validation
+
+| Check | Recorded status |
+| --- | --- |
+| Compiled source and package | Build completed with the source/package hashes above; JavaScript syntax, packed-source roundtrip, and host-payload preservation are checked by the builder. |
+| Normal-entry selection flow | Passed locally through the visible controls: normal root → PLAY NOW → Maria → next body → Grand Inquisitor → ENTER → Classic → CONTINUE → ENTER THE CITY → skip onboarding → automatic introduction. All twelve choices fit both 390 × 844 portrait and 915 × 412 landscape with targets at least 44 × 44 pixels. |
+| Route and fallback handling | Passed locally: root, index, and direct P50 entry retain existing query values and fragment; the previous-version recovery link remains on the original index without a redirect loop. Removing only the entry guard restores the byte-exact previous index. |
+| R2 public entry and hosted package | Passed all 15 checks against public release `c354974d8cca4e68388399fda055b3177a507f2c`: normal root → visible PLAY NOW → Maria → next body → Grand in portrait and landscape → ENTER → visible Classic card → CONTINUE → ENTER THE CITY → SKIP → automatic Grand introduction. The decoded source metadata matches R2. Both selector captures wait for the actual model to be mounted and visible. Root/index/direct routes retain query values and fragment; the previous-version recovery does not loop. |
+
+### R1 quest validation retained
+
+The R1 compiled source SHA-256 was `77992a4191e8ab2904b7ca91a88af3afc789d7c6978ac8103843dc8dfe6e4351`. R3 and R4 below are test-run names for that release. R3 completed all six playable trials in the full existing game host; R4 checked the final camera adjustment and native touch controls. Mobile coverage was limited to Chrome emulation at **390 × 844** and **915 × 412**.
 
 | Check | Recorded status |
 | --- | --- |
 | Presentation syntax and isolated lifecycle/control checks | Passed locally. |
 | Isolated audio preferences, node limits, and cleanup checks | Passed locally. |
-| Final compiled host and package validation | Passed: manifest confirms JavaScript syntax, packed-source roundtrip, and preservation of unrelated host markup. |
+| R1 compiled host and package validation | Passed: manifest confirms JavaScript syntax, packed-source roundtrip, and preservation of unrelated host markup. |
 | New-player entry, attacks, ledger puzzle, pause/reload, and Index resume | Passed in the actual-host tests. |
 | All six trials and native completion | Passed in R3: three escort relays with zero checkpoint resets and minimum integrity of two; charged/gold clock intervals; 12-second core-exposure expiry and recovery; all three boss phases; natural 16-second finisher and 20-second ending; all seven scenes recorded. |
 | Other-character exclusion, veteran-save restoration, and legacy character migration | Passed in R3, including chapter-five progress/economy preservation and exact city camera, layer, and position restoration. |
@@ -89,6 +121,6 @@ The R3 tests ran against the full existing game host and completed all six playa
 | Final gameplay camera and core approach | Passed in R4: 22 focused checks. |
 | Desktop and mobile portrait/landscape controls and layout | Passed visual review. R4 emulated mobile tests passed both cases and 20 explicit checks, including native attack taps, joystick movement/cancel/release, jump taps, and the contextual linked-disc action. |
 | Micro-mode, restart recovery, and existing city audio restoration | Passed in R3. |
-| Hosted update link and required assets | Passed against the public GitHub Pages build from commit `275e77025dae831d6cab442de014cbdcb73d7165`: HTTP 200, exact decoded source checksum, real model with all seven animation clips, six-room scene, automatic introduction, and a native attack that breaks and saves the first seal. The hosted smoke passed all 17 checks. |
+| R1 hosted update link and required assets | Passed against the public GitHub Pages build from commit `275e77025dae831d6cab442de014cbdcb73d7165`: HTTP 200, exact decoded source checksum, real model with all seven animation clips, six-room scene, automatic introduction, and a native attack that breaks and saves the first seal. The hosted smoke passed all 17 checks. |
 
-All listed implementation and hosted checks are complete. Public verification ran on 10 October 2026 in an isolated browser profile. Mobile checks used Chrome emulation; no physical phone was used.
+R1 and R2 public verification used isolated browser profiles. Mobile checks used Chrome emulation; no physical phone was used. R2 closes the earlier test gap by starting at the normal website and selecting the character through visible controls, with no preset character, forced launcher, or runtime bridge.
