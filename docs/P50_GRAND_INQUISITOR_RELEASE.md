@@ -6,6 +6,8 @@ Grand Inquisitor Cicero receives a character-exclusive introduction in ATROPA: T
 
 The story uses original fictional dialogue and Atropa imagery, including Ethereum/PulseChain mirror ledgers, the pDAI record, and the final 414 reveal.
 
+Play the hosted update: [Atropa P50 — Grand Inquisitor](https://thepeggening.github.io/ThePeggening/Atropa-P50-Grand-Inquisitor-Update.html).
+
 ## Starting, saving, and returning
 
 - Select **Grand Inquisitor Cicero** in Classic mode. The story starts once onboarding is complete or skipped, the selected model is ready, and the player has returned to an eligible city state.
@@ -87,6 +89,6 @@ The R3 tests ran against the full existing game host and completed all six playa
 | Final gameplay camera and core approach | Passed in R4: 22 focused checks. |
 | Desktop and mobile portrait/landscape controls and layout | Passed visual review. R4 emulated mobile tests passed both cases and 20 explicit checks, including native attack taps, joystick movement/cancel/release, jump taps, and the contextual linked-disc action. |
 | Micro-mode, restart recovery, and existing city audio restoration | Passed in R3. |
-| Hosted update link and required assets | Pending publication verification. |
+| Hosted update link and required assets | Passed against the public GitHub Pages build from commit `275e77025dae831d6cab442de014cbdcb73d7165`: HTTP 200, exact decoded source checksum, real model with all seven animation clips, six-room scene, automatic introduction, and a native attack that breaks and saves the first seal. The hosted smoke passed all 17 checks. |
 
-All listed implementation checks are complete. Hosted-link verification will be recorded after publication.
+All listed implementation and hosted checks are complete. Public verification ran on 10 October 2026 in an isolated browser profile. Mobile checks used Chrome emulation; no physical phone was used.
