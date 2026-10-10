@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Build the P50 Grand Inquisitor overlay without writing to index.html.
+"""Build the P50 Grand Inquisitor overlay.
 
-Usage: python tools/build-grand-inquisitor.py [repository-root]
+Usage: python tools/build-grand-inquisitor.py [repository-root] [--promote]
 
 The authoritative packed Classic source is read from index.html. All patches
 have unique, checked anchors. The emitted runtime uses the existing packed-47
 format; the thin update page installs that precompiled package into the same
-host HTML and leaves all other embedded games/assets unchanged.
+host HTML and leaves all other embedded games/assets unchanged. The optional
+--promote flag connects the normal website entry to the separate update page,
+preserving every original packed payload and the query string/fragment.
 """
 from __future__ import annotations
 
@@ -20,7 +22,7 @@ import subprocess
 import tempfile
 
 
-REVISION = "P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R1"
+REVISION = "P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R2"
 ALPHABET_SIZE = 52496
 PACKAGE_NAME = "grand-inquisitor-runtime.pkg"
 MANIFEST_NAME = "grand-inquisitor-runtime.manifest.json"
@@ -45,6 +47,43 @@ def read_html(value: bytes) -> str:
     if value[:16].count(b"\x00") >= 4:
         return value.decode("utf-16le" if value[:1] != b"\x00" else "utf-16be")
     return value.decode("utf-8-sig")
+
+
+def promote_entry(root: Path) -> None:
+    """Route the normal website to P50; keep the original game as a fallback."""
+    index = root / "index.html"
+    original = index.read_bytes()
+    html = read_html(original)
+    marker = 'id="atropa-p50-default-entry"'
+    previous_guard = re.compile(r'\n?<script id="atropa-p50-default-entry">.*?</script>\n?', re.S)
+    if marker in html and len(previous_guard.findall(html)) != 1:
+        raise ValueError("Expected one existing default-entry guard")
+    plain_html = previous_guard.sub("", html, count=1) if marker in html else html
+    if html.count("<head>") != 1:
+        raise ValueError("Expected one normal host head before promoting P50")
+    guard = '''
+<script id="atropa-p50-default-entry">
+(() => {
+  if (!/^https?:$/.test(location.protocol)) return;
+  const destination = new URL(location.href);
+  if (destination.searchParams.get('atropa-base') === '1') return;
+  if (!/\\/(?:index\\.html)?$/i.test(destination.pathname)) return;
+  destination.pathname = destination.pathname.replace(/(?:index\\.html)?$/i, 'Atropa-P50-Grand-Inquisitor-Update.html');
+  destination.searchParams.set('atropa-update', 'P50-R2');
+  location.replace(destination.href);
+})();
+</script>
+'''
+    updated = plain_html.replace("<head>", "<head>" + guard, 1)
+    if updated.replace(guard, "", 1) != plain_html:
+        raise ValueError("Entry promotion changed unrelated host content")
+    if original.startswith(b"\xff\xfe"):
+        encoded = b"\xff\xfe" + updated.encode("utf-16le")
+    elif original.startswith(b"\xfe\xff"):
+        encoded = b"\xfe\xff" + updated.encode("utf-16be")
+    else:
+        encoded = (b"\xef\xbb\xbf" if original.startswith(b"\xef\xbb\xbf") else b"") + updated.encode("utf-8")
+    index.write_bytes(encoded)
 
 
 def packed_digit(cp: int) -> int:
@@ -159,6 +198,11 @@ const PLAYER_SKINS = [""",
     )
     maria_skin = "    { id: 'maria-414', name: 'Maria 414', blurb: 'playable character · original animated 3D model', build: buildMaria414Player },"
     replace(maria_skin, maria_skin + "\n    { id: 'grand-inquisitor', name: 'Grand Inquisitor Cicero', blurb: 'The Unwritten Verdict · exclusive cinematic intro and six trials · seven attacks', build: buildGrandInquisitorPlayer },", "Add canonical playable character")
+    replace(
+        "const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];",
+        "const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];",
+        "Label Grand Inquisitor as body XII in the visible selector",
+    )
     replace(
         "        const v = localStorage.getItem(SKIN_KEY);\n        return PLAYER_SKINS.some((s) => s.id === v) ? v : 'acolyte';",
         "        const saved = localStorage.getItem(SKIN_KEY);\n        const v = saved === 'crimson-wraith' ? 'grand-inquisitor' : saved;\n        if (saved === 'crimson-wraith') { try { localStorage.setItem(SKIN_KEY, v); } catch (_) {} }\n        return PLAYER_SKINS.some((s) => s.id === v) ? v : 'acolyte';",
@@ -280,6 +324,16 @@ def wrapper_html(manifest: dict) -> str:
     # Embed exact build metadata. No browser-side source rewriting/recompilation,
     # forced selection, save mutation, or navigation to a different URL.
     meta = json.dumps({key: manifest[key] for key in ("revision", "sourceSha256", "sourceRawBytes", "baseSourceSha256", "packageSha256")}, separators=(",", ":"))
+    picker_css = '''<style id="atropa-p50-character-picker">
+.atropa-char-select .atropa-char-dots{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr));width:min(100%,576px);max-width:100%;gap:4px!important;flex-shrink:0}
+.atropa-char-select .atropa-char-dots>button{min-width:0;min-height:44px;justify-content:center;padding:4px!important;border-radius:9px}
+@media(max-width:640px){.atropa-char-select .atropa-char-dots{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(orientation:landscape) and (max-height:540px) and (min-width:600px){
+.atropa-char-select .atropa-char-layout{grid-template-rows:18px 23px 92px minmax(37px,auto) minmax(70px,1fr) 46px!important}
+.atropa-char-select .atropa-char-dots{grid-template-columns:repeat(6,minmax(0,1fr));align-self:center}
+.atropa-char-select .atropa-char-name h1{white-space:normal!important;line-height:1.1;font-size:clamp(16px,2.5vw,22px)!important}
+}
+</style>'''
     return r'''<!doctype html>
 <html lang="en">
 <head>
@@ -292,7 +346,7 @@ def wrapper_html(manifest: dict) -> str:
   </style>
 </head>
 <body>
-  <main id="loader"><div class="eyebrow">ATROPA · THE PEGGENING</div><h1>THE UNWRITTEN VERDICT</h1><p class="subtitle">Grand Inquisitor Cicero</p><div class="bar" aria-hidden="true"><i></i></div><p id="status" role="status">Preparing Atropa…</p><div id="recover" hidden><a id="retry" href="">Retry loading</a><a href="./index.html">Open Atropa</a></div></main>
+  <main id="loader"><div class="eyebrow">ATROPA · THE PEGGENING</div><h1>THE UNWRITTEN VERDICT</h1><p class="subtitle">Grand Inquisitor Cicero</p><div class="bar" aria-hidden="true"><i></i></div><p id="status" role="status">Preparing Atropa…</p><div id="recover" hidden><a id="retry" href="">Retry loading</a><a href="./index.html?atropa-base=1">Open previous version</a></div></main>
   <script>
   (async () => {
     'use strict';
@@ -318,6 +372,7 @@ def wrapper_html(manifest: dict) -> str:
       const tag = match[1].replace(/data-raw-sha256="[a-f0-9]{64}"/,'data-raw-sha256="'+build.sourceSha256+'"').replace(/data-raw-size="\d+"/,'data-raw-size="'+build.sourceRawBytes+'"');
       html = html.slice(0,match.index)+tag+packed+match[3]+html.slice(match.index+match[0].length);
       html = html.replace(/data-integration-revision="[^"]*"/,'data-integration-revision="'+build.revision+'"');
+      html = html.replace('</head>', __P50_PICKER_STYLES__ + '</head>');
       status.textContent = 'Entering Atropa…';
       document.open();document.write(html);document.close();
     } catch (error) {
@@ -331,7 +386,7 @@ def wrapper_html(manifest: dict) -> str:
   </script>
 </body>
 </html>
-'''.replace("__P50_BUILD_METADATA__", meta)
+'''.replace("__P50_BUILD_METADATA__", meta).replace("__P50_PICKER_STYLES__", json.dumps(picker_css))
 
 
 def build(root: Path) -> dict:
@@ -418,8 +473,18 @@ def build(root: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("root", nargs="?", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--promote", action="store_true", help="Connect the normal website to P50 while retaining all original game payloads")
     options = parser.parse_args()
-    manifest = build(options.root.resolve())
+    root = options.root.resolve()
+    previous_index = (root / "index.html").read_bytes() if options.promote else None
+    try:
+        if options.promote:
+            promote_entry(root)
+        manifest = build(root)
+    except Exception:
+        if previous_index is not None:
+            (root / "index.html").write_bytes(previous_index)
+        raise
     print(f"Built {manifest['revision']}")
     print(f"Source: {manifest['sourceRawBytes']:,} bytes; SHA256 {manifest['sourceSha256']}")
     print(f"Runtime package: {manifest['packageBytes']:,} bytes; {len(manifest['patches'])} checked host integrations")

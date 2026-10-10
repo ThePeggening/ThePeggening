@@ -1,13 +1,13 @@
 {
-  "revision": "P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R1",
-  "sourceSha256": "77992a4191e8ab2904b7ca91a88af3afc789d7c6978ac8103843dc8dfe6e4351",
-  "sourceRawBytes": 7345476,
+  "revision": "P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R2",
+  "sourceSha256": "26d9229d34a0bc90781e8992f55b69eabc3b568f6350a50de6c9f4a31c196143",
+  "sourceRawBytes": 7345483,
   "baseSourceSha256": "d75a49a5be2b3ae3ce76449be479c07f2a1364a6a5b5a98a21eecb1d97be81e4",
   "baseSourceRawBytes": 7197193,
-  "baseHtmlSha256": "ce2f472b6442f97231ce268d48de0f1fc6415eaa2a8630c5bec7c42040b88e47",
+  "baseHtmlSha256": "1979d37500aef946b2ae1b70512609ede8dbf0e2bf17328da2e61f2be8218f96",
   "package": "quests/grand-inquisitor-runtime.pkg",
-  "packageSha256": "f778fc5daad9c3452a8165d531144beaa341c814a6783bf95f4cbad75635df09",
-  "packageBytes": 4510982,
+  "packageSha256": "e243916c980ac9961275ca89820ef2813ada3f840ea8775fbb3f619ca7ce9acb",
+  "packageBytes": 4511136,
   "wrapper": "Atropa-P50-Grand-Inquisitor-Update.html",
   "modules": {
     "grand-inquisitor-world.js": "5775d372494aa34ce65c26d5f5a989835684c96fc52077fbcdba8a02425ff4f0",
@@ -17,6 +17,7 @@
   "patches": [
     "Register exact uploaded Grand Inquisitor rig",
     "Add canonical playable character",
+    "Label Grand Inquisitor as body XII in the visible selector",
     "Migrate legacy skin id without forcing a character",
     "Normalize legacy character selection writes",
     "Resolve legacy explicit rig requests",
