@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>ATROPA: The Peggening — Crimson Wraith</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;display:grid;place-items:center;background:#05040a;color:#f7edf0;font:700 15px/1.5 system-ui,sans-serif}
+    main{width:min(520px,calc(100% - 36px));text-align:center}.bar{height:8px;border:1px solid #9d1c32;border-radius:999px;overflow:hidden;background:#18070b}.bar i{display:block;width:12%;height:100%;background:linear-gradient(90deg,#8e1029,#ff354f);animation:p 1.1s ease-in-out infinite alternate}@keyframes p{to{width:92%}}small{display:block;margin-top:12px;color:#b799a2}
+  </style>
+</head>
+<body><main><h1>CRIMSON WRAITH</h1><div class="bar"><i></i></div><small id="status">Preparing the playable Atropa build…</small></main>
+<script>
+(async()=>{
+ const status=document.getElementById('status'),N=52496;
+ const digit=cp=>cp>=0x100&&cp<0x740?cp-0x100:cp>=0x800&&cp<0xd00?1600+cp-0x800:cp>=0x3400&&cp<0xd800?2880+cp-0x3400:cp>=0xe000&&cp<0xfdd0?44864+cp-0xe000:(()=>{throw Error('Bad packed character')})();
+ const ed=d=>String.fromCharCode(d<1600?0x100+d:d<2880?0x800+d-1600:d<44864?0x3400+d-2880:0xe000+d-44864);
+ function decode(raw){if(!raw.startsWith('~47:'))throw Error('Packed source format not found');const q=raw.indexOf(':',4),size=+raw.slice(4,q),text=raw.slice(q+1),out=new Uint8Array(size);let cursor=0,acc=0n,bits=0;for(let i=0;i<text.length&&cursor<size;i+=3){let v=BigInt(digit(text.charCodeAt(i)))+BigInt(digit(text.charCodeAt(i+1)))*BigInt(N)+BigInt(digit(text.charCodeAt(i+2)))*BigInt(N)*BigInt(N),left=47;while(left>0&&cursor<size){const take=Math.min(8-bits,left),mod=1n<<BigInt(take);acc+=(v%mod)<<BigInt(bits);v/=mod;bits+=take;left-=take;if(bits===8){out[cursor++]=Number(acc);acc=0n;bits=0}}}if(cursor!==size)throw Error('Packed source ended early');return out}
+ function encode(data){const parts=[];let acc=0n,bits=0;const emit=v=>{const n=BigInt(N),a=Number(v%n);v/=n;const b=Number(v%n);v/=n;return ed(a)+ed(b)+ed(Number(v))};for(const byte of data){acc|=BigInt(byte)<<BigInt(bits);bits+=8;while(bits>=47){parts.push(emit(acc&((1n<<47n)-1n)));acc>>=47n;bits-=47}}if(bits)parts.push(emit(acc));return `~47:${data.length}:`+parts.join('')}
+ const unzip=async bytes=>new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+ const zip=async bytes=>new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer());
+ const replace=(s,a,b)=>{if(!s.includes(a))throw Error('This Atropa build is missing a required character hook');return s.replace(a,b)};
+ try{
+  status.textContent='Loading the latest Atropa game…';
+  let html=await (await fetch('./index.html',{cache:'no-store'})).text();
+  const re=/(<script id="atropa-src"[^>]*>)(.*?)(<\/script>)/s,m=html.match(re);if(!m)throw Error('Atropa source package not found');
+  status.textContent='Installing Crimson Wraith and his attacks…';
+  let source=new TextDecoder().decode(await unzip(decode(m[2])));
+  const build=`function buildCrimsonWraithPlayer() {\n    return buildHostedLibertyPlayer({\n        id: 'crimson-wraith',\n        name: 'Crimson Wraith',\n        url: './assets/models/crimson-wraith.glb',\n        height: 2.9,\n        weaponMount: [-0.48, 1.45, 0.18],\n        danceClips: ['Backflip', 'Backflip_Jump', 'Backflip_Sweep_Kick', 'Boxing_Practice', 'Right_Hand_Sword_Slash', 'Sweeping_Kick', 'Sword_Judgment'],\n    });\n}\n\n`;
+  source=replace(source,'const PLAYER_SKINS = [',build+'const PLAYER_SKINS = [');
+  source=replace(source,"    { id: 'maria-414', name: 'Maria 414', blurb: 'playable character · original animated 3D model', build: buildMaria414Player },","    { id: 'maria-414', name: 'Maria 414', blurb: 'playable character · original animated 3D model', build: buildMaria414Player },\n    { id: 'crimson-wraith', name: 'Crimson Wraith', blurb: 'playable combat character · seven animated attacks and backflips', build: buildCrimsonWraithPlayer },");
+  source=replace(source,"if (this.player?.userData?.hostedLibertyPlayer !== 'maria-414' || !rig?.startDance)","if (!['maria-414','crimson-wraith'].includes(this.player?.userData?.hostedLibertyPlayer) || !rig?.startDance)");
+  source=replace(source,"if (this.player?.userData?.hostedLibertyPlayer !== 'maria-414' || !rig?.stopDance)","if (!['maria-414','crimson-wraith'].includes(this.player?.userData?.hostedLibertyPlayer) || !rig?.stopDance)");
+  source=replace(source,"    const isMaria = loadSkinId() === 'maria-414';","    const activeSkin = loadSkinId();\n    const isMaria = activeSkin === 'maria-414';\n    const isWraith = activeSkin === 'crimson-wraith';");
+  source=replace(source,"    if (!isMaria || (mobile ? !isTouch : isTouch))","    if ((!isMaria && !isWraith) || (mobile ? !isTouch : isTouch))");
+  source=replace(source,"        'data-maria-dance': '1',\n        'aria-label': 'Maria 414 dance',\n        title: 'DANCE — tap for one cycle, hold to keep cycling',","        'data-maria-dance': isMaria ? '1' : undefined,\n        'data-wraith-attack': isWraith ? '1' : undefined,\n        'aria-label': isWraith ? 'Crimson Wraith attack sequence' : 'Maria 414 dance',\n        title: isWraith ? 'ATTACK — plays all seven attacks including every backflip' : 'DANCE — tap for one cycle, hold to keep cycling',");
+  source=replace(source,"    }, props), 'DANCE');","    }, props), isWraith ? 'ATTACK' : 'DANCE');");
+  const packed=encode(await zip(new TextEncoder().encode(source)));
+  const rawHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(source)))).map(x=>x.toString(16).padStart(2,'0')).join('');
+  const head=m[1].replace(/data-raw-size="[^"]*"/,`data-raw-size="${new TextEncoder().encode(source).length}"`).replace(/data-raw-sha256="[^"]*"/,`data-raw-sha256="${rawHash}"`);
+  html=html.replace(re,head+packed+m[3]).replace('<html ','<html data-crimson-wraith="playable-attacks-v1" ');
+  status.textContent='Entering Atropa…';document.open();document.write(html);document.close();
+ }catch(error){console.error(error);status.textContent='Could not prepare Crimson Wraith: '+(error?.message||error);}
+})();
+</script></body></html>

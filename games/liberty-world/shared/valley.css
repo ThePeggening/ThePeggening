@@ -138,3 +138,11 @@ body.valley [data-interact]{background:radial-gradient(closest-side,var(--surfac
   .v-panel[data-panel-title="Valley map & expeditions"]>.pc-button:nth-of-type(2){grid-column:3}
   .v-panel[data-panel-title="Valley map & expeditions"] .v-adventure-map{grid-column:1/-1;width:min(560px,100%);height:148px;min-height:148px;max-height:148px;aspect-ratio:auto;justify-self:center}
 }
+
+/* Crimson Wraith release: keep story cinematics as a true lower-third on phones. */
+@media(pointer:coarse) and (orientation:landscape) and (max-height:560px){
+  .v-caption{bottom:max(5px,env(safe-area-inset-bottom));width:min(590px,calc(100vw - 150px));max-height:42dvh;padding:6px 9px;border-radius:9px;overflow:auto}
+  .v-caption p{margin:2px 0;font-size:11px;line-height:1.2}
+  .v-cinema-speaker{font-size:9px!important}.v-cinema-count{font-size:8px!important}
+  .v-cinema-actions{margin-top:3px;gap:6px}.v-cinema-actions .pc-button{min-height:34px;padding:4px 8px;font-size:9px}
+}
