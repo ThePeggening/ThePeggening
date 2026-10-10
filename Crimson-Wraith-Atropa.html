@@ -39,7 +39,7 @@
   const rawHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(source)))).map(x=>x.toString(16).padStart(2,'0')).join('');
   const head=m[1].replace(/data-raw-size="[^"]*"/,`data-raw-size="${new TextEncoder().encode(source).length}"`).replace(/data-raw-sha256="[^"]*"/,`data-raw-sha256="${rawHash}"`);
   html=html.replace(re,head+packed+m[3]).replace('<html ','<html data-crimson-wraith="playable-attacks-v1" ');
-  status.textContent='Entering Atropa…';document.open();document.write(html);document.close();
+  status.textContent='Entering Atropa…';localStorage.setItem('atropa_skin_v1','crimson-wraith');document.open();document.write(html);document.close();
  }catch(error){console.error(error);status.textContent='Could not prepare Crimson Wraith: '+(error?.message||error);}
 })();
 </script></body></html>
