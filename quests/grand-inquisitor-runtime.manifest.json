@@ -1,19 +1,19 @@
 {
   "revision": "P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R3",
-  "sourceSha256": "5fa6f9a20d705d2fb2cbeef7504162adc527057742402b633c94506803a6276f",
-  "sourceRawBytes": 7357325,
+  "sourceSha256": "2a070d95b0c23f14f95cff169544a72938e11b4c6526e35f510d86a5be3f7817",
+  "sourceRawBytes": 7361720,
   "baseSourceSha256": "d75a49a5be2b3ae3ce76449be479c07f2a1364a6a5b5a98a21eecb1d97be81e4",
-  "inputSourceSha256": "b19c8aed15139e60075e9730d9aa1db870f1cf6fed25e7d45c105c25c21ec98f",
+  "inputSourceSha256": "5fa6f9a20d705d2fb2cbeef7504162adc527057742402b633c94506803a6276f",
   "baseSourceRawBytes": 7197193,
-  "baseHtmlSha256": "d91121c6b4134fa14c6de4a45cd4f2c1bc711bad42f5e302f292c1bde7a9df64",
+  "baseHtmlSha256": "d67fe61e1b8b544e951729ee55d13b3e13a12c7890c723cc6ce55323d5ea4dcc",
   "package": "quests/grand-inquisitor-runtime.pkg",
-  "packageSha256": "45a22c25fc60123b42cc3d578e7fceff69899680e7b3b5eeec3f0613797d5e81",
-  "packageBytes": 4515349,
+  "packageSha256": "0c47338cd8895b8943e0b817264ce46f526f2560145005fd7873443dbb19ee56",
+  "packageBytes": 4516817,
   "wrapper": "Atropa-P50-Grand-Inquisitor-Update.html",
   "modules": {
     "grand-inquisitor-world.js": "4a7462a2b1b4da7337726ef795bdb73b8f5bd441452eb0a8d3a19441d42581ab",
-    "grand-inquisitor-presentation.js": "96d9357e6cf2f76cb2c766f36596616c94d53653bdc55c9816f480c1cc6f7a84",
-    "grand-inquisitor.js": "6dbae91733b45a4195d727ca610c2f420df9f781dadaa5db30a7378cdd979ef1"
+    "grand-inquisitor-presentation.js": "92fd4ce99401d64721da1f41953458f3c3a499a16217d01de004edd02212d825",
+    "grand-inquisitor.js": "2ad723dbe00fafeb4248362f57edd74eef99d76c268da455b00e87b25b062076"
   },
   "patches": [
     "Register exact uploaded Grand Inquisitor rig",
@@ -69,5 +69,5 @@
     "unrelatedHostMarkupPreserved": true,
     "normalWebsitePreserved": true
   },
-  "installedHtmlSha256": "d67fe61e1b8b544e951729ee55d13b3e13a12c7890c723cc6ce55323d5ea4dcc"
+  "installedHtmlSha256": "2a1c23fba149096db5907a0b9cda6a87b1571875e78b52890347c0a48ee79c33"
 }

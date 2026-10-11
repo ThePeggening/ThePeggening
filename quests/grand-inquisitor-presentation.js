@@ -135,6 +135,8 @@ const GrandInquisitorPresentation = (() => {
 .gip-final{position:absolute;left:8%;right:8%;top:44%;transform:translateY(-50%);text-align:center;opacity:0;pointer-events:none;text-shadow:0 3px 18px #000,0 0 38px #17131b}.gip-final-title{font-family:Georgia,"Times New Roman",serif;font-size:clamp(22px,4.1vw,54px);font-weight:400;letter-spacing:.12em;line-height:1.3;color:#fff0d0}.gip-final-rule{height:1px;max-width:210px;margin:17px auto 14px;background:linear-gradient(90deg,transparent,#f2cf8c,transparent)}.gip-final-sub{font-size:10px;letter-spacing:.24em;color:#edc992;line-height:1.6}
 @media(max-width:560px) and (orientation:portrait){.gip-head{top:calc(9px + var(--gip-safe-top));left:calc(10px + var(--gip-safe-left));padding:9px 10px;max-width:calc(100% - 83px)}.gip-objective{font-size:14px}.gip-hint{bottom:calc(167px + var(--gip-safe-bottom));max-width:calc(100% - 34px);width:calc(100% - 34px);font-size:11px}.gip-root[data-touch="false"] .gip-hint{bottom:calc(167px + var(--gip-safe-bottom))}.gip-pause{top:calc(9px + var(--gip-safe-top));right:calc(10px + var(--gip-safe-right))}.gip-chapter{font-size:8px;letter-spacing:.12em}.gip-final-title{font-size:28px;letter-spacing:.09em}.gip-final-sub{font-size:9px;letter-spacing:.13em}.gip-sub{width:calc(100% - 24px);padding:0 5px}.gip-line{font-size:16px}}
 @media(orientation:landscape) and (max-height:520px){.gip-head{top:calc(7px + var(--gip-safe-top));left:calc(10px + var(--gip-safe-left));padding:6px 10px 7px;width:min(375px,calc(100% - 90px));}.gip-eyebrow{font-size:8px}.gip-objective{font-size:13px;margin-top:3px}.gip-meta{font-size:9px;margin-top:4px}.gip-meter{margin-top:5px;height:2px}.gip-pause{top:calc(7px + var(--gip-safe-top));right:calc(10px + var(--gip-safe-right));min-width:50px}.gip-actions{right:calc(15px + var(--gip-safe-right));bottom:calc(12px + var(--gip-safe-bottom));grid-template-columns:66px 48px;grid-template-rows:44px 66px;gap:6px}.gip-attack{width:66px;height:66px}.gip-jump{width:48px;height:48px}.gip-interact{max-width:120px}.gip-joystick{width:104px;height:104px;left:calc(23px + var(--gip-safe-left));bottom:calc(18px + var(--gip-safe-bottom))}.gip-hint{bottom:calc(14px + var(--gip-safe-bottom));max-width:calc(100% - 326px);font-size:10px}.gip-hint strong{font-size:11px}.gip-sub{bottom:calc(5% + 8px + var(--gip-safe-bottom));width:min(740px,calc(100% - 70px));}.gip-speaker{font-size:9px;margin-bottom:4px}.gip-line{font-size:14px;line-height:1.3}.gip-chapter{top:calc(5% + 9px + var(--gip-safe-top));font-size:8px}.gip-final-title{font-size:clamp(23px,4vw,39px)}.gip-final-rule{margin:10px auto 8px}.gip-final-sub{font-size:9px}}
+.gip-fullscreen{position:absolute;z-index:5;top:calc(68px + var(--gip-safe-top));right:calc(13px + var(--gip-safe-right));width:52px;min-height:48px;padding:5px 3px;border:1px solid rgba(237,197,126,.65);border-radius:7px;background:rgba(8,10,15,.87);color:#fff1d7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 2px 12px #0005}.gip-fullscreen svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.gip-fullscreen span{font-size:8px;font-weight:700;letter-spacing:.05em}.gip-fullscreen:active{background:#604633}.gip-root[data-cinematic="true"] .gip-fullscreen{top:calc(5% + 56px + var(--gip-safe-top))}
+@media(orientation:landscape) and (max-height:520px){.gip-fullscreen{top:calc(60px + var(--gip-safe-top));right:calc(10px + var(--gip-safe-right));width:46px;min-height:44px}.gip-root[data-cinematic="true"] .gip-fullscreen{top:calc(5% + 52px + var(--gip-safe-top))}}
 @media(prefers-reduced-motion:reduce){.gip-meter>i{transition:none}}
 `;
 
@@ -172,11 +174,12 @@ const GrandInquisitorPresentation = (() => {
  <div class="gip-bars"></div><div class="gip-chapter"></div><button type="button" class="gip-skip" aria-label="Skip current cinematic">SKIP</button>
  <div class="gip-final"><div class="gip-final-title">THE INQUISITION BEGINS</div><div class="gip-final-rule"></div><div class="gip-final-sub">THE PEG IS THE BEGINNING</div></div>
  <div class="gip-sub" aria-live="polite" aria-atomic="true"><div class="gip-speaker"></div><div class="gip-line"></div></div>
-</div>`;
+</div>
+<button type="button" class="gip-fullscreen" aria-label="Enter fullscreen" title="Enter fullscreen" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M3 16v3a2 2 0 0 0 2 2h3M21 16v3a2 2 0 0 1-2 2h-3"/></svg><span>FULL</span></button>`;
         document.body.appendChild(root);
         const q = (s) => root.querySelector(s);
         const els = {
-            play: q('.gip-gameplay'), head: q('.gip-head'), eyebrow: q('.gip-eyebrow'), objective: q('.gip-objective'), stage: q('.gip-stage'), progress: q('.gip-progress'), meter: q('.gip-meter'), fill: q('.gip-meter>i'), integrity: q('.gip-integrity'), integrityBars: Array.from(root.querySelectorAll('.gip-integrity i')), pause: q('.gip-pause'), hint: q('.gip-hint strong'), actions: q('.gip-actions'), attack: q('.gip-attack'), attackLabel: q('.gip-attack .gip-action-label'), interact: q('.gip-interact'), interactLabel: q('.gip-interact .gip-action-label'), jump: q('.gip-jump'), joy: q('.gip-joystick'), stick: q('.gip-stick'), look: q('.gip-look'), cine: q('.gip-cine'), chapter: q('.gip-chapter'), speaker: q('.gip-speaker'), line: q('.gip-line'), sub: q('.gip-sub'), skip: q('.gip-skip'), final: q('.gip-final')
+            play: q('.gip-gameplay'), head: q('.gip-head'), eyebrow: q('.gip-eyebrow'), objective: q('.gip-objective'), stage: q('.gip-stage'), progress: q('.gip-progress'), meter: q('.gip-meter'), fill: q('.gip-meter>i'), integrity: q('.gip-integrity'), integrityBars: Array.from(root.querySelectorAll('.gip-integrity i')), pause: q('.gip-pause'), hint: q('.gip-hint strong'), actions: q('.gip-actions'), attack: q('.gip-attack'), attackLabel: q('.gip-attack .gip-action-label'), interact: q('.gip-interact'), interactLabel: q('.gip-interact .gip-action-label'), jump: q('.gip-jump'), joy: q('.gip-joystick'), stick: q('.gip-stick'), look: q('.gip-look'), cine: q('.gip-cine'), chapter: q('.gip-chapter'), speaker: q('.gip-speaker'), line: q('.gip-line'), sub: q('.gip-sub'), skip: q('.gip-skip'), final: q('.gip-final'), fullscreen: q('.gip-fullscreen')
         };
         const on = (target, type, fn, options) => {
             target.addEventListener(type, fn, options);
@@ -187,6 +190,49 @@ const GrandInquisitorPresentation = (() => {
         const consume = (e) => { if (e.cancelable) e.preventDefault(); e.stopPropagation(); };
         const allowed = () => !disposed && !film && !hud.paused && !document.hidden;
         const ensureGesture = () => { try { game.sfx?.ensure?.(); } catch (_) {} };
+        // Fullscreen API requires a trusted user activation in most browsers.
+        // Attempt it when the quest begins, but keep the visible button for a
+        // rejected request (including an in-app browser or embedded iframe).
+        const fullscreenNode = document.documentElement;
+        let fullscreenOwned = false;
+        const fullscreenElement = () => document.fullscreenElement || document.webkitFullscreenElement || null;
+        const isQuestFullscreen = () => fullscreenElement() === fullscreenNode;
+        function syncFullscreen() {
+            if (disposed) return;
+            const active = isQuestFullscreen();
+            const label = active ? 'Exit fullscreen' : 'Enter fullscreen';
+            els.fullscreen.setAttribute('aria-label', label);
+            els.fullscreen.setAttribute('title', label);
+            els.fullscreen.setAttribute('aria-pressed', String(active));
+            els.fullscreen.querySelector('span').textContent = active ? 'EXIT' : 'FULL';
+        }
+        function requestFullscreen() {
+            if (disposed || document.hidden) return false;
+            if (isQuestFullscreen()) { syncFullscreen(); return true; }
+            if (fullscreenElement()) return false; // Respect another fullscreen owner.
+            const request = fullscreenNode.requestFullscreen || fullscreenNode.webkitRequestFullscreen;
+            if (!request) { syncFullscreen(); return false; }
+            try {
+                const result = request.call(fullscreenNode);
+                Promise.resolve(result).then(() => {
+                    if (!disposed && isQuestFullscreen()) fullscreenOwned = true;
+                    else if (disposed && isQuestFullscreen()) exitOwnedFullscreen(true);
+                    syncFullscreen();
+                }).catch(() => syncFullscreen());
+                return true;
+            } catch (_) { syncFullscreen(); return false; }
+        }
+        function exitOwnedFullscreen(force = false) {
+            if (!(force || fullscreenOwned) || !isQuestFullscreen()) return;
+            const exit = document.exitFullscreen || document.webkitExitFullscreen;
+            fullscreenOwned = false;
+            try { const result = exit?.call(document); if (result?.catch) result.catch(() => {}); } catch (_) {}
+        }
+        function toggleFullscreen() {
+            if (isQuestFullscreen()) exitOwnedFullscreen(true);
+            else requestFullscreen();
+            syncFullscreen();
+        }
 
         let media = null;
         try { media = window.matchMedia('(pointer: coarse)'); } catch (_) {}
@@ -371,6 +417,10 @@ const GrandInquisitorPresentation = (() => {
         }
         actionButton(els.interact, () => callbacks.interact?.());
         actionButton(els.jump, () => game.touchJump?.());
+        on(els.fullscreen, 'click', (e) => { consume(e); if (disposed) return; toggleFullscreen(); });
+        on(document, 'fullscreenchange', syncFullscreen);
+        on(document, 'webkitfullscreenchange', syncFullscreen);
+        syncFullscreen();
         on(els.pause, 'click', (e) => {
             consume(e); if (disposed || film) return;
             clearInputs(true); stopAudio(); callbacks.pause?.();
@@ -448,6 +498,7 @@ const GrandInquisitorPresentation = (() => {
             if (film) finish(false);
             clearInputs(true);
             film = { id: clip.id, clip, t: 0, savedFov: game.camera.fov, onFinish, line: -2, shot: -1, cues: new Set(), reduced: reducedMotion(), stage: currentStage() };
+            root.dataset.cinematic = 'true';
             els.play.hidden = true; els.cine.hidden = false; els.chapter.textContent = clip.title;
             els.sub.hidden = true; els.speaker.textContent = ''; els.line.textContent = ''; els.final.style.opacity = '0';
             els.skip.disabled = false;
@@ -457,6 +508,7 @@ const GrandInquisitorPresentation = (() => {
         function finish(invoke = true) {
             if (!film) return false;
             const ended = film; film = null;
+            root.dataset.cinematic = 'false';
             els.cine.hidden = true; els.play.hidden = false; els.final.style.opacity = '0';
             els.sub.hidden = true; els.line.textContent = ''; els.speaker.textContent = '';
             if (game.camera && Number.isFinite(ended.savedFov)) { game.camera.fov = ended.savedFov; game.camera.updateProjectionMatrix?.(); }
@@ -516,13 +568,13 @@ const GrandInquisitorPresentation = (() => {
         }
         function dispose() {
             if (disposed) return;
-            finish(false); clearInputs(true); stopAudio(); disposed = true;
+            finish(false); clearInputs(true); stopAudio(); exitOwnedFullscreen(); disposed = true;
             for (const off of listeners.splice(0)) { try { off(); } catch (_) {} }
             audio.noiseBuffer = null; audio.noiseCtx = null;
             root.remove();
         }
         setHUD();
-        return { setHUD, play, tick, finish, dispose, cue, get cinematic() { return film; } };
+        return { setHUD, play, tick, finish, dispose, cue, requestFullscreen, get cinematic() { return film; } };
     }
 
     return { create, clips };

@@ -14,7 +14,7 @@
   <script>
   (async () => {
     'use strict';
-    const build = {"revision":"P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R3","sourceSha256":"5fa6f9a20d705d2fb2cbeef7504162adc527057742402b633c94506803a6276f","sourceRawBytes":7357325,"baseSourceSha256":"d75a49a5be2b3ae3ce76449be479c07f2a1364a6a5b5a98a21eecb1d97be81e4","inputSourceSha256":"b19c8aed15139e60075e9730d9aa1db870f1cf6fed25e7d45c105c25c21ec98f","packageSha256":"45a22c25fc60123b42cc3d578e7fceff69899680e7b3b5eeec3f0613797d5e81"};
+    const build = {"revision":"P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R3","sourceSha256":"2a070d95b0c23f14f95cff169544a72938e11b4c6526e35f510d86a5be3f7817","sourceRawBytes":7361720,"baseSourceSha256":"d75a49a5be2b3ae3ce76449be479c07f2a1364a6a5b5a98a21eecb1d97be81e4","inputSourceSha256":"5fa6f9a20d705d2fb2cbeef7504162adc527057742402b633c94506803a6276f","packageSha256":"0c47338cd8895b8943e0b817264ce46f526f2560145005fd7873443dbb19ee56"};
     const status = document.getElementById('status');
     const read = async (path) => { const response = await fetch(path, {cache:'no-store'}); if (!response.ok) throw new Error('Loading ' + path + ' failed (' + response.status + ').'); return new Uint8Array(await response.arrayBuffer()); };
     const hash = async (bytes) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');

@@ -253,6 +253,9 @@
     const q = read(game); q.started = true;
     try {
       buildRuntime(game); setStage(game, q.stage);
+      // Best-effort on entry. Browsers without a fresh user activation reject
+      // auto-fullscreen; the quest keeps its always-visible FULL button.
+      game.inquisitorRuntime.presentation.requestFullscreen();
       if (q.pendingClip !== null) playClip(game, q.pendingClip);
       else if (INTRO_CLIP[q.stage] !== undefined && !q.seen.includes(INTRO_CLIP[q.stage])) playClip(game, INTRO_CLIP[q.stage]);
       else resolveCompletedCheckpoint(game);
