@@ -439,9 +439,139 @@ const GrandInquisitorWorld = (() => {
     }
 
     for(const room of rooms)room.visual.contactShadows=instanced(room.root,planeG,M.contact,room.visual.contactPoints);
+
+    // Adapt Atropa's native BreadcrumbTrail and buildQuestBeacon to the isolated
+    // story floor. Keep their animated arrows, nested columns and expanding
+    // rings, with a distinct red palette and a single, fully owned resource pool.
+    // The runtime remains the authority for the current objective and its kind.
+    const guideColor='#ff3434',guideLimit=mobile?32:40;
+    const guideRoot=group(root,origin.x,origin.y,origin.z);
+    guideRoot.name='grand-inquisitor-red-guidance';
+    guideRoot.userData.role='objective-guidance';
+    guideRoot.userData.nativeStyle='BreadcrumbTrail + buildQuestBeacon';
+    const guideArrowG=G('guide-arrow',()=>{
+      const g=new T.ConeGeometry(.55,1.3,4);
+      // Cone tip is +Y: rotating by +PI/2 makes the arrow point along +Z.
+      // atan2(dx,dz) below then points every instance TOWARD its destination.
+      g.rotateX(Math.PI/2);g.scale(1,.16,1);return g;
+    });
+    const guideArrowM=basic(guideColor,{transparent:true,opacity:.98,depthWrite:false,toneMapped:false});
+    const guideOutlineM=basic('#210509',{transparent:true,opacity:.86,depthWrite:false,toneMapped:false});
+    const guideTrail=new T.InstancedMesh(guideArrowG,guideArrowM,guideLimit);
+    const guideOutline=new T.InstancedMesh(guideArrowG,guideOutlineM,guideLimit);
+    guideTrail.name='inquisitor-red-direction-arrows';guideOutline.name='inquisitor-arrow-contrast';
+    guideTrail.frustumCulled=guideOutline.frustumCulled=false;
+    guideTrail.renderOrder=7;guideOutline.renderOrder=6;
+    guideRoot.add(guideOutline,guideTrail);
+    const guidePulseColor=new T.Color(1,1,1),guideMatrix=new T.Object3D();
+    for(let i=0;i<guideLimit;i++)guideTrail.setColorAt(i,guidePulseColor);
+    if(T.DynamicDrawUsage!==undefined){
+      guideTrail.instanceMatrix.setUsage(T.DynamicDrawUsage);guideOutline.instanceMatrix.setUsage(T.DynamicDrawUsage);
+      if(guideTrail.instanceColor)guideTrail.instanceColor.setUsage(T.DynamicDrawUsage);
+    }
+    const guideBeacon=group(guideRoot);guideBeacon.name='inquisitor-red-objective-beacon';
+    const guideSoft=o=>basic(guideColor,{transparent:true,opacity:o,side:T.DoubleSide,depthWrite:false,blending:T.AdditiveBlending,toneMapped:false});
+    const guideOuter=mesh(guideBeacon,G('guide-outer-beam',()=>new T.CylinderGeometry(4.6,3.0,26,mobile?14:22,1,true)),guideSoft(.12),0,13,0);
+    const guideInner=mesh(guideBeacon,G('guide-inner-beam',()=>new T.CylinderGeometry(2.0,1.3,30,mobile?12:18,1,true)),guideSoft(.20),0,15,0);
+    const guideRingG=G('guide-ground-ring',()=>new T.RingGeometry(3.2,4.0,mobile?28:44));
+    const guideRing1=mesh(guideBeacon,guideRingG,basic(guideColor,{transparent:true,opacity:.7,side:T.DoubleSide,depthWrite:false,toneMapped:false}),0,.24,0);
+    const guideRing2=mesh(guideBeacon,guideRingG,basic(guideColor,{transparent:true,opacity:.7,side:T.DoubleSide,depthWrite:false,toneMapped:false}),0,.26,0);
+    guideRing1.rotation.x=guideRing2.rotation.x=-Math.PI/2;
+    const guideHalo=new T.Sprite(ownM(new T.SpriteMaterial({map:glowMap,color:guideColor,transparent:true,opacity:.40,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false})));
+    guideHalo.position.y=1.4;guideHalo.scale.set(11,11,1);guideBeacon.add(guideHalo);
+    const guidePointer=mesh(guideRoot,G('guide-target-pointer',()=>new T.ConeGeometry(.56,1.3,4)),guideArrowM);
+    guidePointer.name='inquisitor-red-target-pointer';guidePointer.rotation.z=Math.PI;
+    const guide={root:guideRoot,trail:guideTrail,beacon:guideBeacon,active:false,kind:'',target:V(),worldTarget:V(),from:V(),distance:0,color:guideColor};
+    const guideRoute=[V(),V(),V(),V()];
+    let guideRouteCount=0;
+    function guidePoint(value,out){
+      if(!value)return false;
+      const x=value[0]===undefined?value.x:value[0],y=value[1]===undefined?value.y:value[1],z=value[2]===undefined?value.z:value[2];
+      if(!Number.isFinite(Number(x))||!Number.isFinite(Number(z)))return false;
+      out.set(Number(x),finite(y,0),Number(z));return true;
+    }
+    function hideGuide(){
+      guide.active=false;guide.distance=0;guideRoot.visible=false;
+      guideTrail.visible=guideOutline.visible=guideBeacon.visible=guidePointer.visible=false;
+      guideTrail.count=guideOutline.count=0;
+    }
+    function fallbackGuideTarget(state,room){
+      let index=-1;
+      const unfinished=values=>{for(let i=0;i<3;i++)if(!(values&&values[i]))return i;return -1;};
+      if(room.index===0){index=unfinished(state.seals);guide.kind='seal';}
+      else if(room.index===1){index=unfinished(state.aligned);guide.kind='mirror';}
+      else if(room.index===2){
+        const cleared=clamp(finite(state.relay,0),0,3);if(cleared>=3)return false;
+        if(guidePoint(state.witnessLocal,guide.target)&&Math.hypot(guide.from.x-guide.target.x,guide.from.z-guide.target.z)>10){guide.kind='witness';return true;}
+        index=cleared;guide.kind='relay';
+      }else if(room.index===3){index=unfinished(state.locks);guide.kind='clock';}
+      else if(room.index===4){
+        if(finite(state.bossPhase,0)>=3)return false;
+        index=state.bossExposed?3:clamp(Math.floor(finite(state.bossStation,state.bossPhase||0)),0,2);guide.kind=state.bossExposed?'core':'boss-station';
+      }else if(room.index===5){if(state.doorOpened||finite(state.doorOpen,0)>.96)return false;index=0;guide.kind='door';}
+      const objective=room.targets[index];if(!objective)return false;
+      guide.target.copy(objective.pos).sub(room.root.position);return true;
+    }
+    function tickGuide(state,room,time){
+      if(state.guideEnabled===false||state.cinematic||state.complete||state.paused||!guidePoint(state.playerLocal,guide.from)){hideGuide();return;}
+      guide.kind=typeof state.guideKind==='string'?state.guideKind:'';
+      // Explicit null means there is no active objective (including transitions).
+      if(state.guideTargetLocal!==undefined){if(!guidePoint(state.guideTargetLocal,guide.target)){hideGuide();return;}}
+      else if(!fallbackGuideTarget(state,room)){hideGuide();return;}
+      guideRoot.position.copy(room.root.position);
+      guide.worldTarget.copy(guide.target).add(room.root.position);
+      guide.active=true;guideRoot.visible=guideBeacon.visible=guidePointer.visible=true;
+      guide.distance=Math.hypot(guide.target.x-guide.from.x,guide.target.z-guide.from.z);
+      guideBeacon.position.set(guide.target.x,0,guide.target.z);
+      const near=clamp((guide.distance-5)/20,0,1),scale=.45+.31*near;
+      guideBeacon.scale.setScalar(scale);
+      guideOuter.material.opacity=.10+.06*(.5+.5*Math.sin(time*1.5));
+      guideInner.material.opacity=.17+.09*(.5+.5*Math.sin(time*1.5+1.2));
+      guideOuter.rotation.y=time*.16;guideInner.rotation.y=-time*.22;
+      const p1=(time*.55)%1,p2=(time*.55+.5)%1;
+      guideRing1.scale.setScalar(.75+p1*.85);guideRing1.material.opacity=.72*(1-p1);
+      guideRing2.scale.setScalar(.75+p2*.85);guideRing2.material.opacity=.72*(1-p2);
+      guideHalo.material.opacity=.18+.23*near;
+      guidePointer.position.set(guide.target.x,(room.index===1?7.6:5.8)+Math.sin(time*3.1)*.24,guide.target.z);
+      guidePointer.scale.setScalar(.72+.22*near);
+      guideRoute[0].copy(guide.from);guideRoute[1].copy(guide.target);guideRouteCount=2;
+      // If a player approaches a charged clock from behind, route them around
+      // its real +/-10m floor band using the safe outer lane, never through it.
+      if(room.index===3&&state.clockOpen===false){
+        let next=0;while(next<3&&state.locks&&state.locks[next])next++;
+        if(next<3){
+          const clockZ=next===0?10:next===1?-8:-26,dz=guide.target.z-guide.from.z;
+          if(Math.abs(dz)>.01&&(guide.from.z-clockZ)*(guide.target.z-clockZ)<0){
+            const x=guide.from.x+(guide.target.x-guide.from.x)*(clockZ-guide.from.z)/dz;
+            if(Math.abs(x)<11.25){
+              const lane=guide.target.x<0?-12.6:12.6;
+              guideRoute[1].set(lane,0,guide.from.z);guideRoute[2].set(lane,0,guide.target.z);guideRoute[3].copy(guide.target);guideRouteCount=4;
+            }
+          }
+        }
+      }
+      let length=0;for(let i=1;i<guideRouteCount;i++)length+=Math.hypot(guideRoute[i].x-guideRoute[i-1].x,guideRoute[i].z-guideRoute[i-1].z);
+      const available=Math.max(0,length-3.1),count=length>3.5?Math.min(guideLimit,Math.max(1,Math.floor(available/1.85)+1)):0;
+      const spacing=count>1?available/(count-1):0;
+      guideTrail.count=guideOutline.count=count;guideTrail.visible=guideOutline.visible=count>0;
+      let segment=1,segmentStart=0;
+      for(let i=0;i<count;i++){
+        const d=1.35+i*spacing;
+        let a=guideRoute[segment-1],b=guideRoute[segment],dx=b.x-a.x,dz=b.z-a.z,segmentLength=Math.hypot(dx,dz);
+        while(segment<guideRouteCount-1&&d>segmentStart+segmentLength){segmentStart+=segmentLength;segment++;a=guideRoute[segment-1];b=guideRoute[segment];dx=b.x-a.x;dz=b.z-a.z;segmentLength=Math.hypot(dx,dz);}
+        const f=clamp((d-segmentStart)/Math.max(.001,segmentLength),0,1),x=a.x+dx*f,z=a.z+dz*f,yaw=Math.atan2(dx,dz);
+        guideMatrix.position.set(x,.24,z);guideMatrix.rotation.set(0,yaw,0);guideMatrix.scale.setScalar(1);guideMatrix.updateMatrix();guideTrail.setMatrixAt(i,guideMatrix.matrix);
+        guideMatrix.position.y=.15;guideMatrix.scale.set(1.34,1,1.24);guideMatrix.updateMatrix();guideOutline.setMatrixAt(i,guideMatrix.matrix);
+        guidePulseColor.setScalar(.70+.30*(.5+.5*Math.sin(time*4.2-i*.9)));guideTrail.setColorAt(i,guidePulseColor);
+      }
+      guideTrail.instanceMatrix.needsUpdate=guideOutline.instanceMatrix.needsUpdate=true;
+      if(guideTrail.instanceColor)guideTrail.instanceColor.needsUpdate=true;
+    }
+    hideGuide();
     function stageIndex(stage){return clamp(Math.floor(finite(stage,0)),0,5);}
     function setStage(stage){
       if(disposed)return;const s=stageIndex(stage);activeStage=s;
+      hideGuide();
       for(let i=0;i<rooms.length;i++)rooms[i].root.visible=i===s;
       // Direction remains identical across isolated chambers; no point-light cross-talk.
       key.position.set(origin.x+16,origin.y+34,origin.z-s*160+19);key.target.position.set(origin.x,origin.y+4,origin.z-s*160-8);
@@ -456,6 +586,7 @@ const GrandInquisitorWorld = (() => {
       const stage=state.stage===undefined?(activeStage<0?0:activeStage):stageIndex(state.stage);
       if(stage!==activeStage)setStage(stage);
       const time=Number.isFinite(state.clock)?state.clock:elapsed,room=rooms[stage],v=room.visual;
+      tickGuide(state,room,time);
       for(let i=0;i<v.flags.length;i++)v.flags[i].rotation.y=(i<2?-.12:.12)+Math.sin(time*.48+i)*.025;
       v.dust.rotation.y=Math.sin(time*.034)*.018;v.dust.position.y=Math.sin(time*.18)*.2;
       if(stage===0){
@@ -530,14 +661,15 @@ const GrandInquisitorWorld = (() => {
       }
     }
     function dispose(){
-      if(disposed)return;disposed=true;
+      if(disposed)return;hideGuide();disposed=true;
       if(root.parent)root.parent.remove(root);
+      guideTrail.dispose?.();guideOutline.dispose?.();
       for(const g of geometries)g.dispose();for(const m of materials)m.dispose();for(const t of textures)t.dispose();
       for(const room of rooms)room.targets.length=0;
       while(root.children.length)root.remove(root.children[root.children.length-1]);geometries.clear();materials.clear();textures.clear();geometryCache.clear();textCache.clear();
     }
     setStage(0);
-    return {root,rooms,target,spawn,setStage,tick,dispose};
+    return {root,rooms,target,spawn,setStage,tick,dispose,guide};
   }
   return {create};
 })();

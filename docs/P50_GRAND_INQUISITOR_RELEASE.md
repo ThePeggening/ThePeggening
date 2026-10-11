@@ -10,11 +10,13 @@ Play from the normal game link: [ATROPA: The Peggening](https://thepeggening.git
 
 Direct update link: [Atropa P50 — Grand Inquisitor](https://thepeggening.github.io/ThePeggening/Atropa-P50-Grand-Inquisitor-Update.html).
 
-## R2 — Normal entry and character chooser
+## R3 — Native website entry, red guidance, and a kick-first attack
 
-The normal game entry now opens the P50 update. The character chooser shows all twelve bodies, labels Grand Inquisitor Cicero **XII**, and uses a responsive grid so the final choice remains visible on narrow screens. Character buttons have a minimum height of 44 pixels; compact layouts use two rows of six.
+The normal website keeps its original Atropa opening and loads Grand Inquisitor through its existing Classic game. R3 installs the compiled character update directly in that game and removes the R2 redirect. The character chooser retains all twelve bodies, labels Grand Inquisitor Cicero **XII**, and uses a responsive grid so the final choice remains visible on narrow screens. Character buttons have a minimum height of 44 pixels; compact layouts use two rows of six.
 
-R2 changes the entry route, wrapper layout, and selector numeral. The quest world, presentation, and lifecycle modules are identical to R1.
+All six playable trials now have red directional arrows and a red objective beacon in Atropa's native guidance style. The trail changes with the current objective, including linked archive stations, escort targets, clock mechanisms, and the Tribunal's exposed core. Guidance is hidden during cinematics and replays.
+
+ATTACK now begins with the model's existing **Sweeping_Kick** animation. The full sequence retains the other strikes and backflips; contact timing follows each animation's name. The pure **Backflip** and **Backflip_Jump** motions deal no damage.
 
 ## Starting, saving, and returning
 
@@ -50,13 +52,17 @@ Hazard trials use a three-segment integrity indicator. Depleting it restores the
 | Leave the trial | Escape or PAUSE | PAUSE |
 | Skip a cinematic | Escape or SKIP | SKIP |
 
-Tap ATTACK for the character's full seven-animation sequence, including backflips; hold the button to repeat. Movement interrupts the sequence. Cinematics use compact two-line subtitles and separate music/SFX preferences. Their clocks freeze when the document is hidden. Reduced-motion preferences remove camera travel within shots.
+Tap ATTACK for the character's full seven-animation sequence; hold the button to repeat. The order is **Sweeping_Kick → Boxing_Practice → Right_Hand_Sword_Slash → Backflip_Sweep_Kick → Backflip_Jump → Backflip → Sword_Judgment**. Movement interrupts the sequence, and the next fresh attack begins with the kick again.
+
+The 2.333-second opening kick has contact beats at approximately **1.190 seconds** and **1.423 seconds**, matching the model's extended leg sweep. Attack timing is keyed by the actual clip name so a reordered sequence keeps the correct contact timing. Sword_Judgment remains last, allowing the crown cinematic to play its finisher without continuing into other motions.
+
+Cinematics use compact two-line subtitles and separate music/SFX preferences. Their clocks freeze when the document is hidden. Reduced-motion preferences remove camera travel within shots.
 
 Dialogue is subtitled; audio uses synthesized ambience and effects, without spoken voiceover.
 
 ## Build and local preview
 
-Requirements: Python 3, Node.js, the authoritative base Classic payload in `index.html`, the existing game assets, and all three quest modules in `quests/`.
+Requirements: Python 3, Node.js, `index.html`, the existing game assets, all three quest modules in `quests/`, and the preserved original Classic input for rebuilding an installed update.
 
 From the repository root:
 
@@ -67,7 +73,7 @@ python3 -m http.server 8765 --bind 127.0.0.1
 
 Open `http://127.0.0.1:8765/Atropa-P50-Grand-Inquisitor-Update.html`. The default build leaves `index.html` unchanged.
 
-To install or refresh the normal-entry route as part of the build, use:
+To install the compiled Classic update directly into the normal Atropa website, use:
 
 ```bash
 python3 tools/build-grand-inquisitor.py . --promote
@@ -75,27 +81,51 @@ python3 tools/build-grand-inquisitor.py . --promote
 
 Then open `http://127.0.0.1:8765/`.
 
-The builder emits:
+The builder emits the current release files:
 
 - `Atropa-P50-Grand-Inquisitor-Update.html`
 - `quests/grand-inquisitor-runtime.pkg`
 - `quests/grand-inquisitor-runtime.manifest.json`
 
-The builder validates checked source anchors, JavaScript syntax, source checksums, packed-source roundtripping, and preservation of unrelated host payloads. The optional `--promote` flag adds a small head script to `index.html` while preserving every packed game payload. A failed promoted build restores the original index bytes.
+The original Classic build input is preserved in:
 
-The entry script routes an HTTP(S) root or `index.html` URL to the P50 page in the same directory. It retains existing query values and the fragment and adds `atropa-update=P50-R2`. The named P50 page bypasses the redirect, as does `index.html?atropa-base=1`. If the P50 loader fails, its **Open previous version** action uses that explicit bypass.
+- `quests/atropa-classic-before-grand-inquisitor.pkg`
+- `quests/atropa-classic-before-grand-inquisitor.manifest.json`
 
-The update page loads the complete existing Atropa host with the new compiled Classic runtime; it requires the repository's existing assets. Rebuild the update after changing the base host, wrapper, or any quest module.
+The builder validates checked source anchors, JavaScript syntax, source checksums, packed-source roundtripping, and preservation of unrelated host payloads. Subsequent builds use the verified original package rather than patching an already compiled update. The manifest also records the installed Classic source: an unrecognized edit to that source stops the build and requires a deliberate rebase.
+
+The optional `--promote` flag replaces the Classic source inside `index.html`, adds the responsive chooser stylesheet, updates the integration revision, and removes the obsolete R2 redirect. Other website content and embedded games are retained. A failed promoted build restores the original index and preserved-input files.
+
+The named P50 page remains a direct compatibility entry with a neutral **ATROPA** loading screen. It accepts the recognized original or current compiled host source and uses the same existing website and assets. The normal root opens the original website directly. Rebuild the update after changing the recognized base host, wrapper, or any quest module.
 
 ## Validation record
 
-The current release is R2. Its world, presentation, and quest lifecycle modules are unchanged from the validated R1 release. The complete quest and camera/mobile results below are R1 evidence. R2 additionally checks the normal website entry and visible character selection.
+The current release is R3. Its website installation, guidance, and attack corrections have a separate validation record below. Earlier R1 and R2 results are retained as historical evidence; they are not presented as a complete rerun of the R3 quest.
 
-- Build revision: `P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R2`.
-- Compiled source SHA-256: `26d9229d34a0bc90781e8992f55b69eabc3b568f6350a50de6c9f4a31c196143`.
-- Packed runtime SHA-256: `e243916c980ac9961275ca89820ef2813ada3f840ea8775fbb3f619ca7ce9acb`.
+- Build revision: `P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R3`.
+- Compiled source SHA-256: `5fa6f9a20d705d2fb2cbeef7504162adc527057742402b633c94506803a6276f`.
+- Compiled source size: **7,357,325 bytes**.
+- Packed runtime SHA-256: `45a22c25fc60123b42cc3d578e7fceff69899680e7b3b5eeec3f0613797d5e81`.
+- Packed runtime size: **4,515,349 bytes**.
 
-### R2 entry and selector validation
+### R3 correction validation
+
+| Check | Recorded status |
+| --- | --- |
+| Final compiled source and package | Passed build validation for the source and package hashes above: JavaScript syntax, source integrity, packed-source roundtrip, and rebuilding from the preserved original input after native installation. |
+| Original website and unrelated embedded content | Passed structural preservation: the original homepage is unchanged outside the Classic source, responsive chooser stylesheet, and integration revision; all 29 other named scripts are byte-exact. |
+| Existing opening-kick animation | Passed isolated inspection of the real GLB: Sweeping_Kick is a 2.333-second low circular leg sweep, with extended-leg samples supporting the .51/.61 contact marks. This is model inspection, not an R3 gameplay test. |
+| Native homepage, visible selection, onboarding, and first attack | Passed 29 local visible-entry checks: normal root, original Atropa homepage, twelve choices in portrait/landscape, Grand model, Classic, onboarding skip, exclusive intro, native touch joystick approach, first Sweeping_Kick hit, red-guide retarget, and pause back to the city. Root/index paths retain their query and fragment; the compatibility recovery does not loop. |
+| Other-character and veteran-save entry/restoration | Passed 13 ordinary Acolyte checks, including 100 additional render frames without a Grand quest, cinematic, HUD, or guide. Passed 19 veteran checks using the actual IMPORT BACKUP file chooser and visible character/Classic selection: Grand starts without replaying onboarding while chapter five, main quest index 28, and 73,129 PLS remain intact. |
+| Final-source compatibility entry | Passed 13 checks on final source `5fa6f9a20d705d2fb2cbeef7504162adc527057742402b633c94506803a6276f`: the separately named P50 page loads the installed native index successfully, keeps ordinary Atropa branding and its requested URL, and enters the normal Acolyte/Chapter 1 flow. |
+| Red guidance through objectives, cinematics, and replays | Passed 175 focused checks on the final source in the actual game using isolated checkpoint fixtures: red arrow direction/floor clearance, three native archive turns, witness/warden/relay changes with native combat, saved relay and clock targets, charged-clock safe-lane routing, all three Tribunal station/core switches, door completion, and cinematic/replay/pause disposal. All six trials were covered. |
+| R3 public root, direct entry, and hosted package | PENDING publication verification. |
+
+The 61 local visible-entry checks above used source `b19c8aed15139e60075e9730d9aa1db870f1cf6fed25e7d45c105c25c21ec98f`. The final source above changes only the archive guide pointer's height condition so it clears the station label. Final-source guidance and public checks are recorded separately. The entry checks use isolated profiles and visible controls, with no preselected storage, forced launcher, or runtime bridge.
+
+### Historical R2 entry and selector validation
+
+R2 used compiled source SHA-256 `26d9229d34a0bc90781e8992f55b69eabc3b568f6350a50de6c9f4a31c196143` and packed runtime SHA-256 `e243916c980ac9961275ca89820ef2813ada3f840ea8775fbb3f619ca7ce9acb`. Its redirect and previous-version bypass behavior below describe that historical release; R3 replaces that entry mechanism with a native installation.
 
 | Check | Recorded status |
 | --- | --- |
@@ -104,7 +134,7 @@ The current release is R2. Its world, presentation, and quest lifecycle modules 
 | Route and fallback handling | Passed locally: root, index, and direct P50 entry retain existing query values and fragment; the previous-version recovery link remains on the original index without a redirect loop. Removing only the entry guard restores the byte-exact previous index. |
 | R2 public entry and hosted package | Passed all 15 checks against public release `c354974d8cca4e68388399fda055b3177a507f2c`: normal root → visible PLAY NOW → Maria → next body → Grand in portrait and landscape → ENTER → visible Classic card → CONTINUE → ENTER THE CITY → SKIP → automatic Grand introduction. The decoded source metadata matches R2. Both selector captures wait for the actual model to be mounted and visible. Root/index/direct routes retain query values and fragment; the previous-version recovery does not loop. |
 
-### R1 quest validation retained
+### Historical R1 quest validation
 
 The R1 compiled source SHA-256 was `77992a4191e8ab2904b7ca91a88af3afc789d7c6978ac8103843dc8dfe6e4351`. R3 and R4 below are test-run names for that release. R3 completed all six playable trials in the full existing game host; R4 checked the final camera adjustment and native touch controls. Mobile coverage was limited to Chrome emulation at **390 × 844** and **915 × 412**.
 
@@ -123,4 +153,4 @@ The R1 compiled source SHA-256 was `77992a4191e8ab2904b7ca91a88af3afc789d7c6978a
 | Micro-mode, restart recovery, and existing city audio restoration | Passed in R3. |
 | R1 hosted update link and required assets | Passed against the public GitHub Pages build from commit `275e77025dae831d6cab442de014cbdcb73d7165`: HTTP 200, exact decoded source checksum, real model with all seven animation clips, six-room scene, automatic introduction, and a native attack that breaks and saves the first seal. The hosted smoke passed all 17 checks. |
 
-R1 and R2 public verification used isolated browser profiles. Mobile checks used Chrome emulation; no physical phone was used. R2 closes the earlier test gap by starting at the normal website and selecting the character through visible controls, with no preset character, forced launcher, or runtime bridge.
+R1 and R2 public verification used isolated browser profiles. Mobile checks used Chrome emulation; no physical phone was used. R2 verified the normal website and visible character-selection path. R3 browser and publication outcomes will replace the PENDING entries after those checks finish.

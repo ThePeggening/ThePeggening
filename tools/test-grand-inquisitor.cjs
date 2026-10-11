@@ -45,7 +45,7 @@ fs.mkdirSync(output, { recursive: true });
 const report = { url: startURL.href, started: new Date().toISOString(), actualHost: true, cases: [], checks: 0 };
 let browser;
 const nap = ms => new Promise(resolve => setTimeout(resolve, ms));
-const expectedClips = ['Backflip', 'Backflip_Jump', 'Backflip_Sweep_Kick', 'Boxing_Practice', 'Right_Hand_Sword_Slash', 'Sweeping_Kick', 'Sword_Judgment'];
+const expectedClips = ['Sweeping_Kick', 'Boxing_Practice', 'Right_Hand_Sword_Slash', 'Backflip_Sweep_Kick', 'Backflip_Jump', 'Backflip', 'Sword_Judgment'];
 
 function check(condition, text, detail = undefined) {
   report.checks++;

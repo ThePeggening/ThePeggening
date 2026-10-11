@@ -1,18 +1,19 @@
 {
-  "revision": "P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R2",
-  "sourceSha256": "26d9229d34a0bc90781e8992f55b69eabc3b568f6350a50de6c9f4a31c196143",
-  "sourceRawBytes": 7345483,
+  "revision": "P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R3",
+  "sourceSha256": "5fa6f9a20d705d2fb2cbeef7504162adc527057742402b633c94506803a6276f",
+  "sourceRawBytes": 7357325,
   "baseSourceSha256": "d75a49a5be2b3ae3ce76449be479c07f2a1364a6a5b5a98a21eecb1d97be81e4",
+  "inputSourceSha256": "b19c8aed15139e60075e9730d9aa1db870f1cf6fed25e7d45c105c25c21ec98f",
   "baseSourceRawBytes": 7197193,
-  "baseHtmlSha256": "1979d37500aef946b2ae1b70512609ede8dbf0e2bf17328da2e61f2be8218f96",
+  "baseHtmlSha256": "d91121c6b4134fa14c6de4a45cd4f2c1bc711bad42f5e302f292c1bde7a9df64",
   "package": "quests/grand-inquisitor-runtime.pkg",
-  "packageSha256": "e243916c980ac9961275ca89820ef2813ada3f840ea8775fbb3f619ca7ce9acb",
-  "packageBytes": 4511136,
+  "packageSha256": "45a22c25fc60123b42cc3d578e7fceff69899680e7b3b5eeec3f0613797d5e81",
+  "packageBytes": 4515349,
   "wrapper": "Atropa-P50-Grand-Inquisitor-Update.html",
   "modules": {
-    "grand-inquisitor-world.js": "5775d372494aa34ce65c26d5f5a989835684c96fc52077fbcdba8a02425ff4f0",
+    "grand-inquisitor-world.js": "4a7462a2b1b4da7337726ef795bdb73b8f5bd441452eb0a8d3a19441d42581ab",
     "grand-inquisitor-presentation.js": "96d9357e6cf2f76cb2c766f36596616c94d53653bdc55c9816f480c1cc6f7a84",
-    "grand-inquisitor.js": "ecf99b2eb3992c7dacf4e4b0404a622889bafbf889680d500f6de3c1365e76f3"
+    "grand-inquisitor.js": "6dbae91733b45a4195d727ca610c2f420df9f781dadaa5db30a7378cdd979ef1"
   },
   "patches": [
     "Register exact uploaded Grand Inquisitor rig",
@@ -61,9 +62,12 @@
     "Display active status for actionable character record",
     "Use native Index action buttons for the new story only"
   ],
+  "normalEntry": "native-index",
   "validation": {
     "nodeSyntax": true,
     "packedRoundtrip": true,
-    "unrelatedHostMarkupPreserved": true
-  }
+    "unrelatedHostMarkupPreserved": true,
+    "normalWebsitePreserved": true
+  },
+  "installedHtmlSha256": "d67fe61e1b8b544e951729ee55d13b3e13a12c7890c723cc6ce55323d5ea4dcc"
 }

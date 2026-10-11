@@ -8,9 +8,27 @@
   const ORIGIN = { x: 1600, y: 24, z: 1600 };
   const TITLES = ['The Summons', 'The Divided Record', 'The Erasure', 'The Stolen Hour', 'The Tribunal', 'The Door'];
   const TARGET_TURNS = [3, 1, 2];
+  // Work backwards through the linked stations. Merely pointing at the first
+  // unmatched dial can send the player around a loop because each turns two.
+  const LEDGER_GUIDE = (() => {
+    const next = new Map([[TARGET_TURNS.join(','), null]]), queue = [TARGET_TURNS];
+    for (let cursor = 0; cursor < queue.length; cursor++) {
+      for (let station = 0; station < 3; station++) {
+        const previous = queue[cursor].slice();
+        for (const i of [station, (station + 1) % 3]) previous[i] = (previous[i] + 3) % 4;
+        const key = previous.join(',');
+        if (!next.has(key)) { next.set(key, station); queue.push(previous); }
+      }
+    }
+    return next;
+  })();
   // Long source clips include several motions. Give the sustained sequences
   // several impact beats so a six-second boxing clip remains active in combat.
-  const ATTACK_IMPACTS = [[.23, .72], [.17, .50, .83], [.14, .40, .72], [.09, .24, .39, .54, .69, .84], [.30], [.26, .66], [.13, .45, .76]];
+  const ATTACK_IMPACTS = {
+    Sweeping_Kick: [.51, .61], Boxing_Practice: [.09, .24, .39, .54, .69, .84],
+    Right_Hand_Sword_Slash: [.30], Sword_Judgment: [.13, .45, .76],
+    Backflip_Sweep_Kick: [.14, .40, .72], Backflip_Jump: [], Backflip: [],
+  };
   const CLIP_STAGE = [0, 1, 2, 3, 4, 4, 5];
   const INTRO_CLIP = { 0: 0, 2: 2, 3: 3, 4: 4 };
   const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
@@ -225,7 +243,7 @@
     if (stage === 3) { const next = q.locks.findIndex(v => !v); if (next > 0) spawn.copy(target(game, next - 1)).add(V(0, 0, 5)); }
     spawn.y = ORIGIN.y; if (resetPosition) teleport(game, spawn);
     r.witness.copy(spawn).add(V(0, 1.8, -2));
-    toast(game, ['Attack the glowing seals. Move to interrupt your attack chain.', 'Each station turns itself and its neighbour. Match the three target marks.', 'Stay with the witness. Clear the wardens and break each purge relay.', 'Read the pulse. Lock each mechanism when its ring turns gold.', 'Stand at the gold station. Redirect the witness, then strike the exposed core.', 'Carry the surviving record to the door.'][stage], 7);
+    toast(game, ['Follow the red arrows to a seal, then ATTACK. Move to interrupt your attack chain.', 'Follow the red arrows to the next station. Each turn also moves its neighbour.', 'Follow the red guide. Stay with the witness, clear the wardens, and break each purge relay.', 'Follow the red arrows. Strike the mechanism when its ring turns gold.', 'Follow the red arrows to the gold station. Redirect the witness, then strike the exposed core.', 'Follow the red arrows. Carry the surviving record to the door.'][stage], 7);
     if (!r.replay) checkpoint(game);
   }
   function begin(game = window.__game) {
@@ -292,7 +310,7 @@
       q.complete = true; q.stage = 5; q.doorOpened = true;
       checkpoint(game); leave(game, { quiet: true });
       Quests.toast('THE INQUISITION BEGINS · The Unwritten Verdict is complete. Its seven scenes are now in the Index.');
-    } else { checkpoint(game); toast(game, id === 4 ? 'Turn the witness toward the crown. The gold station reveals its weak point.' : 'Follow the gold light. Your checkpoint is saved.', 5); }
+    } else { checkpoint(game); toast(game, id === 4 ? 'Follow the red guide to the gold station. Turn the witness toward the crown.' : 'Follow the red arrows. Your checkpoint is saved.', 5); }
   }
 
   function armRig(game) {
@@ -303,8 +321,8 @@
     rig.playDanceIndex = function(index) {
       const ok = play.call(this, index), r = game.inquisitorRuntime;
       if (ok && game.inquisitorInside && r && !r.replay && !r.presentation.cinematic) {
-        const duration = this.activeDance?.getClip?.()?.duration || 1.2;
-        r.pendingHit = { elapsed: 0, times: (ATTACK_IMPACTS[index] || [.25]).map(mark => Math.max(.16, duration * mark)), index };
+        const clip = this.activeDance?.getClip?.(), duration = clip?.duration || 1.2;
+        r.pendingHit = { elapsed: 0, times: (ATTACK_IMPACTS[clip?.name] || []).map(mark => Math.max(.16, duration * mark)), index, clip: clip?.name };
         faceAttackTarget(game);
       }
       return ok;
@@ -446,12 +464,12 @@
     const done = [q.seals.filter(Boolean).length, q.aligned.filter(Boolean).length, q.relay, q.locks.filter(Boolean).length, q.bossPhase, q.doorOpened ? 1 : 0][q.stage];
     const objectives = ['Break the three seals', 'Reconstruct the divided record', 'Protect the surviving record', 'Stop the clock. Reach the Tribunal.', r?.bossExposed > 0 ? 'Strike the exposed core' : 'Turn the witness on the Tribunal', 'Open the door beneath the world'];
     const defaultHints = [
-      'Move near a seal · ATTACK / Q plays all seven strikes and backflips.',
-      'INTERACT / E turns this station and the next. Align all three with their fixed marks.',
+      'Follow the red arrows · ATTACK / Q opens with a sweeping kick. Move to interrupt the combo.',
+      'Follow the red guide · INTERACT / E turns this station and the next. Align all three fixed marks.',
       r?.relaySpawned === q.relay && r?.fx.guards.some(g => g.hp > 0) ? 'ATTACK the wardens. Their crimson masks mark the threat.' : r?.purgeHP > 0 ? 'Stay near the witness. Break the purge relay after its wardens.' : 'Walk with the witness to the cleared relay.',
       'Outer lanes are safe. ATTACK the next mechanism while it glows gold.',
       r?.bossExposed > 0 ? 'Core open · ' + Math.ceil(r.bossExposed) + 's · approach the center, then ATTACK.' : 'Gold station ' + (correctBossStation(game) + 1) + ' has the clear sight line. INTERACT there.',
-      'Follow the pale gold aisle. INTERACT at the record cradle.'
+      'Follow the red arrows. INTERACT at the record cradle.'
     ];
     const total = q.stage === 5 ? 1 : 3;
     return { stage: q.stage, objective: objectives[q.stage], hint: r?.messageTime > 0 ? r.message : defaultHints[q.stage], progress: { current: done, total, label: done + ' / ' + total }, integrity: q.stage === 2 || q.stage === 3 || q.stage === 4 ? r?.integrity : null, canInteract: !!nearestInteraction(game), nearLabel: q.stage === 1 ? 'TURN' : q.stage === 5 ? 'OPEN' : 'ALIGN', attackLabel: 'ATTACK', paused: false, replay: !!r?.replay };
@@ -461,18 +479,33 @@
     const offset = V(ORIGIN.x, ORIGIN.y, ORIGIN.z - r.stage * 160);
     const activeClock = q.locks.findIndex(v => !v);
     const period = q.stage === 3 ? 5.6 : 6;
-    return { ...q, stage: r.stage, clock: r.clock, witnessLocal: r.witness.clone().sub(offset).toArray(), clockOpen: clockOpen(r, Math.max(0, activeClock)), hazardPhase: (r.clock % period) / period, bossExposed: r.bossExposed > 0, bossStation: correctBossStation(game), doorOpen: r.doorOpen, cinematic: !!r.presentation.cinematic, relayCleared: r.purgeHP <= 0, guardHP: r.fx.guards.map(g => g.hp), externalCombat: true, paused: document.hidden };
+    const guide = guideObjective(game);
+    return { ...q, stage: r.stage, clock: r.clock, witnessLocal: r.witness.clone().sub(offset).toArray(), playerLocal: game.playerPos.clone().sub(offset).toArray(), guideTargetLocal: guide?.pos ? guide.pos.clone().sub(offset).toArray() : null, guideKind: guide?.kind || null, guideEnabled: !r.replay && !q.complete, clockOpen: clockOpen(r, Math.max(0, activeClock)), hazardPhase: (r.clock % period) / period, bossExposed: r.bossExposed > 0, bossStation: correctBossStation(game), doorOpen: r.doorOpen, cinematic: !!r.presentation.cinematic, relayCleared: r.purgeHP <= 0, guardHP: r.fx.guards.map(g => g.hp), externalCombat: true, paused: document.hidden };
   }
-  function waypoint(game) {
+  function guideObjective(game) {
     const q = state(game), r = game.inquisitorRuntime;
-    if (!r || r.presentation.cinematic || r.replay) return null;
-    if (q.stage === 0) return target(game, q.seals.findIndex(v => !v));
-    if (q.stage === 1) return target(game, q.aligned.findIndex(v => !v));
-    if (q.stage === 2) return distance(game, r.witness) > 12 ? r.witness : target(game, Math.min(2, q.relay));
-    if (q.stage === 3) return target(game, q.locks.findIndex(v => !v));
-    if (q.stage === 4) return target(game, r.bossExposed > 0 ? 3 : correctBossStation(game));
-    return target(game, 0);
+    if (!r || r.presentation.cinematic || r.replay || q.complete) return null;
+    const at = (index, kind) => index >= 0 ? { pos: target(game, index), kind } : null;
+    if (q.stage === 0) {
+      const index = q.seals.map((done, i) => done ? null : { i, d: distance(game, target(game, i)) }).filter(Boolean).sort((a, b) => a.d - b.d)[0]?.i;
+      return at(index ?? -1, 'seal');
+    }
+    if (q.stage === 1) {
+      const next = LEDGER_GUIDE.get(q.turns.join(','));
+      return at(next === null ? -1 : next ?? q.aligned.findIndex(v => !v), 'station');
+    }
+    if (q.stage === 2) {
+      if (q.relay >= 3) return null;
+      if (distance(game, r.witness) > 12) return { pos: r.witness, kind: 'witness' };
+      const guard = r.fx.guards.filter(g => g.hp > 0 && g.mesh.visible).sort((a, b) => distance(game, a.mesh.position) - distance(game, b.mesh.position))[0];
+      if (guard) return { pos: guard.mesh.position, kind: 'warden' };
+      return at(q.relay, r.relaySpawned === q.relay && r.purgeHP > 0 ? 'relay' : 'escort');
+    }
+    if (q.stage === 3) return at(q.locks.findIndex(v => !v), 'clock');
+    if (q.stage === 4) return q.bossPhase >= 3 ? null : at(r.bossExposed > 0 ? 3 : correctBossStation(game), r.bossExposed > 0 ? 'core' : 'station');
+    return q.doorOpened ? null : at(0, 'door');
   }
+  function waypoint(game) { return guideObjective(game)?.pos || null; }
   function tick(game, dt) {
     let r = game.inquisitorRuntime;
     if (game.inquisitorInside && !selected()) { leave(game, { quiet: true }); return; }

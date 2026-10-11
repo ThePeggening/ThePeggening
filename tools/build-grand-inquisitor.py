@@ -3,12 +3,10 @@
 
 Usage: python tools/build-grand-inquisitor.py [repository-root] [--promote]
 
-The authoritative packed Classic source is read from index.html. All patches
-have unique, checked anchors. The emitted runtime uses the existing packed-47
-format; the thin update page installs that precompiled package into the same
-host HTML and leaves all other embedded games/assets unchanged. The optional
---promote flag connects the normal website entry to the separate update page,
-preserving every original packed payload and the query string/fragment.
+The original packed Classic source is retained as an immutable build input.
+All patches have unique, checked anchors. The emitted runtime uses the existing
+packed-47 format. --promote installs it in the normal Atropa host, preserving
+the original website opening and every other embedded game and asset.
 """
 from __future__ import annotations
 
@@ -22,11 +20,13 @@ import subprocess
 import tempfile
 
 
-REVISION = "P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R2"
+REVISION = "P50-GRAND-INQUISITOR-THE-UNWRITTEN-VERDICT-R3"
 ALPHABET_SIZE = 52496
 PACKAGE_NAME = "grand-inquisitor-runtime.pkg"
 MANIFEST_NAME = "grand-inquisitor-runtime.manifest.json"
 PAGE_NAME = "Atropa-P50-Grand-Inquisitor-Update.html"
+BASE_PACKAGE_NAME = "atropa-classic-before-grand-inquisitor.pkg"
+BASE_MANIFEST_NAME = "atropa-classic-before-grand-inquisitor.manifest.json"
 MODULE_NAMES = (
     "grand-inquisitor-world.js",
     "grand-inquisitor-presentation.js",
@@ -49,41 +49,45 @@ def read_html(value: bytes) -> str:
     return value.decode("utf-8-sig")
 
 
-def promote_entry(root: Path) -> None:
-    """Route the normal website to P50; keep the original game as a fallback."""
-    index = root / "index.html"
-    original = index.read_bytes()
-    html = read_html(original)
-    marker = 'id="atropa-p50-default-entry"'
-    previous_guard = re.compile(r'\n?<script id="atropa-p50-default-entry">.*?</script>\n?', re.S)
-    if marker in html and len(previous_guard.findall(html)) != 1:
-        raise ValueError("Expected one existing default-entry guard")
-    plain_html = previous_guard.sub("", html, count=1) if marker in html else html
-    if html.count("<head>") != 1:
-        raise ValueError("Expected one normal host head before promoting P50")
-    guard = '''
-<script id="atropa-p50-default-entry">
-(() => {
-  if (!/^https?:$/.test(location.protocol)) return;
-  const destination = new URL(location.href);
-  if (destination.searchParams.get('atropa-base') === '1') return;
-  if (!/\\/(?:index\\.html)?$/i.test(destination.pathname)) return;
-  destination.pathname = destination.pathname.replace(/(?:index\\.html)?$/i, 'Atropa-P50-Grand-Inquisitor-Update.html');
-  destination.searchParams.set('atropa-update', 'P50-R2');
-  location.replace(destination.href);
-})();
-</script>
-'''
-    updated = plain_html.replace("<head>", "<head>" + guard, 1)
-    if updated.replace(guard, "", 1) != plain_html:
-        raise ValueError("Entry promotion changed unrelated host content")
+def encode_html(updated: str, original: bytes) -> bytes:
     if original.startswith(b"\xff\xfe"):
-        encoded = b"\xff\xfe" + updated.encode("utf-16le")
+        return b"\xff\xfe" + updated.encode("utf-16le")
     elif original.startswith(b"\xfe\xff"):
-        encoded = b"\xfe\xff" + updated.encode("utf-16be")
-    else:
-        encoded = (b"\xef\xbb\xbf" if original.startswith(b"\xef\xbb\xbf") else b"") + updated.encode("utf-8")
-    index.write_bytes(encoded)
+        return b"\xfe\xff" + updated.encode("utf-16be")
+    return (b"\xef\xbb\xbf" if original.startswith(b"\xef\xbb\xbf") else b"") + updated.encode("utf-8")
+
+
+def remove_entry_redirect(html: str) -> str:
+    pattern = re.compile(r'\n?<script id="atropa-p50-default-entry">.*?</script>\n?', re.S)
+    if 'id="atropa-p50-default-entry"' in html and len(pattern.findall(html)) != 1:
+        raise ValueError("Expected one obsolete default-entry redirect")
+    return pattern.sub("", html, count=1)
+
+
+def without_picker(html: str) -> str:
+    return re.sub(r'<style id="atropa-p50-character-picker">.*?</style>', "", html, flags=re.S)
+
+
+def host_without_p50_slots(html: str) -> str:
+    html = without_picker(remove_entry_redirect(html))
+    html = SOURCE_RE.sub("__CLASSIC_SOURCE__", html)
+    return re.sub(r'data-integration-revision="[^"]*"', 'data-integration-revision="__REVISION__"', html, count=1)
+
+
+def promote_entry(html: str, packed: str, raw_size: int, raw_sha: str) -> str:
+    """Install the character into the normal game without a website redirect."""
+    clean = without_picker(remove_entry_redirect(html))
+    matches = list(SOURCE_RE.finditer(clean))
+    if len(matches) != 1 or clean.count('</head>') != 1:
+        raise ValueError("Expected one Classic source and one normal host head")
+    match = matches[0]
+    tag = update_source_tag(match[1], raw_size, raw_sha)
+    updated = clean[:match.start()] + tag + packed + match[3] + clean[match.end():]
+    updated = re.sub(r'data-integration-revision="[^"]*"', 'data-integration-revision="' + REVISION + '"', updated, count=1)
+    updated = updated.replace('</head>', picker_styles() + '</head>', 1)
+    if host_without_p50_slots(updated) != host_without_p50_slots(html):
+        raise ValueError("Native installation changed unrelated website or game content")
+    return updated
 
 
 def packed_digit(cp: int) -> int:
@@ -168,7 +172,7 @@ def encode47(data: bytes) -> str:
 def patch_source(source: str) -> tuple[str, list[str]]:
     """Apply narrowly scoped host integrations; return an auditable patch list."""
     if "// GRAND INQUISITOR P50 HOST INTEGRATION" in source:
-        raise ValueError("Input already contains P50; build from the unchanged base index.html")
+        raise ValueError("Input already contains P50; use the preserved original Classic source")
     patches: list[str] = []
 
     def replace(old: str, new: str, label: str, count: int = 1) -> None:
@@ -189,7 +193,7 @@ function buildGrandInquisitorPlayer() {
         url: './assets/models/crimson-wraith.glb',
         height: 2.9,
         weaponMount: [-0.48, 1.45, 0.18],
-        danceClips: ['Backflip', 'Backflip_Jump', 'Backflip_Sweep_Kick', 'Boxing_Practice', 'Right_Hand_Sword_Slash', 'Sweeping_Kick', 'Sword_Judgment'],
+        danceClips: ['Sweeping_Kick', 'Boxing_Practice', 'Right_Hand_Sword_Slash', 'Backflip_Sweep_Kick', 'Backflip_Jump', 'Backflip', 'Sword_Judgment'],
     });
 }
 
@@ -221,7 +225,7 @@ const PLAYER_SKINS = [""",
     replace("    if (!isMaria || (mobile ? !isTouch : isTouch))", "    if ((!isMaria && !isInquisitor) || (mobile ? !isTouch : isTouch))", "Show attack button on correct input surface")
     replace(
         "        'data-maria-dance': '1',\n        'aria-label': 'Maria 414 dance',\n        title: 'DANCE — tap for one cycle, hold to keep cycling',",
-        "        'data-maria-dance': isMaria ? '1' : undefined,\n        'data-inquisitor-attack': isInquisitor ? '1' : undefined,\n        'aria-label': isInquisitor ? 'Grand Inquisitor attack sequence' : 'Maria 414 dance',\n        title: isInquisitor ? 'ATTACK — tap to play all seven attacks and backflips; hold to repeat' : 'DANCE — tap for one cycle, hold to keep cycling',",
+        "        'data-maria-dance': isMaria ? '1' : undefined,\n        'data-inquisitor-attack': isInquisitor ? '1' : undefined,\n        'aria-label': isInquisitor ? 'Grand Inquisitor attack sequence' : 'Maria 414 dance',\n        title: isInquisitor ? 'ATTACK — sweeping kick first, then the full combat combo; hold to repeat' : 'DANCE — tap for one cycle, hold to keep cycling',",
         "Name native attack controls accessibly",
     )
     replace("    }, props), 'DANCE');", "    }, props), isInquisitor ? 'ATTACK' : 'DANCE');", "Label native Grand Inquisitor attack control")
@@ -320,11 +324,8 @@ def update_source_tag(tag: str, raw_size: int, raw_sha: str) -> str:
     return SIZE_RE.sub(f'data-raw-size="{raw_size}"', tag, count=1)
 
 
-def wrapper_html(manifest: dict) -> str:
-    # Embed exact build metadata. No browser-side source rewriting/recompilation,
-    # forced selection, save mutation, or navigation to a different URL.
-    meta = json.dumps({key: manifest[key] for key in ("revision", "sourceSha256", "sourceRawBytes", "baseSourceSha256", "packageSha256")}, separators=(",", ":"))
-    picker_css = '''<style id="atropa-p50-character-picker">
+def picker_styles() -> str:
+    return '''<style id="atropa-p50-character-picker">
 .atropa-char-select .atropa-char-dots{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr));width:min(100%,576px);max-width:100%;gap:4px!important;flex-shrink:0}
 .atropa-char-select .atropa-char-dots>button{min-width:0;min-height:44px;justify-content:center;padding:4px!important;border-radius:9px}
 @media(max-width:640px){.atropa-char-select .atropa-char-dots{grid-template-columns:repeat(6,minmax(0,1fr))}}
@@ -334,19 +335,25 @@ def wrapper_html(manifest: dict) -> str:
 .atropa-char-select .atropa-char-name h1{white-space:normal!important;line-height:1.1;font-size:clamp(16px,2.5vw,22px)!important}
 }
 </style>'''
+
+
+def wrapper_html(manifest: dict) -> str:
+    # Keep the separately named update link, with ordinary Atropa branding.
+    # The normal homepage already contains this source and needs no wrapper.
+    meta = json.dumps({key: manifest[key] for key in ("revision", "sourceSha256", "sourceRawBytes", "baseSourceSha256", "inputSourceSha256", "packageSha256")}, separators=(",", ":"))
     return r'''<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#090610">
-  <title>ATROPA — Grand Inquisitor Cicero · The Unwritten Verdict</title>
+  <meta name="theme-color" content="#0d1026">
+  <title>ATROPA: The Peggening</title>
   <style>
     *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#090610;color:#ece3d4;font:15px/1.6 system-ui,sans-serif}body{min-height:100dvh;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 35%,#30132788,transparent 62%),#090610}main{width:min(530px,calc(100% - 40px));text-align:center;padding:32px 0}.eyebrow{color:#c6a164;font-size:10px;letter-spacing:.26em;text-transform:uppercase}h1{font:500 clamp(25px,6vw,42px)/1.18 Georgia,serif;margin:20px 0 13px}.subtitle{color:#a899a5;font-size:12px}.bar{margin:28px auto 15px;height:3px;width:82%;overflow:hidden;background:#332232}.bar i{display:block;width:32%;height:100%;background:linear-gradient(90deg,transparent,#e8bf73,transparent);animation:load 1.8s ease-in-out infinite}#status{font-size:12px;overflow-wrap:anywhere}#recover{margin-top:20px}a{display:inline-block;padding:9px 17px;margin:4px;border:1px solid #8b6a45;border-radius:4px;color:#f2d4a4;text-decoration:none;font-size:12px}a:focus-visible{outline:2px solid #edc780;outline-offset:4px}.error .bar{display:none}@keyframes load{from{transform:translateX(-100%)}to{transform:translateX(410%)}}@media(prefers-reduced-motion:reduce){.bar i{animation:none;width:100%}}
   </style>
 </head>
 <body>
-  <main id="loader"><div class="eyebrow">ATROPA · THE PEGGENING</div><h1>THE UNWRITTEN VERDICT</h1><p class="subtitle">Grand Inquisitor Cicero</p><div class="bar" aria-hidden="true"><i></i></div><p id="status" role="status">Preparing Atropa…</p><div id="recover" hidden><a id="retry" href="">Retry loading</a><a href="./index.html?atropa-base=1">Open previous version</a></div></main>
+  <main id="loader"><div class="eyebrow">ATROPA</div><h1>THE PEGGENING</h1><div class="bar" aria-hidden="true"><i></i></div><p id="status" role="status">Loading Atropa…</p><div id="recover" hidden><a id="retry" href="">Retry loading</a><a href="./index.html">Open Atropa</a></div></main>
   <script>
   (async () => {
     'use strict';
@@ -356,22 +363,27 @@ def wrapper_html(manifest: dict) -> str:
     const hash = async (bytes) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('');
     const htmlText = (bytes) => { const le=bytes[0]===255&&bytes[1]===254,be=bytes[0]===254&&bytes[1]===255;return new TextDecoder(le?'utf-16le':be?'utf-16be':'utf-8',{fatal:true}).decode(bytes); };
     try {
-      status.textContent = 'Loading Atropa and the Inquisitor story…';
-      const [hostBytes,packageBytes] = await Promise.all([read('./index.html'),read('./quests/grand-inquisitor-runtime.pkg')]);
-      if (!globalThis.crypto?.subtle) throw new Error('Open this update through its hosted HTTPS game link.');
-      if (await hash(packageBytes) !== build.packageSha256) throw new Error('The story download was incomplete. Retry loading.');
+      status.textContent = 'Loading Atropa…';
+      const hostBytes = await read('./index.html');
       let html = htmlText(hostBytes);
       const pattern = /(<script id="atropa-src"[^>]*>)(.*?)(<\/script>)/s;
       const match = pattern.exec(html);
       if (!match) throw new Error('The Atropa source package was not found.');
       const baseHash = /data-raw-sha256="([a-f0-9]{64})"/.exec(match[1]);
-      if (!baseHash || baseHash[1] !== build.baseSourceSha256) throw new Error('Atropa has changed since this story build. Open Atropa below while this update is refreshed.');
-      const packed = new TextDecoder('utf-8',{fatal:true}).decode(packageBytes);
-      if (!/^~47:\d+:/.test(packed)) throw new Error('The Inquisitor story package has an invalid format.');
-      if (!/data-raw-size="\d+"/.test(match[1])) throw new Error('Atropa source metadata is missing.');
-      const tag = match[1].replace(/data-raw-sha256="[a-f0-9]{64}"/,'data-raw-sha256="'+build.sourceSha256+'"').replace(/data-raw-size="\d+"/,'data-raw-size="'+build.sourceRawBytes+'"');
-      html = html.slice(0,match.index)+tag+packed+match[3]+html.slice(match.index+match[0].length);
+      if (!baseHash || ![build.baseSourceSha256,build.inputSourceSha256,build.sourceSha256].includes(baseHash[1])) throw new Error('A newer Atropa version is available. Open Atropa below.');
+      if (baseHash[1] !== build.sourceSha256) {
+        if (!globalThis.crypto?.subtle) throw new Error('Open Atropa through its hosted HTTPS game link.');
+        const packageBytes = await read('./quests/grand-inquisitor-runtime.pkg');
+        if (await hash(packageBytes) !== build.packageSha256) throw new Error('The game download was incomplete. Retry loading.');
+        const packed = new TextDecoder('utf-8',{fatal:true}).decode(packageBytes);
+        if (!/^~47:\d+:/.test(packed)) throw new Error('The Atropa game package has an invalid format.');
+        if (!/data-raw-size="\d+"/.test(match[1])) throw new Error('Atropa source metadata is missing.');
+        const tag = match[1].replace(/data-raw-sha256="[a-f0-9]{64}"/,'data-raw-sha256="'+build.sourceSha256+'"').replace(/data-raw-size="\d+"/,'data-raw-size="'+build.sourceRawBytes+'"');
+        html = html.slice(0,match.index)+tag+packed+match[3]+html.slice(match.index+match[0].length);
+      }
+      html = html.replace(/\n?<script id="atropa-p50-default-entry">.*?<\/script>\n?/s,'');
       html = html.replace(/data-integration-revision="[^"]*"/,'data-integration-revision="'+build.revision+'"');
+      html = html.replace(/<style id="atropa-p50-character-picker">.*?<\/style>/s,'');
       html = html.replace('</head>', __P50_PICKER_STYLES__ + '</head>');
       status.textContent = 'Entering Atropa…';
       document.open();document.write(html);document.close();
@@ -386,10 +398,10 @@ def wrapper_html(manifest: dict) -> str:
   </script>
 </body>
 </html>
-'''.replace("__P50_BUILD_METADATA__", meta).replace("__P50_PICKER_STYLES__", json.dumps(picker_css))
+'''.replace("__P50_BUILD_METADATA__", meta).replace("__P50_PICKER_STYLES__", json.dumps(picker_styles()))
 
 
-def build(root: Path) -> dict:
+def build(root: Path, promote: bool = False) -> dict:
     index = root / "index.html"
     original_bytes = index.read_bytes()
     html = read_html(original_bytes)
@@ -404,6 +416,29 @@ def build(root: Path) -> dict:
         raise ValueError("Input Classic source checksum mismatch")
     if not original_size or len(raw_base) != int(original_size[1]):
         raise ValueError("Input Classic source size mismatch")
+
+    base_packed = match[2]
+    base_meta_path = root / "quests" / BASE_MANIFEST_NAME
+    base_package_path = root / "quests" / BASE_PACKAGE_NAME
+    base_meta = {
+        "sourceSha256": checksum[1], "sourceRawBytes": len(raw_base),
+        "packageSha256": sha256(base_packed.encode("utf-8")),
+        "package": "quests/" + BASE_PACKAGE_NAME,
+        "installedSourceSha256": None,
+    }
+    if b"// GRAND INQUISITOR P50 HOST INTEGRATION" in raw_base:
+        if not base_meta_path.is_file() or not base_package_path.is_file():
+            raise ValueError("Installed P50 source requires its preserved original Classic build input")
+        base_meta = json.loads(base_meta_path.read_text(encoding="utf-8"))
+        if base_meta.get("installedSourceSha256") != checksum[1]:
+            raise ValueError("Classic source changed after the last installation; rebase instead of overwriting it")
+        base_package = base_package_path.read_bytes()
+        if sha256(base_package) != base_meta["packageSha256"]:
+            raise ValueError("Preserved original Classic package checksum mismatch")
+        base_packed = base_package.decode("utf-8")
+        raw_base = gzip.decompress(decode47(base_packed))
+        if sha256(raw_base) != base_meta["sourceSha256"] or len(raw_base) != base_meta["sourceRawBytes"]:
+            raise ValueError("Preserved original Classic source metadata mismatch")
 
     source, patches = patch_source(raw_base.decode("utf-8").replace("\r\n", "\n"))
     module_hashes = {}
@@ -441,7 +476,8 @@ def build(root: Path) -> dict:
         "revision": REVISION,
         "sourceSha256": source_sha,
         "sourceRawBytes": len(raw_source),
-        "baseSourceSha256": checksum[1],
+        "baseSourceSha256": base_meta["sourceSha256"],
+        "inputSourceSha256": checksum[1],
         "baseSourceRawBytes": len(raw_base),
         "baseHtmlSha256": sha256(original_bytes),
         "package": "quests/" + PACKAGE_NAME,
@@ -450,8 +486,13 @@ def build(root: Path) -> dict:
         "wrapper": PAGE_NAME,
         "modules": module_hashes,
         "patches": patches,
+        "normalEntry": "native-index" if promote else "unchanged",
         "validation": {"nodeSyntax": True, "packedRoundtrip": True, "unrelatedHostMarkupPreserved": True},
     }
+    installed_html = promote_entry(html, packed, len(raw_source), source_sha) if promote else None
+    if installed_html is not None:
+        manifest["installedHtmlSha256"] = sha256(encode_html(installed_html, original_bytes))
+        manifest["validation"]["normalWebsitePreserved"] = True
     wrapper = wrapper_html(manifest)
     wrapper_scripts = re.findall(r"<script>(.*?)</script>", wrapper, re.S)
     if len(wrapper_scripts) != 1:
@@ -467,28 +508,39 @@ def build(root: Path) -> dict:
     (root / PAGE_NAME).write_text(wrapper, encoding="utf-8")
     if index.read_bytes() != original_bytes:
         raise ValueError("index.html changed while building; do not publish this output")
+    # Save a verified original input before replacing the embedded Classic copy.
+    # Future builds never patch an already-patched runtime a second time.
+    base_package_path.write_bytes(base_packed.encode("utf-8"))
+    if promote:
+        base_meta["installedSourceSha256"] = source_sha
+    base_meta_path.write_text(json.dumps(base_meta, indent=2) + "\n", encoding="utf-8")
+    if installed_html is not None:
+        index.write_bytes(encode_html(installed_html, original_bytes))
     return manifest
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("root", nargs="?", type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument("--promote", action="store_true", help="Connect the normal website to P50 while retaining all original game payloads")
+    parser.add_argument("--promote", action="store_true", help="Install the updated Classic game in the normal Atropa website without a redirect")
     options = parser.parse_args()
     root = options.root.resolve()
-    previous_index = (root / "index.html").read_bytes() if options.promote else None
+    rollback_paths = [root / "index.html", root / "quests" / BASE_PACKAGE_NAME, root / "quests" / BASE_MANIFEST_NAME]
+    previous_files = {path: path.read_bytes() if path.is_file() else None for path in rollback_paths} if options.promote else {}
     try:
-        if options.promote:
-            promote_entry(root)
-        manifest = build(root)
+        manifest = build(root, promote=options.promote)
     except Exception:
-        if previous_index is not None:
-            (root / "index.html").write_bytes(previous_index)
+        for path, content in previous_files.items():
+            if content is None:
+                path.unlink(missing_ok=True)
+            else:
+                path.write_bytes(content)
         raise
     print(f"Built {manifest['revision']}")
     print(f"Source: {manifest['sourceRawBytes']:,} bytes; SHA256 {manifest['sourceSha256']}")
     print(f"Runtime package: {manifest['packageBytes']:,} bytes; {len(manifest['patches'])} checked host integrations")
-    print("Verified: JavaScript syntax, packed roundtrip, unchanged embedded host payloads and unchanged index.html.")
+    print("Verified: JavaScript syntax, packed roundtrip, and unchanged unrelated website/embedded game payloads.")
+    print("Normal entry: native Atropa website; no redirect." if options.promote else "Normal entry: unchanged by this build.")
     print(f"Page: {manifest['wrapper']}")
 
 
