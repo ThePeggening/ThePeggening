@@ -101,6 +101,27 @@ async function runGuidanceTests() {
       };
       const hidden = (s, label) => check(!s.guide || (!s.guide.active && !s.guide.visible && s.guide.count === 0), label);
 
+      if (process.argv.includes('--visual-only')) {
+        const initial = await waitInside(frame, 0); if (initial.cinematic) await finishScene(frame);
+        const settleCamera = async () => {
+          const first = await read();
+          return eventually(read, x => x.frame > first.frame + 50 && x.clock > first.clock + 1.4, 'Native camera settles after a remote checkpoint jump', 15000);
+        };
+        for (const stage of [1, 3, 5]) {
+          await checkpoint(stage); await settleCamera();
+          let at = await shoot('guide-' + String(stage).padStart(2, '0') + '-settled-portrait');
+          expectTarget(at, stage === 1 ? 'station' : stage === 3 ? 'clock' : 'door', at.guide.worldTarget, 'Settled portrait stage ' + stage);
+          if (stage === 1) {
+            const index = at.targets.findIndex(p => distance(p, at.guide.worldTarget) < .04);
+            await putByTarget(frame, 1, index, 12); await settleCamera();
+            at = await shoot('guide-01-archive-marker-close-portrait');
+            check(at.guide.pointerY - .65 * at.guide.pointerScale > 6.15, 'Close archive marker clears the station label');
+          }
+          metrics.stages.push({ stage, settledVisual: true }); log('settled-visual', { stage });
+        }
+        return;
+      }
+
       let s = await waitInside(frame, 0);
       check(s.cinematic, 'Fresh selected character starts the actual Summons');
       hidden(await read(), 'Red guide stays hidden during the Summons cinematic');
